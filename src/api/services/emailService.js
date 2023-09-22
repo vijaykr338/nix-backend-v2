@@ -13,6 +13,7 @@ const DEVELOPER_FOOTER = "dvishal485";
     * Available child classes:
     * - `pendingApprovalMail`
     * - `registerationMail`
+    * - `storyPublishedMail`
 */
 class Email {
     constructor() {
