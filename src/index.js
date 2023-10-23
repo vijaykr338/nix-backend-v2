@@ -13,7 +13,7 @@ import connectDB from "./config/DatabaseConfig.js";
 import CustomError from "./config/CustomError.js";
 import globalErrorHandler from "./api/helpers/globalErrorHandler.js";
 import userRouter from "./api/routes/userRoute.js"
-
+import authRouter from "./api/routes/authRouter.js"
 
 //creating express server
 const app = express();
@@ -39,6 +39,7 @@ app.get("/", (req, res) => {
 
 //
 app.use("/api/v1/user",userRouter);
+app.use("/api/v1/auth", authRouter);
 
 
 //middleware for swagger
