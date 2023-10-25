@@ -1,10 +1,9 @@
-import express  from 'express'
-import { createUser, getAllUsers } from '../controllers/userController.js';
-const router = express.Router()
+import express from "express";
+import { getAllUsers } from "../controllers/userController.js";
+import { protect } from "../middlewares/authMiddleware.js";
+const router = express.Router();
 
-router.get('/',getAllUsers);
-router.post('/create',createUser);
+router.route("/")
+    .get(protect, getAllUsers);
 
-
-
-export default router
+export default router;

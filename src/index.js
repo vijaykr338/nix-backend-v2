@@ -6,6 +6,7 @@ process.on("uncaughtException", (err) => {
   process.exit(1);
 });
 import cors from "cors";
+import cookieParser from 'cookie-parser';
 import express from "express";
 import swaggerUi from 'swagger-ui-express';
 import { swaggerDocument } from "./config/swagger/swagger-config.js";
@@ -31,7 +32,8 @@ app.use(
 app.use(express.json());
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: false }));
-
+// parse cookies
+app.use(cookieParser())
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
