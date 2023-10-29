@@ -34,7 +34,7 @@ const makeAccessToken = (email) => {
   });
 };
 
-const makeRefreshToken = (payload) => {
+const makeRefreshToken = (email) => {
   return jwt.sign({ email }, process.env.REFRESH_SECRET_KEY, {
     expiresIn: "1d",
   });
@@ -74,25 +74,6 @@ const createResetPasswordToken = (user) => {
  * @param {Function} next - Express next middleware function.
  */
 
-export const verifyToken = (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  if (!authHeader) {
-    const error = new CustomError("Authorization header not present", 401);
-    return next(error);
-  }
-
-  const token = authHeader.split(" ")[1];
-
-  jwt.verify(token, process.env.ACCESS_SECRET_KEY, (err, user) => {
-    if (err) {
-      const error = new CustomError("Invalid token", 403);
-      return next(error);
-    }
-    req.user = user;
-    next();
-  });
-};
-
 /**
  * Used when access tokens have expired. Generate a new access token and a new refresh token.
  *
@@ -111,32 +92,25 @@ export const refresh = asyncErrorHandler(async (req, res, next) => {
 
   const refreshToken = cookies.jwt;
 
-  console.log(refreshToken,"refresh");
+  const foundUser = await UserService.checkUserExists(null, refreshToken);
 
-  const foundUser = await UserService.checkUserExists(null,refreshToken);
-
-  console.log(foundUser);
   if (!foundUser) {
     return next(new CustomError("Invalid refresh token", 403));
   }
 
-  
   jwt.verify(refreshToken, process.env.REFRESH_SECRET_KEY, (err, decoded) => {
-    console.log(err);
-    console.log(decoded);
-
-    if (err || foundUser.email!=decoded.payload  ) {
-        return next(new CustomError("Invalid refresh token", 403));
+    if (err || foundUser.email != decoded.email) {
+      return next(new CustomError("Invalid refresh token", 403));
     }
 
     const newAccessToken = makeAccessToken(foundUser.email);
 
     res.status(200).json({
-        status:"success",
-        message:"AccessToken generated successfully",
-        data:{
-            accessToken:newAccessToken
-        }
+      status: "success",
+      message: "AccessToken generated successfully",
+      data: {
+        accessToken: newAccessToken,
+      },
     });
   });
 });
@@ -222,6 +196,8 @@ export const login = asyncErrorHandler(async (req, res, next) => {
     res.cookie("jwt", refreshToken, {
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, //1 day
+      sameSite: "None",
+      secure: true,
     });
 
     res.json({
@@ -249,6 +225,11 @@ export const login = asyncErrorHandler(async (req, res, next) => {
  * @param {Object} res - Express response object.
  * @param {Function} next - Express next middleware function.
  */
+
+
+export const changePassword=asyncErrorHandler(async(req,res,next)=>{
+      
+})
 
 export const forgotPassword = asyncErrorHandler(async (req, res, next) => {
   //get user based on post email from database
@@ -334,18 +315,25 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
  * @param {Function} next - Express next middleware function.
  */
 
-export const logout = (req, res, next) => {
-  const refreshToken = req.body.refreshToken;
+export const logout = asyncErrorHandler(async (req, res, next) => {
+  const cookies = req.cookies;
 
-  const refreshTokenFound = refreshTokens.find(
-    (otherToken) => otherToken == refreshToken
-  );
-
-  if (!refreshTokenFound) {
-    const error = new CustomError("User not found", 404);
-    return next(error);
+  //if no refreshToken present
+  if (!cookies?.jwt) {
+    return res.sendStatus(204);
   }
 
-  refreshTokens = refreshTokens.filter((token) => token !== refreshToken);
-  res.status(200).json("Logged out successfully.");
-};
+  const refreshToken = cookies.jwt;
+
+  //if no refreshToken present in db
+  const foundUser = await UserService.checkUserExists(null, refreshToken);
+  if (!foundUser) {
+    res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
+    return res.sendStatus(204);
+  }
+
+  //delete refreshToken present in db
+  const user = await UserService.deleteRefreshToken(foundUser.email);
+  res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
+  return res.sendStatus(204);
+});

@@ -26,6 +26,19 @@ export const addRefreshToken = async (email, refreshToken) => {
   return user;
 };
 
+export const deleteRefreshToken = async (email) => {
+  const user = await User.findOneAndUpdate(
+    { email: email },
+    {
+      $set: { refreshToken: "" },
+    },
+    {
+      returnDocument: "after",
+    }
+  );
+  return user;
+};
+
 export const getAllUsers = async (query) => {
   const allUsers = await User.find(query);
   return allUsers;

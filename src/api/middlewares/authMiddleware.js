@@ -19,7 +19,7 @@ export const protect = asyncErrorHandler(async (req, res, next) => {
 
       req.user = decoded.email;
 
-      next();
+      return next();
     });
 
     // Get user from the token and add it to request
@@ -29,6 +29,6 @@ export const protect = asyncErrorHandler(async (req, res, next) => {
 
   if (!token) {
     const err = new CustomError(`Not authorized`, 401);
-    next(err);
+    return next(err);
   }
 });

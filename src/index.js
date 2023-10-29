@@ -15,6 +15,8 @@ import CustomError from "./config/CustomError.js";
 import globalErrorHandler from "./api/helpers/globalErrorHandler.js";
 import userRouter from "./api/routes/userRoute.js"
 import authRouter from "./api/routes/authRouter.js"
+import { corsOptions } from "./config/corsOptions.js";
+import { credentials } from "./api/middlewares/credentials.js";
 
 //creating express server
 const app = express();
@@ -22,11 +24,11 @@ const app = express();
 //connecting to db
 connectDB();
 
-app.use(
-  cors({
-    origin: "*",
-  })
-); //every origin allowed
+//handle options credentials check before CORS
+app.use(credentials);
+
+//cors
+app.use(cors(corsOptions)); 
 
 // parse requests of content-type - application/json
 app.use(express.json());
@@ -74,3 +76,5 @@ process.on("unhandledRejection", (err) => {
     process.exit(1);
   });
 });
+
+

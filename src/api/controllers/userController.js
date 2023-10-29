@@ -3,7 +3,10 @@ import asyncErrorHandler from "../helpers/asyncErrorHandler.js";
 
 
 export const getAllUsers = asyncErrorHandler(async (req, res) => {
+  //add logic here 
+
   const allUsers = await UserService.getAllUsers({});
+  
   res.status(200).json({
     status: "success",
     message: "Users fetched successfully",
