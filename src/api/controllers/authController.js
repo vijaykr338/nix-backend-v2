@@ -5,32 +5,10 @@ import asyncErrorHandler from "../helpers/asyncErrorHandler.js";
 import CustomError from "../../config/CustomError.js";
 import passwordResetMail from "../services/emailService.js";
 import * as UserService from "../services/userService.js";
-/**
- * User data (for demonstration, replace with database interactions).
- * @type {Array}
- */
-
-const users = [
-  {
-    id: "1",
-    username: "siya",
-    email: "sample_email@gmail.com",
-    password: "siya12345",
-    passwordResetToken: undefined,
-    passwordResetTokenExpires: undefined,
-  },
-];
-
-/**
- * Array to store refresh tokens (for demonstration, replace with a database or external service).
- * @type {Array}
- */
-
-let refreshTokens = [];
 
 const makeAccessToken = (email) => {
   return jwt.sign({ email }, process.env.ACCESS_SECRET_KEY, {
-    expiresIn: "30s",
+    expiresIn: "10m", // todo: maybe reduce this? (it was 30s)
   });
 };
 

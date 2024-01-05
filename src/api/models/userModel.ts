@@ -1,7 +1,14 @@
-import mongoose from "mongoose";
-const { Schema } = mongoose;
+import mongoose, { Document, Schema } from "mongoose";
 
-const userSchema = Schema({
+export interface IUser extends Document {
+  name: string;
+  email: string;
+  password: string;
+  refreshToken?: string;
+  role_id: Number;
+}
+
+const userSchema = new Schema<IUser>({
   name: {
     type: String,
     required: [true, "Please enter your name"],
@@ -15,8 +22,12 @@ const userSchema = Schema({
     type: String,
     required: [true, "Please add a password"],
   },
-  refreshToken:{
+  refreshToken: {
     type: String
+  },
+  role_id: {
+    type: Number,
+    default: 0 // 0 would mean columninst
   }
 });
 

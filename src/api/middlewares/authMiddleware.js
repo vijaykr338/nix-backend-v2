@@ -15,7 +15,7 @@ export const protect = asyncErrorHandler(async (req, res, next) => {
 
     // Verify token
     jwt.verify(token, process.env.ACCESS_SECRET_KEY, (err, decoded) => {
-      if (err){ return next(new CustomError(err, 403));}
+      if (err) { return next(new CustomError(err, 403)); }
 
       req.user = decoded.email;
 
