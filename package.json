@@ -5,8 +5,9 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "dev": "npm run tsc && nodemon src/index.js",
-    "tsc": "tsc -t ES2015 src/api/helpers/permissions.ts && echo 'Typescript file(s) compiled'"
+    "build": "tsc && cp src/config/swagger/swagger.yaml dist/config/swagger/swagger.yaml",
+    "start": "npm run build && node dist/index.js",
+    "dev": "nodemon -e js,ts,yaml -w src/ --exec npm run start"
   },
   "author": "",
   "license": "ISC",
@@ -25,6 +26,6 @@
     "colors": "^1.4.0",
     "dotenv": "^16.3.1",
     "nodemon": "^3.0.1",
-    "typescript": "^1.8.10"
+    "typescript": "^5.3.3"
   }
 }
