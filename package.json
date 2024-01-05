@@ -5,8 +5,8 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon src/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "npm run tsc && nodemon src/index.js",
+    "tsc": "tsc -t ES2015 src/api/helpers/permissions.ts && echo 'Typescript file(s) compiled'"
   },
   "author": "",
   "license": "ISC",
@@ -24,6 +24,7 @@
   "devDependencies": {
     "colors": "^1.4.0",
     "dotenv": "^16.3.1",
-    "nodemon": "^3.0.1"
+    "nodemon": "^3.0.1",
+    "typescript": "^1.8.10"
   }
 }
