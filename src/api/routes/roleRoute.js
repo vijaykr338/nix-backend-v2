@@ -11,6 +11,7 @@ const updation_protect = protected_route([new Perm.CreateRole(), new Perm.Update
 const deletion_protect = protected_route([new Perm.DeleteRole()]);
 // i don't think we need the overhead to protect read operation via perms
 const read_protect = protected_route([new Perm.ReadRole()]);
+
 // routes
 router.route("/")
     .get(protect, read_protect, get_all_roles)
