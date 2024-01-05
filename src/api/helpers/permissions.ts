@@ -37,10 +37,10 @@ export default class Permission {
             case 1: return new ReadProfile();
             case 2: return new UpdateProfile();
             case 3: return new DeleteProfile();
-            case 4: return new CreateAcl();
-            case 5: return new ReadAcl();
-            case 6: return new UpdateAcl();
-            case 7: return new DeleteAcl();
+            case 4: return new CreateRole();
+            case 5: return new ReadRole();
+            case 6: return new UpdateRole();
+            case 7: return new DeleteRole();
             case 8: return new CreateStory();
             case 9: return new ReadStory();
             case 10: return new UpdateStory();
@@ -75,10 +75,10 @@ export class CreateProfile extends Permission { constructor() { super(0); } }
 export class ReadProfile extends Permission { constructor() { super(1); } }
 export class UpdateProfile extends Permission { constructor() { super(2); } }
 export class DeleteProfile extends Permission { constructor() { super(3); } }
-export class CreateAcl extends Permission { constructor() { super(4); } }
-export class ReadAcl extends Permission { constructor() { super(5); } }
-export class UpdateAcl extends Permission { constructor() { super(6); } }
-export class DeleteAcl extends Permission { constructor() { super(7); } }
+export class CreateRole extends Permission { constructor() { super(4); } }
+export class ReadRole extends Permission { constructor() { super(5); } }
+export class UpdateRole extends Permission { constructor() { super(6); } }
+export class DeleteRole extends Permission { constructor() { super(7); } }
 export class CreateStory extends Permission { constructor() { super(8); } }
 export class ReadStory extends Permission { constructor() { super(9); } }
 export class UpdateStory extends Permission { constructor() { super(10); } }
