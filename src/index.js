@@ -15,6 +15,7 @@ import CustomError from "./config/CustomError.js";
 import globalErrorHandler from "./api/helpers/globalErrorHandler.js";
 import userRouter from "./api/routes/userRoute.js"
 import authRouter from "./api/routes/authRouter.js"
+import roleRouter from "./api/routes/roleRoute.js"
 import { corsOptions } from "./config/corsOptions.js";
 import { credentials } from "./api/middlewares/credentials.js";
 
@@ -44,6 +45,7 @@ app.get("/", (req, res) => {
 //
 app.use("/api/v1/user",userRouter);
 app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/role", roleRouter);
 
 
 //middleware for swagger
@@ -76,5 +78,3 @@ process.on("unhandledRejection", (err) => {
     process.exit(1);
   });
 });
-
-

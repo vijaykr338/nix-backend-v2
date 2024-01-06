@@ -1,0 +1,13 @@
+{
+    "compilerOptions": {
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "target": "ES2015",
+        "sourceMap": false,
+        "outDir": "dist",
+        "allowJs": true
+    },
+    "exclude": [
+        "node_modules", "dist"
+    ],
+}
