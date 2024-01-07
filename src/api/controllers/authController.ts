@@ -5,6 +5,8 @@ import asyncErrorHandler from "../helpers/asyncErrorHandler.js";
 import CustomError from "../../config/CustomError.js";
 import passwordResetMail from "../services/emailService.js";
 import * as UserService from "../services/userService.js";
+import { User } from "../models/userModel.js";
+import generateRandomPassword from "../helpers/randomPassword.js";
 
 const makeAccessToken = (email) => {
   return jwt.sign({ email }, process.env.ACCESS_SECRET_KEY, {
@@ -205,15 +207,15 @@ export const login = asyncErrorHandler(async (req, res, next) => {
  */
 
 
-export const changePassword=asyncErrorHandler(async(req,res,next)=>{
-      
+export const changePassword = asyncErrorHandler(async (req, res, next) => {
+
 })
 
 export const forgotPassword = asyncErrorHandler(async (req, res, next) => {
   //get user based on post email from database
   const email = req.body.email;
   const username = req.body.username;
-  const user = users.find((user) => user.email == email);
+  const user = User.findOne({ email: email });
 
   if (!user) {
     const error = new CustomError("No user exists with this email.", 404);
@@ -255,10 +257,19 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
     .createHash("sha256")
     .update(req.params.token)
     .digest("hex");
-  const user = await users.find(
-    (user) =>
-      user.passwordResetToken == token &&
-      user.passwordResetTokenExpires > Date.now()
+
+
+  const password: string = generateRandomPassword(7);
+  const hashed_password: string = bcrypt.hash(password, 10);
+
+  // todo : add date and time to expire password reset token ?
+  // todo: should be under service logic
+  const user = await User.findOneAndUpdate(
+    { passwordResetToken: token },
+    {
+      passwordResetToken: undefined,
+      password: hashed_password
+    },
   );
 
   if (!user) {
@@ -266,21 +277,22 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
     next(error);
   }
 
-  user.password = req.body.password;
-
-  //set passwordResetToken and passwordResetTokenExpires as undefined in db
-  user.passwordResetToken = undefined;
-  user.passwordResetTokenExpires = undefined;
-
   //login the user
-  const accessToken = makeAccessToken(user.username);
-  const refreshToken = makeRefreshToken(user.username);
+  const accessToken = makeAccessToken(user.email);
+  const refreshToken = makeRefreshToken(user.email);
+
+  // todo : move to service logic
+  user.refreshToken = refreshToken;
+  await user.save();
 
   res.status(200).json({
     status: "sucess",
-    accessToken,
-    refreshToken,
-    user,
+    data: {
+      accessToken,
+      refreshToken,
+      new_password: password,
+      user,
+    }
   });
 });
 
