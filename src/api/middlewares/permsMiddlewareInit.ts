@@ -82,7 +82,7 @@ export const protect_superuser = asyncErrorHandler(async (req, res, next) => {
         const err = new CustomError("Cannot find your login in database! hehe", 401);
     }
 
-    const role_id = user.role_id;
+    const role_id = user!.role_id;
     if (role_id === 100) { // 100 is SUPERUSER
         return next();
     }

@@ -16,6 +16,7 @@ import globalErrorHandler from "./api/helpers/globalErrorHandler.js";
 import userRouter from "./api/routes/userRoute.js"
 import authRouter from "./api/routes/authRouter.js"
 import roleRouter from "./api/routes/roleRoute.js"
+import blogRouter from './api/routes/blogRoute.js';
 import { corsOptions } from "./config/corsOptions.js";
 import { credentials } from "./api/middlewares/credentials.js";
 
@@ -29,7 +30,7 @@ connectDB();
 app.use(credentials);
 
 //cors
-app.use(cors(corsOptions)); 
+app.use(cors(corsOptions));
 
 // parse requests of content-type - application/json
 app.use(express.json());
@@ -43,9 +44,10 @@ app.get("/", (req, res) => {
 });
 
 //
-app.use("/api/v1/user",userRouter);
+app.use("/api/v1/user", userRouter);
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/role", roleRouter);
+app.use("/api/v1/blog", blogRouter);
 
 
 //middleware for swagger
