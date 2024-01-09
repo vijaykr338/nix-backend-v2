@@ -1,6 +1,7 @@
 import mongoose, { Document, Schema } from "mongoose";
 
 export interface IBlog extends Document {
+  user_id: mongoose.Schema.Types.ObjectId;
   title: string;
   biliner: string;
   slug: string;
@@ -16,6 +17,11 @@ export interface IBlog extends Document {
 }
 
 const blogSchema = new Schema<IBlog>({
+  user_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'user',
+    // required: [true, "User_id is required"],
+  },
   title: {
     type: String,
     required: [true, "Please enter title"],

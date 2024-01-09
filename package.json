@@ -5,7 +5,8 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "tsc && cp src/config/swagger/swagger.yaml dist/config/swagger/swagger.yaml",
+    "build-windows": "tsc",
     "start": "npm run build && node dist/index.js",
     "dev": "nodemon -e js,ts,yaml -w src/ --exec npm run start"
   },
