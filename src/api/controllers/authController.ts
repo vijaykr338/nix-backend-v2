@@ -208,7 +208,35 @@ export const login = asyncErrorHandler(async (req, res, next) => {
 
 
 export const changePassword = asyncErrorHandler(async (req, res, next) => {
+  interface ChangePasswordRequest {
+    old_password: string;
+    new_password: string;
+    email: string;
+  }
+  const body = req.body as ChangePasswordRequest;
+  if (!body.email || !body.old_password || !body.new_password) {
+    const err = new CustomError("Invalid request", 400);
+    return next(err);
+  }
 
+  const user = await User.findOne({ email: body.email });
+  if (!user) {
+    const err = new CustomError("Invalid email", 400);
+    return next(err);
+  }
+  if (!bcrypt.compare(body.old_password, user.password)) {
+    const err = new CustomError("Invalid old password", 400);
+    return next(err);
+  }
+
+  const hashed_password = await bcrypt.hash(body.new_password, 10);
+  user.password = hashed_password;
+  await user.save();
+  res.status(200).json({
+    status: "success",
+    message: "Password changed successfully",
+    data: { user }
+  });
 })
 
 export const forgotPassword = asyncErrorHandler(async (req, res, next) => {
@@ -219,21 +247,24 @@ export const forgotPassword = asyncErrorHandler(async (req, res, next) => {
 
   if (!user) {
     const error = new CustomError("No user exists with this email.", 404);
-    next(error);
+    return next(error);
   }
 
   //generate random reset token to send to user
   const resetToken = createResetPasswordToken(user);
 
-  const resetUrl = `${req.protocol}://${req.get(
-    "host"
-  )}/api/v1/auth/resetPassword/${resetToken}`;
+  const resetUrl = `${req.protocol}://${req.get("host")}/api/v1/auth/resetPassword/${resetToken}`;
 
   const mail = new passwordResetMail.passwordResetMail(username, resetUrl);
 
   try {
     await mail.sendTo(email);
-    res.status(200).json("Password reset link successfully sent.");
+    res.status(200).json(
+      {
+        status: "success",
+        message: "Password reset link successfully sent."
+      }
+    );
   } catch (err) {
     const error = new CustomError(
       "There was an error in sending password reset email. Please try again.",
@@ -274,7 +305,7 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
 
   if (!user) {
     const error = new CustomError("Token is invalid or has expired", 400);
-    next(error);
+    return next(error);
   }
 
   //login the user
