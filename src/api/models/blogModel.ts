@@ -1,12 +1,20 @@
 import mongoose, { Document, Schema } from "mongoose";
 
+/** Hardcoded values so relative orders are in sync with db */
+export enum BlogStatus {
+  Pending = 0,
+  Published = 1,
+  // auto publish at a given time
+  Approved = 2,
+}
+
 export interface IBlog extends Document {
   user_id: mongoose.Schema.Types.ObjectId;
   title: string;
   biliner: string;
   slug: string;
   body: string;
-  status: string;
+  status: BlogStatus;
   category_id: number;
   cover: string | null;
   views: number;
@@ -39,9 +47,9 @@ const blogSchema = new Schema<IBlog>({
     required: [true, "Please enter body"],
   },
   status: {
-    type: String,
-    enum: ["pending", "draft", "published"] ,
-    default: "pending",
+    type: Number,
+    enum: BlogStatus,
+    default: BlogStatus.Pending,
   },
   category_id: {
     type: Number,
