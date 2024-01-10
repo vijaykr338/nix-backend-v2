@@ -1,6 +1,6 @@
 /** Javascript lacks enums, so I would need a 
  * hack to simulate these and make code "look" idiomatic
- * Writing this in tsc for my own convinience and to avoid errors
+ * Writing this in tsc for my own convenience and to avoid errors
  * Also I can generate automatic JsDoc documentation if I use tsc
  */
 

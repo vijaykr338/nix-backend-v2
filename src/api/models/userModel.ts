@@ -5,7 +5,8 @@ export interface IUser extends Document {
   email: string;
   password: string;
   refreshToken?: string;
-  role_id: Number;
+  passwordResetToken?: string;
+  role_id: number;
 }
 
 const userSchema = new Schema<IUser>({
@@ -25,10 +26,13 @@ const userSchema = new Schema<IUser>({
   refreshToken: {
     type: String
   },
+  passwordResetToken: {
+    type: String,
+  },
   role_id: {
     type: Number,
     default: 0 // 0 would mean columninst
-  }
+  },
 });
 
 const User = mongoose.model("user", userSchema);

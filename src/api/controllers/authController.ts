@@ -5,6 +5,8 @@ import asyncErrorHandler from "../helpers/asyncErrorHandler.js";
 import CustomError from "../../config/CustomError.js";
 import passwordResetMail from "../services/emailService.js";
 import * as UserService from "../services/userService.js";
+import { User } from "../models/userModel.js";
+import generateRandomPassword from "../helpers/randomPassword.js";
 
 const makeAccessToken = (email) => {
   return jwt.sign({ email }, process.env.ACCESS_SECRET_KEY, {
@@ -205,33 +207,64 @@ export const login = asyncErrorHandler(async (req, res, next) => {
  */
 
 
-export const changePassword=asyncErrorHandler(async(req,res,next)=>{
-      
+export const changePassword = asyncErrorHandler(async (req, res, next) => {
+  interface ChangePasswordRequest {
+    old_password: string;
+    new_password: string;
+    email: string;
+  }
+  const body = req.body as ChangePasswordRequest;
+  if (!body.email || !body.old_password || !body.new_password) {
+    const err = new CustomError("Invalid request", 400);
+    return next(err);
+  }
+
+  const user = await User.findOne({ email: body.email });
+  if (!user) {
+    const err = new CustomError("Invalid email", 400);
+    return next(err);
+  }
+  if (!bcrypt.compare(body.old_password, user.password)) {
+    const err = new CustomError("Invalid old password", 400);
+    return next(err);
+  }
+
+  const hashed_password = await bcrypt.hash(body.new_password, 10);
+  user.password = hashed_password;
+  await user.save();
+  res.status(200).json({
+    status: "success",
+    message: "Password changed successfully",
+    data: { user }
+  });
 })
 
 export const forgotPassword = asyncErrorHandler(async (req, res, next) => {
   //get user based on post email from database
   const email = req.body.email;
   const username = req.body.username;
-  const user = users.find((user) => user.email == email);
+  const user = User.findOne({ email: email });
 
   if (!user) {
     const error = new CustomError("No user exists with this email.", 404);
-    next(error);
+    return next(error);
   }
 
   //generate random reset token to send to user
   const resetToken = createResetPasswordToken(user);
 
-  const resetUrl = `${req.protocol}://${req.get(
-    "host"
-  )}/api/v1/auth/resetPassword/${resetToken}`;
+  const resetUrl = `${req.protocol}://${req.get("host")}/api/v1/auth/resetPassword/${resetToken}`;
 
   const mail = new passwordResetMail.passwordResetMail(username, resetUrl);
 
   try {
     await mail.sendTo(email);
-    res.status(200).json("Password reset link successfully sent.");
+    res.status(200).json(
+      {
+        status: "success",
+        message: "Password reset link successfully sent."
+      }
+    );
   } catch (err) {
     const error = new CustomError(
       "There was an error in sending password reset email. Please try again.",
@@ -255,32 +288,42 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
     .createHash("sha256")
     .update(req.params.token)
     .digest("hex");
-  const user = await users.find(
-    (user) =>
-      user.passwordResetToken == token &&
-      user.passwordResetTokenExpires > Date.now()
+
+
+  const password: string = generateRandomPassword(7);
+  const hashed_password: string = bcrypt.hash(password, 10);
+
+  // todo : add date and time to expire password reset token ?
+  // todo: should be under service logic
+  const user = await User.findOneAndUpdate(
+    { passwordResetToken: token },
+    {
+      passwordResetToken: undefined,
+      password: hashed_password
+    },
   );
 
   if (!user) {
     const error = new CustomError("Token is invalid or has expired", 400);
-    next(error);
+    return next(error);
   }
 
-  user.password = req.body.password;
-
-  //set passwordResetToken and passwordResetTokenExpires as undefined in db
-  user.passwordResetToken = undefined;
-  user.passwordResetTokenExpires = undefined;
-
   //login the user
-  const accessToken = makeAccessToken(user.username);
-  const refreshToken = makeRefreshToken(user.username);
+  const accessToken = makeAccessToken(user.email);
+  const refreshToken = makeRefreshToken(user.email);
+
+  // todo : move to service logic
+  user.refreshToken = refreshToken;
+  await user.save();
 
   res.status(200).json({
     status: "sucess",
-    accessToken,
-    refreshToken,
-    user,
+    data: {
+      accessToken,
+      refreshToken,
+      new_password: password,
+      user,
+    }
   });
 });
 
