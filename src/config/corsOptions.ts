@@ -1,8 +1,9 @@
-import CustomError from "./CustomError.js";
+import { CorsOptions } from "cors";
+import CustomError from "./CustomError";
 
 export const allowedOrigins = ["https://www.ourwebsite.com"];
 
-export let corsOptions = {
+export let corsOptions: CorsOptions = {
   origin: (origin, callback) => {
     if ( allowedOrigins.indexOf(origin) !== -1 || (process.env.NODE_ENV === "development" && !origin)) {
       callback(null, true);

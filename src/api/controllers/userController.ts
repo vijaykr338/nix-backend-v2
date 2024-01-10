@@ -1,5 +1,5 @@
-import * as UserService from "../services/userService.js";
-import asyncErrorHandler from "../helpers/asyncErrorHandler.js";
+import * as UserService from "../services/userService";
+import asyncErrorHandler from "../helpers/asyncErrorHandler";
 
 
 export const getAllUsers = asyncErrorHandler(async (req, res) => {

@@ -1,8 +1,8 @@
 import express from "express";
-import { protect } from "../middlewares/authMiddleware.js";
-import { add_or_update_role, get_all_roles } from "../controllers/roleController.js";
-import protected_route from "../middlewares/permsMiddlewareInit.js";
-import * as Perm from "../helpers/permissions.js";
+import { protect } from "../middlewares/authMiddleware";
+import { add_or_update_role, get_all_roles } from "../controllers/roleController";
+import protected_route from "../middlewares/permsMiddlewareInit";
+import * as Perm from "../helpers/permissions";
 
 const router = express.Router();
 

@@ -1,12 +1,13 @@
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import bcrypt from "bcrypt";
-import asyncErrorHandler from "../helpers/asyncErrorHandler.js";
-import CustomError from "../../config/CustomError.js";
-import passwordResetMail from "../services/emailService.js";
-import * as UserService from "../services/userService.js";
-import { User } from "../models/userModel.js";
-import generateRandomPassword from "../helpers/randomPassword.js";
+import asyncErrorHandler from "../helpers/asyncErrorHandler";
+import CustomError from "../../config/CustomError";
+import passwordResetMail from "../services/emailService";
+import * as UserService from "../services/userService";
+import { User } from "../models/userModel";
+import generateRandomPassword from "../helpers/randomPassword";
+import { NextFunction, Request, Response } from "express";
 
 const makeAccessToken = (email) => {
   return jwt.sign({ email }, process.env.ACCESS_SECRET_KEY, {
@@ -20,47 +21,14 @@ const makeRefreshToken = (email) => {
   });
 };
 
-/**
- * Create a reset password token for a user.
- *
- * @function
- * @param {Object} user - User object for whom the token is created.
- * @returns {string} Reset token.
- */
-
-const createResetPasswordToken = (user) => {
-  const resetToken = crypto.randomBytes(32).toString("hex");
-
-  //encrypted reset token to store in db
-  //store in db todo
-  const passwordResetToken = crypto
-    .createHash("sha256")
-    .update(resetToken)
-    .digest("hex");
-  const passwordResetTokenExpires = Date.now() + 10 * 60 * 1000;
-
-  user.passwordResetToken = passwordResetToken;
-  user.passwordResetTokenExpires = passwordResetTokenExpires;
-
-  return resetToken;
-};
-
-/**
- * Verify the access token in the request.
- *
- * @function
- * @param {Object} req - Express request object.
- * @param {Object} res - Express response object.
- * @param {Function} next - Express next middleware function.
- */
 
 /**
  * Used when access tokens have expired. Generate a new access token and a new refresh token.
  *
  * @function
- * @param {Object} req - Express request object.
- * @param {Object} res - Express response object.
- * @param {Function} next - Express next middleware function.
+ * @param {Request} req - Express request object.
+ * @param {Response} res - Express response object.
+ * @param {NextFunction} next - Express next middleware function.
  */
 
 export const refresh = asyncErrorHandler(async (req, res, next) => {
@@ -99,9 +67,9 @@ export const refresh = asyncErrorHandler(async (req, res, next) => {
  * Create new user.
  *
  * @function
- * @param {Object} req - Express request object.
- * @param {Object} res - Express response object.
- * @param {Function} next - Express next middleware function.
+ * @param {Request} req - Express request object.
+ * @param {Response} res - Express response object.
+ * @param {NextFunction} next - Express next middleware function.
  */
 
 export const signup = asyncErrorHandler(async (req, res, next) => {
@@ -142,9 +110,9 @@ export const signup = asyncErrorHandler(async (req, res, next) => {
  * Handle user login. Generate new access and refresh tokens for user.
  *
  * @function
- * @param {Object} req - Express request object.
- * @param {Object} res - Express response object.
- * @param {Function} next - Express next middleware function.
+ * @param {Request} req - Express request object.
+ * @param {Response} res - Express response object.
+ * @param {NextFunction} next - Express next middleware function.
  */
 export const login = asyncErrorHandler(async (req, res, next) => {
   const { email, password } = req.body;
@@ -176,7 +144,7 @@ export const login = asyncErrorHandler(async (req, res, next) => {
     res.cookie("jwt", refreshToken, {
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, //1 day
-      sameSite: "None",
+      sameSite: "none",
       secure: true,
     });
 
@@ -201,9 +169,9 @@ export const login = asyncErrorHandler(async (req, res, next) => {
  * Handle user password reset request. Send a mail to user with password reset link.
  *
  * @function
- * @param {Object} req - Express request object.
- * @param {Object} res - Express response object.
- * @param {Function} next - Express next middleware function.
+ * @param {Request} req - Express request object.
+ * @param {Response} res - Express response object.
+ * @param {NextFunction} next - Express next middleware function.
  */
 
 
@@ -243,7 +211,7 @@ export const forgotPassword = asyncErrorHandler(async (req, res, next) => {
   //get user based on post email from database
   const email = req.body.email;
   const username = req.body.username;
-  const user = User.findOne({ email: email });
+  const user = await User.findOne({ email: email });
 
   if (!user) {
     const error = new CustomError("No user exists with this email.", 404);
@@ -251,7 +219,22 @@ export const forgotPassword = asyncErrorHandler(async (req, res, next) => {
   }
 
   //generate random reset token to send to user
-  const resetToken = createResetPasswordToken(user);
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  //encrypted reset token to store in db
+  //store in db todo
+  const passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  // todo: maybe add expiration?
+  // const passwordResetTokenExpires = Date.now() + 10 * 60 * 1000;
+
+  user.passwordResetToken = passwordResetToken;
+  // user.passwordResetTokenExpires = passwordResetTokenExpires;
+
+  await user.save();
 
   const resetUrl = `${req.protocol}://${req.get("host")}/api/v1/auth/resetPassword/${resetToken}`;
 
@@ -278,9 +261,9 @@ export const forgotPassword = asyncErrorHandler(async (req, res, next) => {
  * Update new password in db and generate new access token and refresh token for user.
  *
  * @function
- * @param {Object} req - Express request object.
- * @param {Object} res - Express response object.
- * @param {Function} next - Express next middleware function.
+ * @param {Request} req - Express request object.
+ * @param {Response} res - Express response object.
+ * @param {NextFunction} next - Express next middleware function.
  */
 
 export const resetPassword = asyncErrorHandler(async (req, res, next) => {
@@ -331,9 +314,9 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
  * Handle user logout.
  *
  * @function
- * @param {Object} req - Express request object.
- * @param {Object} res - Express response object.
- * @param {Function} next - Express next middleware function.
+ * @param {Request} req - Express request object.
+ * @param {Response} res - Express response object.
+ * @param {NextFunction} next - Express next middleware function.
  */
 
 export const logout = asyncErrorHandler(async (req, res, next) => {
@@ -349,12 +332,12 @@ export const logout = asyncErrorHandler(async (req, res, next) => {
   //if no refreshToken present in db
   const foundUser = await UserService.checkUserExists(null, refreshToken);
   if (!foundUser) {
-    res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
+    res.clearCookie("jwt", { httpOnly: true, sameSite: "none", secure: true });
     return res.sendStatus(204);
   }
 
   //delete refreshToken present in db
   const user = await UserService.deleteRefreshToken(foundUser.email);
-  res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
+  res.clearCookie("jwt", { httpOnly: true, sameSite: "none", secure: true });
   return res.sendStatus(204);
 });

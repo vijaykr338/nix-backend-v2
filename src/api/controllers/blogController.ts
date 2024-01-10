@@ -1,16 +1,17 @@
-import asyncErrorHandler from "../helpers/asyncErrorHandler.js";
-import CustomError from "../../config/CustomError.js";
-import { Blog, BlogStatus } from "../models/blogModel.js";
-import * as UserService from "../services/userService.js";
+import asyncErrorHandler from "../helpers/asyncErrorHandler";
+import CustomError from "../../config/CustomError";
+import { Blog, BlogStatus } from "../models/blogModel";
+import * as UserService from "../services/userService";
+import { NextFunction, Request, Response } from "express";
 
 
 /**
  * Get all blogs.
  *
  * @function
- * @param {Object} req - Express request object.
- * @param {Object} res - Express response object.
- * @param {Function} next - Express next middleware function.
+ * @param {Request} req - Express request object.
+ * @param {Response} res - Express response object.
+ * @param {NextFunction} next - Express next middleware function.
  * @returns {Object} - Returns a JSON object containing the retrieved blogs.
  */
 export const getAllBlogsController = asyncErrorHandler(async (req, res, next) => {
@@ -33,9 +34,9 @@ export const getAllBlogsController = asyncErrorHandler(async (req, res, next) =>
  * Create a new blog.
  *
  * @function
- * @param {Object} req - Express request object.
- * @param {Object} res - Express response object.
- * @param {Function} next - Express next middleware function.
+ * @param {Request} req - Express request object.
+ * @param {Response} res - Express response object.
+ * @param {NextFunction} next - Express next middleware function.
  * @returns {Object} - Returns a JSON object confirming the creation of the blog.
  */
 export const createBlogController = asyncErrorHandler(async (req, res, next) => {
@@ -78,9 +79,9 @@ export const createBlogController = asyncErrorHandler(async (req, res, next) => 
  * Update a blog by ID.
  *
  * @function
- * @param {Object} req - Express request object containing blog data.
- * @param {Object} res - Express response object.
- * @param {Function} next - Express next middleware function.
+ * @param {Request} req - Express request object containing blog data.
+ * @param {Response} res - Express response object.
+ * @param {NextFunction} next - Express next middleware function.
  * @returns {Object} - Returns a JSON object containing the updated blog.
  */
 export const updateBlogController = asyncErrorHandler(async (req, res, next) => {
@@ -103,9 +104,9 @@ export const updateBlogController = asyncErrorHandler(async (req, res, next) => 
  * Publish a blog by ID.
  *
  * @function
- * @param {Object} req - Express request object containing blog ID.
- * @param {Object} res - Express response object.
- * @param {Function} next - Express next middleware function.
+ * @param {Request} req - Express request object containing blog ID.
+ * @param {Response} res - Express response object.
+ * @param {NextFunction} next - Express next middleware function.
  * @returns {Object} - Returns a JSON object confirming the published blog.
  */
 export const publishBlogController = asyncErrorHandler(async (req, res, next) => {
@@ -135,9 +136,9 @@ export const publishBlogController = asyncErrorHandler(async (req, res, next) =>
  * If the publish timestamp is in the past, it returns a 418 error (I'm a teapot).
  * 
  * @function
- * @param {Object} req - The request object.
- * @param {Object} res - The response object.
- * @param {Function} next - The next middleware function.
+ * @param {Request} req - The request object.
+ * @param {Response} res - The response object.
+ * @param {NextFunction} next - The next middleware function.
  * @returns {Object} The updated blog object in the response.
  */
 export const approveBlogController = asyncErrorHandler(async (req, res, next) => {
@@ -177,9 +178,9 @@ export const approveBlogController = asyncErrorHandler(async (req, res, next) =>
  * Refreshes the status of a blog. Makes the blog with status "Approved" and publish date in the past to "Published".
  * 
  * @function
- * @param {Object} req - The request object.
- * @param {Object} res - The response object.
- * @param {Function} next - The next middleware function.
+ * @param {Request} req - The request object.
+ * @param {Response} res - The response object.
+ * @param {NextFunction} next - The next middleware function.
  * @returns {Object} A JSON response indicating the success of the operation.
  */
 export const refreshBlogStatus = asyncErrorHandler(async (req, res, next) => {

@@ -9,16 +9,16 @@ import cors from "cors";
 import cookieParser from 'cookie-parser';
 import express from "express";
 import swaggerUi from 'swagger-ui-express';
-import { swaggerDocument } from "./config/swagger/swagger-config.js";
-import connectDB from "./config/DatabaseConfig.js";
-import CustomError from "./config/CustomError.js";
-import globalErrorHandler from "./api/helpers/globalErrorHandler.js";
-import userRouter from "./api/routes/userRoute.js"
-import authRouter from "./api/routes/authRouter.js"
-import roleRouter from "./api/routes/roleRoute.js"
-import blogRouter from './api/routes/blogRoute.js';
-import { corsOptions } from "./config/corsOptions.js";
-import { credentials } from "./api/middlewares/credentials.js";
+import { swaggerDocument } from "./config/swagger/swagger-config";
+import connectDB from "./config/DatabaseConfig";
+import CustomError from "./config/CustomError";
+import globalErrorHandler from "./api/helpers/globalErrorHandler";
+import userRouter from "./api/routes/userRoute";
+import authRouter from "./api/routes/authRouter";
+import roleRouter from "./api/routes/roleRoute";
+import blogRouter from './api/routes/blogRoute';
+import { corsOptions } from "./config/corsOptions";
+import { credentials } from "./api/middlewares/credentials";
 
 //creating express server
 const app = express();
@@ -57,7 +57,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 //fallback route
 app.all("*", (req, res, next) => {
   const err = new CustomError(
-    `Can't find ${req.originalUrl} on the server`,
+    `Can't find ${req.originalUrl} on the server! Are you sure you wanted to make a ${req.method} request?`,
     404
   );
   //pass it to global error handler
@@ -73,7 +73,7 @@ const server = app.listen(port, () => {
   console.log(`App listening on port ${port}`.yellow.underline);
 });
 
-process.on("unhandledRejection", (err) => {
+process.on("unhandledRejection", (err: Error) => {
   console.log(err.name.magenta, err.message.magenta);
   console.log("Unhandled rejection occured! Shutting down...".red);
   server.close(() => {

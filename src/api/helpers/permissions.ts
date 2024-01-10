@@ -41,11 +41,11 @@ export default class Permission {
             case 5: return new ReadRole();
             case 6: return new UpdateRole();
             case 7: return new DeleteRole();
-            case 8: return new CreateStory();
-            case 9: return new ReadStory();
-            case 10: return new UpdateStory();
-            case 11: return new DeleteStory();
-            case 12: return new PublishStory();
+            case 8: return new CreateBlog();
+            case 9: return new ReadBlog();
+            case 10: return new UpdateBlog();
+            case 11: return new DeleteBlog();
+            case 12: return new PublishBlog();
             case 13: return new CreateGallery();
             case 14: return new ReadGallery();
             case 15: return new UpdateGallery();
@@ -79,11 +79,11 @@ export class CreateRole extends Permission { constructor() { super(4); } }
 export class ReadRole extends Permission { constructor() { super(5); } }
 export class UpdateRole extends Permission { constructor() { super(6); } }
 export class DeleteRole extends Permission { constructor() { super(7); } }
-export class CreateStory extends Permission { constructor() { super(8); } }
-export class ReadStory extends Permission { constructor() { super(9); } }
-export class UpdateStory extends Permission { constructor() { super(10); } }
-export class DeleteStory extends Permission { constructor() { super(11); } }
-export class PublishStory extends Permission { constructor() { super(12); } }
+export class CreateBlog extends Permission { constructor() { super(8); } }
+export class ReadBlog extends Permission { constructor() { super(9); } }
+export class UpdateBlog extends Permission { constructor() { super(10); } }
+export class DeleteBlog extends Permission { constructor() { super(11); } }
+export class PublishBlog extends Permission { constructor() { super(12); } }
 export class CreateGallery extends Permission { constructor() { super(13); } }
 export class ReadGallery extends Permission { constructor() { super(14); } }
 export class UpdateGallery extends Permission { constructor() { super(15); } }

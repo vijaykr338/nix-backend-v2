@@ -2,12 +2,10 @@
   "name": "backend_v2",
   "version": "1.0.0",
   "description": "DTU Times backend",
-  "main": "src/index.js",
-  "type": "module",
+  "main": "src/index.ts",
   "scripts": {
-    "build": "tsc && cp src/config/swagger/swagger.yaml dist/config/swagger/swagger.yaml || copy src\\config\\swagger\\swagger.yaml dist\\config\\swagger\\swagger.yaml",
-    "start": "npm run build && node dist/index.js",
-    "dev": "nodemon -e js,ts,yaml -w src/ --exec npm run start"
+    "start": "ts-node src/index.ts",
+    "dev": "nodemon"
   },
   "author": "",
   "license": "ISC",
@@ -23,9 +21,16 @@
     "yamljs": "^0.3.0"
   },
   "devDependencies": {
+    "@types/cookie-parser": "^1.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/mongoose": "^5.11.97",
+    "@types/swagger-ui-express": "^4.1.6",
+    "@types/yamljs": "^0.2.34",
     "colors": "^1.4.0",
     "dotenv": "^16.3.1",
-    "nodemon": "^3.0.1",
+    "nodemon": "^3.0.2",
+    "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   }
 }
