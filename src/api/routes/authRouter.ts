@@ -6,10 +6,10 @@ import {
   forgotPassword,
   resetPassword,
   logout,
-} from "../controllers/authController.js";
-import protected_route from "../middlewares/permsMiddlewareInit.js";
-import { CreateProfile } from "../helpers/permissions.js";
-import { protect } from "../middlewares/authMiddleware.js";
+} from "../controllers/authController";
+import protected_route from "../middlewares/permsMiddlewareInit";
+import { CreateProfile } from "../helpers/permissions";
+import { protect } from "../middlewares/authMiddleware";
 
 const router = express.Router();
 

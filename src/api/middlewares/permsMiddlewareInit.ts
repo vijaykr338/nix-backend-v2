@@ -1,7 +1,7 @@
-import asyncErrorHandler from "../helpers/asyncErrorHandler.js";
-import CustomError from "../../config/CustomError.js";
-import { User } from "../models/userModel.js";
-import { Role } from "../models/rolesModel.js";
+import asyncErrorHandler from "../helpers/asyncErrorHandler";
+import CustomError from "../../config/CustomError";
+import { User } from "../models/userModel";
+import { Role } from "../models/rolesModel";
 
 /**
  * This generates a middleware to check for certain given permissions

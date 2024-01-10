@@ -1,6 +1,6 @@
-import CustomError from "../../config/CustomError.js";
-import asyncErrorHandler from "../helpers/asyncErrorHandler.js";
-import { Role, IRole } from "../models/rolesModel.js";
+import CustomError from "../../config/CustomError";
+import asyncErrorHandler from "../helpers/asyncErrorHandler";
+import { Role, IRole } from "../models/rolesModel";
 
 export const add_or_update_role = asyncErrorHandler(async (req, res, next) => {
     const data = req.body as IRole;
@@ -18,10 +18,10 @@ export const add_or_update_role = asyncErrorHandler(async (req, res, next) => {
     }
 
 
-    // should be under service logic
+    // todo: should be under service logic
     const role = await Role.updateOne({ id }, { name, permissions }, { upsert: true });
     console.log(role);
-    
+
     res.status(200).json({
         status: "success",
         message:

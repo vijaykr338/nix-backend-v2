@@ -1,13 +1,13 @@
-import { User } from "../models/userModel.js";
+import { User } from "../models/userModel";
 
 export const createUser = async (user) => {
   const newUser = await User.create(user);
   return newUser;
 };
 
-export const checkUserExists = async (email="randomTextNotInDB",refreshToken = "randomTextNotInDB") => {
+export const checkUserExists = async (email = "randomTextNotInDB", refreshToken = "randomTextNotInDB") => {
   const user = await User.find({
-    $or: [{ email, email }, { refreshToken: refreshToken }],
+    $or: [{ email: email }, { refreshToken: refreshToken }],
   });
   if (user.length === 0) return null;
   return user[0];
