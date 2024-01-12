@@ -13,11 +13,11 @@ const updateBlogProtect = protected_route([new Perm.UpdateBlog()]);
 const publishBlogProtect = protected_route([new Perm.PublishBlog()]);
 
 //routes
-router.route('/').get(protect, readBlogProtect, getAllBlogsController);
-router.route('/create-blog').post(protect, createBlogProtect, createBlogController);
-router.route('/update-blog/:id').put(protect, updateBlogProtect, updateBlogController);
-router.route('/publish-blog/:id').put(protect, publishBlogProtect, publishBlogController);
-router.route('/approve-blog/:id').put(protect, publishBlogProtect, approveBlogController);
+router.route("/").get(protect, readBlogProtect, getAllBlogsController);
+router.route("/create-blog").post(protect, createBlogProtect, createBlogController);
+router.route("/update-blog/:id").put(protect, updateBlogProtect, updateBlogController);
+router.route("/publish-blog/:id").put(protect, publishBlogProtect, publishBlogController);
+router.route("/approve-blog/:id").put(protect, publishBlogProtect, approveBlogController);
 // todo: delete blog
 
 export default router;

@@ -12,62 +12,62 @@
  * @typedef {Permission}
  */
 export default class Permission {
-    /** @type {number} */
-    permission_id: number;
-    /**
+  /** @type {number} */
+  permission_id: number;
+  /**
      * Creates an instance of Permission.
      *
      * @constructor
      * @param {number} id
      */
-    constructor(id: number) {
-        this.permission_id = id;
-    }
+  constructor(id: number) {
+    this.permission_id = id;
+  }
 
-    /**
+  /**
      * Creates a permission child object from a `permission_id`
      * 
      * Throws an error if the `id` is invalid
      *
      * @returns {Permission}
      */
-    to_permission(): Permission {
-        switch (this.permission_id) {
-            case 0: return new CreateProfile();
-            case 1: return new ReadProfile();
-            case 2: return new UpdateProfile();
-            case 3: return new DeleteProfile();
-            case 4: return new CreateRole();
-            case 5: return new ReadRole();
-            case 6: return new UpdateRole();
-            case 7: return new DeleteRole();
-            case 8: return new CreateBlog();
-            case 9: return new ReadBlog();
-            case 10: return new UpdateBlog();
-            case 11: return new DeleteBlog();
-            case 12: return new PublishBlog();
-            case 13: return new AccessLogs();
-            case 14: return new ReadGallery();
-            case 15: return new UpdateGallery();
-            case 16: return new DeleteGallery();
-            case 17: return new CreateAlbum();
-            case 18: return new ReadAlbum();
-            case 19: return new UpdateAlbum();
-            case 20: return new DeleteAlbum();
-            case 21: return new PublishAlbum();
-            case 22: return new CreateCategory();
-            case 23: return new ReadCategory();
-            case 24: return new UpdateCategory();
-            case 25: return new DeleteCategory();
-            case 26: return new PublishImage();
-            case 27: return new CreateCampaign();
-            case 28: return new ReadCampaign();
-            case 29: return new UpdateCampaign();
-            case 30: return new DeleteCampaign();
-            case 31: return new SendCampaign();
-            default: throw new Error("Invalid permission id");
-        }
+  to_permission(): Permission {
+    switch (this.permission_id) {
+    case 0: return new CreateProfile();
+    case 1: return new ReadProfile();
+    case 2: return new UpdateProfile();
+    case 3: return new DeleteProfile();
+    case 4: return new CreateRole();
+    case 5: return new ReadRole();
+    case 6: return new UpdateRole();
+    case 7: return new DeleteRole();
+    case 8: return new CreateBlog();
+    case 9: return new ReadBlog();
+    case 10: return new UpdateBlog();
+    case 11: return new DeleteBlog();
+    case 12: return new PublishBlog();
+    case 13: return new AccessLogs();
+    case 14: return new ReadGallery();
+    case 15: return new UpdateGallery();
+    case 16: return new DeleteGallery();
+    case 17: return new CreateAlbum();
+    case 18: return new ReadAlbum();
+    case 19: return new UpdateAlbum();
+    case 20: return new DeleteAlbum();
+    case 21: return new PublishAlbum();
+    case 22: return new CreateCategory();
+    case 23: return new ReadCategory();
+    case 24: return new UpdateCategory();
+    case 25: return new DeleteCategory();
+    case 26: return new PublishImage();
+    case 27: return new CreateCampaign();
+    case 28: return new ReadCampaign();
+    case 29: return new UpdateCampaign();
+    case 30: return new DeleteCampaign();
+    case 31: return new SendCampaign();
+    default: throw new Error("Invalid permission id");
     }
+  }
 }
 
 

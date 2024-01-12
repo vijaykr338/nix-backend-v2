@@ -9,7 +9,7 @@ const router = express.Router();
 
 const protect_logs = protected_route([new Perm.AccessLogs()]);
 
-router.route('/').get(protect, protect_logs, get_logs);
-router.route('/clear').get(protect, protect_logs, clear_logs);
+router.route("/").get(protect, protect_logs, get_logs);
+router.route("/clear").get(protect, protect_logs, clear_logs);
 
 export default router;
