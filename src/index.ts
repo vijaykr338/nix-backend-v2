@@ -17,6 +17,7 @@ import userRouter from "./api/routes/userRoute";
 import authRouter from "./api/routes/authRouter";
 import roleRouter from "./api/routes/roleRoute";
 import blogRouter from './api/routes/blogRoute';
+import logsRouter from './api/routes/logsRoute';
 import { corsOptions } from "./config/corsOptions";
 import { credentials } from "./api/middlewares/credentials";
 
@@ -48,6 +49,7 @@ app.use("/api/v1/user", userRouter);
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/role", roleRouter);
 app.use("/api/v1/blog", blogRouter);
+app.use("/api/v1/logs", logsRouter);
 
 
 //middleware for swagger
