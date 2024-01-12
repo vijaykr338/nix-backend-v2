@@ -6,7 +6,8 @@
   "scripts": {
     "prod": "npx pm2 delete NixBackend; pm2 --name NixBackend --time start npm -- start",
     "start": "ts-node src/index.ts",
-    "dev": "nodemon -e ts,yaml,json"
+    "dev": "nodemon -e ts,yaml,json",
+    "lint": "npx eslint . --fix"
   },
   "author": "",
   "license": "ISC",
@@ -28,8 +29,11 @@
     "@types/mongoose": "^5.11.97",
     "@types/swagger-ui-express": "^4.1.6",
     "@types/yamljs": "^0.2.34",
+    "@typescript-eslint/eslint-plugin": "^6.18.1",
+    "@typescript-eslint/parser": "^6.18.1",
     "colors": "^1.4.0",
     "dotenv": "^16.3.1",
+    "eslint": "^8.56.0",
     "nodemon": "^3.0.2",
     "pm2": "^5.3.0",
     "ts-node": "^10.9.2",

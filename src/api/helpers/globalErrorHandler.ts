@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // todo: add types
 
 import { NextFunction, Request, Response } from "express";
@@ -11,27 +12,27 @@ const devErrors = (res: Response, error: CustomError) => {
     stackTrace: error.stack,
     error: error
   });
-}
+};
 
 const castErrorHandler = (err: CastError) => {
-  const msg = `Invalid value for ${err.path}: ${err.value}!`
+  const msg = `Invalid value for ${err.path}: ${err.value}!`;
   return new CustomError(msg, 400);
-}
+};
 
 const duplicateKeyErrorHandler = (err: any) => {
   const name = err.keyValue.name;
   const msg = `There is already a movie with name ${name}. Please use another name!`;
 
   return new CustomError(msg, 400);
-}
+};
 
 const validationErrorHandler = (err: any) => {
   const errors = Object.values(err.errors).map((val: Error) => val.message);
-  const errorMessages = errors.join('. ');
+  const errorMessages = errors.join(". ");
   const msg = `Invalid input data: ${errorMessages}`;
 
   return new CustomError(msg, 400);
-}
+};
 
 const prodErrors = (res: Response, error: CustomError | Error) => {
   if (error instanceof CustomError) {
@@ -41,15 +42,15 @@ const prodErrors = (res: Response, error: CustomError | Error) => {
     });
   } else {
     res.status(500).json({
-      status: 'error',
-      message: 'Something went wrong! Please try again later.'
-    })
+      status: "error",
+      message: "Something went wrong! Please try again later."
+    });
   }
-}
+};
 
 
 
-export default function globalErrorHandler(error: any, req: Request, res: Response, next: NextFunction) {
+export default function globalErrorHandler(error: any, _req: Request, res: Response, _next: NextFunction) {
   error.statusCode = error.statusCode || 500;
   error.status = error.status || "error";
 

@@ -28,7 +28,7 @@ export const protect = asyncErrorHandler(async (req, res, next) => {
   }
 
   if (!token) {
-    const err = new CustomError(`Not authorized`, 401);
+    const err = new CustomError("Not authorized", 401);
     return next(err);
   }
 });

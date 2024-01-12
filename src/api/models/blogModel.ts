@@ -27,7 +27,7 @@ export interface IBlog extends Document {
 const blogSchema = new Schema<IBlog>({
   user_id: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'user',
+    ref: "user",
     // required: [true, "User_id is required"],
   },
   title: {
