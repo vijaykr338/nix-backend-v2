@@ -46,7 +46,7 @@ export default class Permission {
             case 10: return new UpdateBlog();
             case 11: return new DeleteBlog();
             case 12: return new PublishBlog();
-            case 13: return new CreateGallery();
+            case 13: return new AccessLogs();
             case 14: return new ReadGallery();
             case 15: return new UpdateGallery();
             case 16: return new DeleteGallery();
@@ -84,7 +84,7 @@ export class ReadBlog extends Permission { constructor() { super(9); } }
 export class UpdateBlog extends Permission { constructor() { super(10); } }
 export class DeleteBlog extends Permission { constructor() { super(11); } }
 export class PublishBlog extends Permission { constructor() { super(12); } }
-export class CreateGallery extends Permission { constructor() { super(13); } }
+export class AccessLogs extends Permission { constructor() { super(13); } }
 export class ReadGallery extends Permission { constructor() { super(14); } }
 export class UpdateGallery extends Permission { constructor() { super(15); } }
 export class DeleteGallery extends Permission { constructor() { super(16); } }
