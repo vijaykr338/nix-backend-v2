@@ -18,8 +18,8 @@ export default function protected_route(permissions_required /*: [Permission.def
             // no permissions required is a no-op
             return next();
         }
-        const email = req.user;
-        if (!req.user) {
+        const email = req.body.email;
+        if (!email) {
             const err = new CustomError("Not authorized", 401);
             return next(err);
         }
@@ -67,8 +67,8 @@ export default function protected_route(permissions_required /*: [Permission.def
  * explicit to profiles with role as superuser
  */
 export const protect_superuser = asyncErrorHandler(async (req, res, next) => {
-    const email = req.user;
-    if (!req.user) {
+    const email = req.body.email;
+    if (!email) {
         const err = new CustomError("Not authorized", 401);
         return next(err);
     }

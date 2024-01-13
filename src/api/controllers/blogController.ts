@@ -2,7 +2,6 @@ import asyncErrorHandler from "../helpers/asyncErrorHandler";
 import CustomError from "../../config/CustomError";
 import { Blog, BlogStatus } from "../models/blogModel";
 import * as UserService from "../services/userService";
-import { NextFunction, Request, Response } from "express";
 
 
 /**
@@ -50,15 +49,17 @@ export const createBlogController = asyncErrorHandler(async (req, res, next) => 
         return next(error);
     }
 
-    const email = req.user;
-    const foundUser = await UserService.checkUserExists(email);
+    // const email = req.user;
+    // const foundUser = await UserService.checkUserExists(email);
 
-    if (!foundUser) {
-        const error = new CustomError("No user exists with this email.", 401);
-        return next(error);
-    }
+    // if (!foundUser) {
+    //     const error = new CustomError("No user exists with this email.", 401);
+    //     return next(error);
+    // }
 
-    const { _id: user_id } = foundUser;
+    // const { _id: user_id } = foundUser;
+
+    const user_id = req.body.user_id;
 
     const newBlogData = {
         ...req.body,

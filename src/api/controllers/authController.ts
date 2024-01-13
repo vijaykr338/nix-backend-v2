@@ -7,16 +7,15 @@ import passwordResetMail from "../services/emailService";
 import * as UserService from "../services/userService";
 import { User } from "../models/userModel";
 import generateRandomPassword from "../helpers/randomPassword";
-import { NextFunction, Request, Response } from "express";
 
-const makeAccessToken = (email) => {
-  return jwt.sign({ email }, process.env.ACCESS_SECRET_KEY, {
+const makeAccessToken = (email, user_id) => {
+  return jwt.sign({ email, user_id }, process.env.ACCESS_SECRET_KEY, {
     expiresIn: "10m", // todo: maybe reduce this? (it was 30s)
   });
 };
 
-const makeRefreshToken = (email) => {
-  return jwt.sign({ email }, process.env.REFRESH_SECRET_KEY, {
+const makeRefreshToken = (email, user_id) => {
+  return jwt.sign({ email, user_id }, process.env.REFRESH_SECRET_KEY, {
     expiresIn: "1d",
   });
 };
@@ -40,7 +39,7 @@ export const refresh = asyncErrorHandler(async (req, res, next) => {
 
   const refreshToken = cookies.jwt;
 
-  const foundUser = await UserService.checkUserExists(null, refreshToken);
+  const foundUser = await UserService.checkUserExists("null", refreshToken);
 
   if (!foundUser) {
     return next(new CustomError("Invalid refresh token", 403));
@@ -51,7 +50,7 @@ export const refresh = asyncErrorHandler(async (req, res, next) => {
       return next(new CustomError("Invalid refresh token", 403));
     }
 
-    const newAccessToken = makeAccessToken(foundUser.email);
+    const newAccessToken = makeAccessToken(foundUser.email, foundUser._id);
 
     res.status(200).json({
       status: "success",
@@ -136,8 +135,8 @@ export const login = asyncErrorHandler(async (req, res, next) => {
   const match = await bcrypt.compare(password, foundUser.password);
 
   if (match) {
-    const accessToken = makeAccessToken(email);
-    const refreshToken = makeRefreshToken(email);
+    const accessToken = makeAccessToken(email, foundUser._id);
+    const refreshToken = makeRefreshToken(email, foundUser._id);
 
     const user = await UserService.addRefreshToken(email, refreshToken);
 
@@ -154,8 +153,8 @@ export const login = asyncErrorHandler(async (req, res, next) => {
       data: {
         accessToken,
         user: {
-          name: user.name,
-          email: user.email,
+          name: user!.name,
+          email: user!.email,
         },
       },
     });
@@ -292,8 +291,8 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
   }
 
   //login the user
-  const accessToken = makeAccessToken(user.email);
-  const refreshToken = makeRefreshToken(user.email);
+  const accessToken = makeAccessToken(user.email, user._id);
+  const refreshToken = makeRefreshToken(user.email, user._id);
 
   // todo : move to service logic
   user.refreshToken = refreshToken;
@@ -330,7 +329,7 @@ export const logout = asyncErrorHandler(async (req, res, next) => {
   const refreshToken = cookies.jwt;
 
   //if no refreshToken present in db
-  const foundUser = await UserService.checkUserExists(null, refreshToken);
+  const foundUser = await UserService.checkUserExists("null", refreshToken);
   if (!foundUser) {
     res.clearCookie("jwt", { httpOnly: true, sameSite: "none", secure: true });
     return res.sendStatus(204);

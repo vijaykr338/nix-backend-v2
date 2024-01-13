@@ -1,6 +1,5 @@
 import jwt from "jsonwebtoken";
 import asyncErrorHandler from "../helpers/asyncErrorHandler";
-// import { User } from "../models/userModel";
 import CustomError from "../../config/CustomError";
 
 export const protect = asyncErrorHandler(async (req, res, next) => {
@@ -13,18 +12,23 @@ export const protect = asyncErrorHandler(async (req, res, next) => {
     // Get token from header
     token = req.headers.authorization.split(" ")[1];
 
-    // Verify token
-    jwt.verify(token, process.env.ACCESS_SECRET_KEY, (err, decoded) => {
-      if (err) { return next(new CustomError(err, 403)); }
+    try {
+      // Verify token
+      const decoded = jwt.verify(token, process.env.ACCESS_SECRET_KEY);
 
-      req.user = decoded.email;
+      // Add decoded information to the request body
+      req.body.email = decoded.email;
+      req.body.user_id = decoded.user_id;
 
+      console.log(req.body.email);
+      console.log(req.body.user_id);
+
+      // Continue to the next middleware or route handler
       return next();
-    });
-
-    // Get user from the token and add it to request
-    // req.user = await User.findById(decoded.id).select("-password");
-    // next();
+    } catch (err) {
+      // Handle token verification error
+      return next(new CustomError(err, 403));
+    }
   }
 
   if (!token) {
