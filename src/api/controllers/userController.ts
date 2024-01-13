@@ -17,7 +17,7 @@ export const getAllUsers = asyncErrorHandler(async (req, res) => {
         name: user.name,
         email: user.email,
         role_id: user.role_id
-      }
+      };
     }),
   });
 });

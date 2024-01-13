@@ -4,7 +4,7 @@ import { protect } from "../middlewares/authMiddleware";
 const router = express.Router();
 
 router.route("/")
-    .get(protect, getAllUsers)
+  .get(protect, getAllUsers);
 
 router.route('/current-user').get(protect, getCurrentUserController);
 

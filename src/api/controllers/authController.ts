@@ -7,6 +7,8 @@ import passwordResetMail from "../services/emailService";
 import * as UserService from "../services/userService";
 import { User } from "../models/userModel";
 import generateRandomPassword from "../helpers/randomPassword";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { NextFunction, Request, Response } from "express";
 
 const makeAccessToken = (email, user_id) => {
   return jwt.sign({ email, user_id }, process.env.ACCESS_SECRET_KEY, {
@@ -204,7 +206,7 @@ export const changePassword = asyncErrorHandler(async (req, res, next) => {
     message: "Password changed successfully",
     data: { user }
   });
-})
+});
 
 export const forgotPassword = asyncErrorHandler(async (req, res, next) => {
   //get user based on post email from database
@@ -318,7 +320,7 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
  * @param {NextFunction} next - Express next middleware function.
  */
 
-export const logout = asyncErrorHandler(async (req, res, next) => {
+export const logout = asyncErrorHandler(async (req, res, _next) => {
   const cookies = req.cookies;
 
   //if no refreshToken present
@@ -335,8 +337,8 @@ export const logout = asyncErrorHandler(async (req, res, next) => {
     return res.sendStatus(204);
   }
 
-  //delete refreshToken present in db
-  const user = await UserService.deleteRefreshToken(foundUser.email);
+  // delete refreshToken present in db
+  await UserService.deleteRefreshToken(foundUser.email);
   res.clearCookie("jwt", { httpOnly: true, sameSite: "none", secure: true });
   return res.sendStatus(204);
 });

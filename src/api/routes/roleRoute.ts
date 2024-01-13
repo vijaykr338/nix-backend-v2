@@ -14,11 +14,11 @@ const read_protect = protected_route([new Perm.ReadRole()]);
 
 // routes
 router.route("/")
-    .get(protect, read_protect, get_all_roles)
+  .get(protect, read_protect, get_all_roles);
 router.route("/update")
-    .get(protect, updation_protect, add_or_update_role)
+  .get(protect, updation_protect, add_or_update_role);
 router.route("/delete")
-    .delete(protect, deletion_protect)
+  .delete(protect, deletion_protect);
 
 
 export default router;

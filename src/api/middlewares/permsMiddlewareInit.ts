@@ -30,35 +30,35 @@ export default function protected_route(permissions_required /*: [Permission.def
             * before the entry was deleted from db
             * must be a bad user
             */
-            const err = new CustomError("Cannot find your login in database! hehe", 401);
-            return next(err);
-        }
+      const err = new CustomError("Cannot find your login in database! hehe", 401);
+      return next(err);
+    }
 
-        const role_id = user.role_id;
-        if (role_id === 100) { // 100 is SUPERUSER
-            return next();
-        }
-        const role = await Role.findOne({ id: role_id });
-        if (!role) {
-            const err = new CustomError("Invalid role", 409);
-            return next(err);
-        }
-        let satisfied = true;
-        permissions_required.forEach((perm) => {
-            if (satisfied && !role.permissions.includes(perm.permission_id)) {
-                console.log(perm, "permission not satisfied");
-                satisfied = false;
-            }
-        });
-
-        if (satisfied) {
-            return next();
-        }
-
-        const err = new CustomError("You do not have permission to access this setting.", 403);
-        return next(err);
+    const role_id = user.role_id;
+    if (role_id === 100) { // 100 is SUPERUSER
+      return next();
+    }
+    const role = await Role.findOne({ id: role_id });
+    if (!role) {
+      const err = new CustomError("Invalid role", 409);
+      return next(err);
+    }
+    let satisfied = true;
+    permissions_required.forEach((perm) => {
+      if (satisfied && !role.permissions.includes(perm.permission_id)) {
+        console.log(perm, "permission not satisfied");
+        satisfied = false;
+      }
     });
-    return protect;
+
+    if (satisfied) {
+      return next();
+    }
+
+    const err = new CustomError("You do not have permission to access this setting.", 403);
+    return next(err);
+  });
+  return protect;
 }
 
 
@@ -79,14 +79,15 @@ export const protect_superuser = asyncErrorHandler(async (req, res, next) => {
         * before the entry was deleted from db
         * must be a bad user
         */
-        const err = new CustomError("Cannot find your login in database! hehe", 401);
-    }
-
-    const role_id = user!.role_id;
-    if (role_id === 100) { // 100 is SUPERUSER
-        return next();
-    }
-
-    const err = new CustomError("You do not have permission to access this setting.", 403);
+    const err = new CustomError("Cannot find your login in database! hehe", 401);
     return next(err);
+  }
+
+  const role_id = user!.role_id;
+  if (role_id === 100) { // 100 is SUPERUSER
+    return next();
+  }
+
+  const err = new CustomError("You do not have permission to access this setting.", 403);
+  return next(err);
 });
