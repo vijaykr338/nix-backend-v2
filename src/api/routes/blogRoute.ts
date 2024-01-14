@@ -20,4 +20,5 @@ router.route("/publish-blog/:id").put(protect, publishBlogProtect, publishBlogCo
 router.route("/approve-blog/:id").put(protect, publishBlogProtect, approveBlogController);
 // todo: delete blog
 
+
 export default router;

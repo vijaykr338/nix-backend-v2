@@ -1,7 +1,7 @@
 import { CorsOptions } from "cors";
 import CustomError from "./CustomError";
 
-export const allowedOrigins = ["https://www.ourwebsite.com"];
+export const allowedOrigins = ["http://localhost:5173"];
 
 export const corsOptions: CorsOptions = {
   origin: (origin, callback) => {

@@ -13,13 +13,13 @@ import { Role } from "../models/rolesModel";
  * @returns Middleware function
  */
 export default function protected_route(permissions_required /*: [Permission.default]*/) {
-  const protect = asyncErrorHandler(async (req, _res, next) => {
+  const protect = asyncErrorHandler(async (req, res, next) => {
     if (!permissions_required) {
       // no permissions required is a no-op
       return next();
     }
-    const email = req.user;
-    if (!req.user) {
+    const email = req.body.email;
+    if (!email) {
       const err = new CustomError("Not authorized", 401);
       return next(err);
     }
@@ -67,8 +67,8 @@ export default function protected_route(permissions_required /*: [Permission.def
  * explicit to profiles with role as superuser
  */
 export const protect_superuser = asyncErrorHandler(async (req, res, next) => {
-  const email = req.user;
-  if (!req.user) {
+  const email = req.body.email;
+  if (!email) {
     const err = new CustomError("Not authorized", 401);
     return next(err);
   }

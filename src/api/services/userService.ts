@@ -5,12 +5,28 @@ export const createUser = async (user) => {
   return newUser;
 };
 
-export const checkUserExists = async (email = "randomTextNotInDB", refreshToken = "randomTextNotInDB") => {
-  const user = await User.find({
-    $or: [{ email: email }, { refreshToken: refreshToken }],
-  });
-  if (user.length === 0) return null;
-  return user[0];
+
+export interface ICheckUser {
+  email?: string;
+  refreshToken?: string;
+}
+
+export const checkUserExists = async ({ email, refreshToken }: ICheckUser) => {
+  if (email && refreshToken) {
+    const user = await User.findOne({
+      $or: [{ email: email }, { refreshToken: refreshToken }],
+    });
+    if (!user) return null;
+    return user;
+  }
+  if (email) {
+    const user = await User.findOne({ email: email });
+    if (!user) return null;
+    return user;
+  }
+  const user = await User.findOne({ refreshToken: refreshToken });
+  if (!user) return null;
+  return user;
 };
 
 export const addRefreshToken = async (email, refreshToken) => {
