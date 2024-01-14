@@ -1,6 +1,7 @@
 import asyncErrorHandler from "../helpers/asyncErrorHandler";
 import CustomError from "../../config/CustomError";
 import { Blog, BlogStatus } from "../models/blogModel";
+import mongoose from "mongoose";
 
 
 /**
@@ -11,7 +12,11 @@ import { Blog, BlogStatus } from "../models/blogModel";
  */
 export const getAllBlogsController = asyncErrorHandler(async (req, res, next) => {
   await refresh_blog_status();
-  const blogs = await Blog.find({}, "-body").sort({ created_at: -1 }).lean();
+  const blogs = await Blog
+    .find({}, "-body")
+    .populate({ path: "user", select: "name email", model: "user" })
+    .sort({ created_at: -1 })
+    .lean();
 
   if (!blogs || blogs.length === 0) {
     const error = new CustomError("No blogs found", 201);
@@ -32,7 +37,7 @@ export const getAllBlogsController = asyncErrorHandler(async (req, res, next) =>
  * @returns {Object} - Returns a JSON object confirming the creation of the blog.
  */
 export const createBlogController = asyncErrorHandler(async (req, res, next) => {
-  const requiredFields = ["title", "biliner", "slug", "body", "category_id", "meta_title", "meta_description", "user_id", "user_id"];
+  const requiredFields = ["title", "byliner", "slug", "body", "category_id", "meta_title", "meta_description", "user_id"];
   // the condition !req.body[field] failed for category_id = 0
   const missingField = requiredFields.find(field => req.body[field] === undefined || req.body[field] === null);
   // umm ok we allow empty strings here, but ok itna dimag kon lagata hai
@@ -45,11 +50,11 @@ export const createBlogController = asyncErrorHandler(async (req, res, next) => 
   // todo: we didn't verify if user who sent the request sent their user_id only
   // this can potentially allow user to publish blog with other's name
   // but who and why someone will do that so let's keep it the way it is
-  const user_id = req.body.user_id;
+  const user_id = new mongoose.Types.ObjectId(req.body.user_id);
 
   const newBlogData = {
     ...req.body,
-    user_id
+    user: user_id
   };
 
   const blog = new Blog(newBlogData);
@@ -70,7 +75,7 @@ export const createBlogController = asyncErrorHandler(async (req, res, next) => 
  */
 export const updateBlogController = asyncErrorHandler(async (req, res, next) => {
   const { id } = req.params;
-  const blog = await Blog.findByIdAndUpdate(id, { ...req.body }, { new: true });
+  const blog = await Blog.findByIdAndUpdate({ _id: id }, { ...req.body }, { new: true });
 
   if (!blog) {
     const error = new CustomError("Blog not found", 404);
@@ -94,7 +99,7 @@ export const publishBlogController = asyncErrorHandler(async (req, res, _next) =
   const { id } = req.params;
   const currentDate = new Date();
   const updatedBlog = await Blog.findByIdAndUpdate(
-    id,
+    { _id: id },
     {
       status: BlogStatus.Published,
       published_at: currentDate // Set the published_at field to the current date/time

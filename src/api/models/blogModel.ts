@@ -9,7 +9,7 @@ export enum BlogStatus {
 }
 
 export interface IBlog extends Document {
-  user_id: mongoose.Schema.Types.ObjectId;
+  user: mongoose.Schema.Types.ObjectId;
   title: string;
   byliner: string;
   slug: string;
@@ -25,10 +25,10 @@ export interface IBlog extends Document {
 }
 
 const blogSchema = new Schema<IBlog>({
-  user_id: {
+  user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "user",
-    // required: [true, "User_id is required"],
+    required: [true, "User_id is required"],
   },
   title: {
     type: String,
