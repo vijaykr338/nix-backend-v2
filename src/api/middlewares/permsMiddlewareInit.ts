@@ -13,19 +13,19 @@ import { Role } from "../models/rolesModel";
  * @returns Middleware function
  */
 export default function protected_route(permissions_required /*: [Permission.default]*/) {
-    const protect = asyncErrorHandler(async (req, res, next) => {
-        if (!permissions_required) {
-            // no permissions required is a no-op
-            return next();
-        }
-        const email = req.body.email;
-        if (!email) {
-            const err = new CustomError("Not authorized", 401);
-            return next(err);
-        }
-        const user = await User.findOne({ email: email });
-        if (!user) {
-            /** this code should be unreachable; only way to
+  const protect = asyncErrorHandler(async (req, res, next) => {
+    if (!permissions_required) {
+      // no permissions required is a no-op
+      return next();
+    }
+    const email = req.body.email;
+    if (!email) {
+      const err = new CustomError("Not authorized", 401);
+      return next(err);
+    }
+    const user = await User.findOne({ email: email });
+    if (!user) {
+      /** this code should be unreachable; only way to
             * reach this is code is if user was logged in
             * before the entry was deleted from db
             * must be a bad user
@@ -67,14 +67,14 @@ export default function protected_route(permissions_required /*: [Permission.def
  * explicit to profiles with role as superuser
  */
 export const protect_superuser = asyncErrorHandler(async (req, res, next) => {
-    const email = req.body.email;
-    if (!email) {
-        const err = new CustomError("Not authorized", 401);
-        return next(err);
-    }
-    const user = await User.findOne({ email });
-    if (!user) {
-        /** this code should be unreachable; only way to
+  const email = req.body.email;
+  if (!email) {
+    const err = new CustomError("Not authorized", 401);
+    return next(err);
+  }
+  const user = await User.findOne({ email });
+  if (!user) {
+    /** this code should be unreachable; only way to
         * reach this is code is if user was logged in
         * before the entry was deleted from db
         * must be a bad user

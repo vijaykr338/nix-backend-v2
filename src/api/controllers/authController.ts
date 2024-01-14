@@ -1,4 +1,4 @@
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import crypto from "crypto";
 import bcrypt from "bcrypt";
 import asyncErrorHandler from "../helpers/asyncErrorHandler";
@@ -9,16 +9,17 @@ import { User } from "../models/userModel";
 import generateRandomPassword from "../helpers/randomPassword";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { NextFunction, Request, Response } from "express";
+import mongoose from "mongoose";
 
-const makeAccessToken = (email, user_id) => {
+const makeAccessToken = (email: string, user_id: mongoose.Schema.Types.ObjectId) => {
   return jwt.sign({ email, user_id }, process.env.ACCESS_SECRET_KEY, {
-    expiresIn: "10m", // todo: maybe reduce this? (it was 30s)
+    expiresIn: "1d",
   });
 };
 
-const makeRefreshToken = (email, user_id) => {
+const makeRefreshToken = (email: string, user_id: mongoose.Schema.Types.ObjectId) => {
   return jwt.sign({ email, user_id }, process.env.REFRESH_SECRET_KEY, {
-    expiresIn: "1d",
+    expiresIn: "7d",
   });
 };
 
@@ -34,20 +35,22 @@ const makeRefreshToken = (email, user_id) => {
 
 export const refresh = asyncErrorHandler(async (req, res, next) => {
   const cookies = req.cookies;
+  if (!cookies) return next(new CustomError("User not logged in or cookies disabled!", 401));
 
-  if (!cookies?.jwt) {
-    return next(new CustomError("No refreshToken found!", 401));
+  const refreshToken = cookies.jwt as string;
+
+  if (!refreshToken) {
+    const err = new CustomError("No refreshToken found! Please login again!", 401);
+    return next(err);
   }
 
-  const refreshToken = cookies.jwt;
-
-  const foundUser = await UserService.checkUserExists("null", refreshToken);
+  const foundUser = await UserService.checkUserExists({ refreshToken: refreshToken });
 
   if (!foundUser) {
     return next(new CustomError("Invalid refresh token", 403));
   }
 
-  jwt.verify(refreshToken, process.env.REFRESH_SECRET_KEY, (err, decoded) => {
+  jwt.verify(refreshToken, process.env.REFRESH_SECRET_KEY, (err, decoded: JwtPayload) => {
     if (err || foundUser.email != decoded.email) {
       return next(new CustomError("Invalid refresh token", 403));
     }
@@ -84,7 +87,7 @@ export const signup = asyncErrorHandler(async (req, res, next) => {
     return next(error);
   }
 
-  const isDuplicate = await UserService.checkUserExists(email);
+  const isDuplicate = await UserService.checkUserExists({ email: email });
 
   if (isDuplicate) {
     const error = new CustomError("Email already registered", 406);
@@ -127,7 +130,7 @@ export const login = asyncErrorHandler(async (req, res, next) => {
   }
 
   //check if user exists in database with given email
-  const foundUser = await UserService.checkUserExists(email);
+  const foundUser = await UserService.checkUserExists({ email: email });
 
   if (!foundUser) {
     const error = new CustomError("No user exists with this email.", 401);
@@ -275,7 +278,7 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
 
 
   const password: string = generateRandomPassword(7);
-  const hashed_password: string = bcrypt.hash(password, 10);
+  const hashed_password: string = await bcrypt.hash(password, 10);
 
   // todo : add date and time to expire password reset token ?
   // todo: should be under service logic
@@ -328,10 +331,10 @@ export const logout = asyncErrorHandler(async (req, res, _next) => {
     return res.sendStatus(204);
   }
 
-  const refreshToken = cookies.jwt;
+  const refreshToken = cookies.jwt as string;
 
   //if no refreshToken present in db
-  const foundUser = await UserService.checkUserExists("null", refreshToken);
+  const foundUser = await UserService.checkUserExists({ refreshToken: refreshToken });
   if (!foundUser) {
     res.clearCookie("jwt", { httpOnly: true, sameSite: "none", secure: true });
     return res.sendStatus(204);

@@ -38,7 +38,7 @@ export const getAllBlogsController = asyncErrorHandler(async (req, res, next) =>
  * @returns {Object} - Returns a JSON object confirming the creation of the blog.
  */
 export const createBlogController = asyncErrorHandler(async (req, res, next) => {
-  const requiredFields = ["title", "biliner", "slug", "body", "category_id", "meta_title", "meta_description"];
+  const requiredFields = ["title", "biliner", "slug", "body", "category_id", "meta_title", "meta_description", "user_id"];
   // the condition !req.body[field] failed for category_id = 0
   const missingField = requiredFields.find(field => req.body[field] === undefined || req.body[field] === null);
   // umm ok we allow empty strings here, but ok itna dimag kon lagata hai
@@ -48,17 +48,10 @@ export const createBlogController = asyncErrorHandler(async (req, res, next) => 
     return next(error);
   }
 
-    // const email = req.user;
-    // const foundUser = await UserService.checkUserExists(email);
-
-    // if (!foundUser) {
-    //     const error = new CustomError("No user exists with this email.", 401);
-    //     return next(error);
-    // }
-
-    // const { _id: user_id } = foundUser;
-
-    const user_id = req.body.user_id;
+  // todo: we didn't verify if user who sent the request sent their user_id only
+  // this can potentially allow user to publish blog with other's name
+  // but who and why someone will do that so let's keep it the way it is
+  const user_id = req.body.user_id;
 
   const newBlogData = {
     ...req.body,

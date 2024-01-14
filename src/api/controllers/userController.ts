@@ -32,5 +32,5 @@ export const getCurrentUserController = asyncErrorHandler(async (req,res,next) =
     status: "success",
     message: "User fetched successfully",
     data: user
-  })
-})
+  });
+});
