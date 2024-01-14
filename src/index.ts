@@ -1,5 +1,7 @@
 import "dotenv/config";
 import "colors";
+import compression from "compression";
+
 process.on("uncaughtException", (err) => {
   console.error(err.name.red.underline, err.message.red.underline);
   console.error("Uncaught Exception occured! Shutting down...".magenta);
@@ -26,6 +28,8 @@ const app = express();
 
 //connecting to db
 connectDB();
+
+app.use(compression());
 
 //handle options credentials check before CORS
 app.use(credentials);
@@ -62,7 +66,7 @@ app.all("*", (req, res, next) => {
     `Can't find ${req.originalUrl} on the server! Are you sure you wanted to make a ${req.method} request?`,
     404
   );
-    //pass it to global error handler
+  //pass it to global error handler
   next(err);
 });
 
