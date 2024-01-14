@@ -6,6 +6,7 @@ import CustomError from "../../config/CustomError";
 import { CastError, Error } from "mongoose";
 
 const devErrors = (res: Response, error: CustomError) => {
+  console.error(error);
   res.status(error.statusCode).json({
     status: error.statusCode,
     message: error.message,
@@ -35,6 +36,7 @@ const validationErrorHandler = (err: any) => {
 };
 
 const prodErrors = (res: Response, error: CustomError | Error) => {
+  console.error(error);
   if (error instanceof CustomError) {
     res.status(error.statusCode).json({
       status: error.statusCode,

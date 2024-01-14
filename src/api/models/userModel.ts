@@ -1,4 +1,5 @@
 import mongoose, { Document, Schema } from "mongoose";
+import Permission from "../helpers/permissions";
 
 export interface IUser extends Document {
   name: string;
@@ -6,7 +7,9 @@ export interface IUser extends Document {
   password: string;
   refreshToken?: string;
   passwordResetToken?: string;
-  role_id: number;
+  role_id: mongoose.Schema.Types.ObjectId;
+  extra_permissions?: Permission[];
+  removed_permissions?: Permission[];
 }
 
 const userSchema = new Schema<IUser>({
@@ -30,9 +33,19 @@ const userSchema = new Schema<IUser>({
     type: String,
   },
   role_id: {
-    type: Number,
-    default: 0 // 0 would mean columninst
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "role",
+    // warn: default role from env
+    default: new mongoose.Types.ObjectId(process.env.DEFAULT_ROLE_ID)
   },
+  extra_permissions: {
+    type: [Number],
+    enum: Object.values(Permission),
+  },
+  removed_permissions: {
+    type: [Number],
+    enum: Object.values(Permission),
+  }
 });
 
 const User = mongoose.model("user", userSchema);

@@ -1,16 +1,16 @@
 import express from "express";
 import { protect } from "../middlewares/authMiddleware";
 import protected_route from "../middlewares/permsMiddlewareInit";
-import * as Perm from "../helpers/permissions";
+import Permission from "../helpers/permissions";
 import { approveBlogController, createBlogController, getAllBlogsController, publishBlogController, updateBlogController } from "../controllers/blogController";
 
 const router = express.Router();
 
 //permissions
-const createBlogProtect = protected_route([new Perm.CreateBlog()]);
-const readBlogProtect = protected_route([new Perm.ReadBlog()]);
-const updateBlogProtect = protected_route([new Perm.UpdateBlog()]);
-const publishBlogProtect = protected_route([new Perm.PublishBlog()]);
+const createBlogProtect = protected_route([Permission.CreateBlog]);
+const readBlogProtect = protected_route([Permission.ReadBlog]);
+const updateBlogProtect = protected_route([Permission.UpdateBlog]);
+const publishBlogProtect = protected_route([Permission.PublishBlog]);
 
 //routes
 router.route("/").get(protect, readBlogProtect, getAllBlogsController);
