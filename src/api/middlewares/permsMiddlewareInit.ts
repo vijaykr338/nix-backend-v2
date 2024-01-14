@@ -1,6 +1,5 @@
 import asyncErrorHandler from "../helpers/asyncErrorHandler";
 import CustomError from "../../config/CustomError";
-import { Role } from "../models/rolesModel";
 import Permission from "../helpers/permissions";
 import * as UserService from "../services/userService";
 
@@ -36,15 +35,14 @@ export default function protected_route(permissions_required: Permission[]) {
       return next(err);
     }
 
-    const role_id = user.role_id;
-    if (role_id.toString() === process.env.SUPERUSER_ROLE_ID) {
-      return next();
-    }
+    const role = user.role_id;
 
-    const role = await Role.findOne({ _id: role_id });
     if (!role) {
-      const err = new CustomError(`Invalid role! Role id ${role_id} not found`, 409);
+      const err = new CustomError(`Invalid role! ${role}`, 409);
       return next(err);
+    }
+    if (role.id?.toString() === process.env.SUPERUSER_ROLE_ID) {
+      return next();
     }
 
     const satisfied = permissions_required.every((perm) => {

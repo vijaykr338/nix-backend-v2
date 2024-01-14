@@ -2,6 +2,7 @@ import asyncErrorHandler from "../helpers/asyncErrorHandler";
 import CustomError from "../../config/CustomError";
 import { Blog, BlogStatus } from "../models/blogModel";
 import mongoose from "mongoose";
+import { IUser } from "../models/userModel";
 
 
 /**
@@ -12,7 +13,7 @@ export const getAllBlogsController = asyncErrorHandler(async (req, res, next) =>
   await refresh_blog_status();
   const blogs = await Blog
     .find({}, "-body")
-    .populate({ path: "user", select: "name email", model: "user" })
+    .populate<{ user: IUser }>("user", "_id name email")
     .sort({ created_at: -1 })
     .lean();
 
@@ -169,8 +170,12 @@ export const refreshBlogStatus = asyncErrorHandler(async (_req, res, _next) => {
  * @returns A promise that resolves to an object representing the result of the update operation.
  */
 async function refresh_blog_status(): Promise<import("mongoose").UpdateWriteOpResult> {
-  return await Blog.updateMany(
+  const refresh_result = await Blog.updateMany(
     { status: BlogStatus.Approved, published_at: { $lte: new Date() } },
     { status: BlogStatus.Published }
   );
+  if (refresh_result.matchedCount > 0) {
+    console.log("Auto published blogs", refresh_result);
+  }
+  return refresh_result;
 }
