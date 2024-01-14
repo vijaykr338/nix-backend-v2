@@ -1,6 +1,5 @@
 import asyncErrorHandler from "../helpers/asyncErrorHandler";
 import CustomError from "../../config/CustomError";
-import { Role } from "../models/rolesModel";
 import Permission from "../helpers/permissions";
 import * as UserService from "../services/userService";
 
