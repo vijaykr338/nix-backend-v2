@@ -75,7 +75,7 @@ export const createBlogController = asyncErrorHandler(async (req, res, next) => 
  */
 export const updateBlogController = asyncErrorHandler(async (req, res, next) => {
   const { id } = req.params;
-  const blog = await Blog.findByIdAndUpdate({ _id: id }, { ...req.body }, { new: true });
+  const blog = await Blog.findByIdAndUpdate({ _id: new mongoose.Types.ObjectId(id) }, { ...req.body }, { new: true });
 
   if (!blog) {
     const error = new CustomError("Blog not found", 404);
@@ -99,7 +99,7 @@ export const publishBlogController = asyncErrorHandler(async (req, res, _next) =
   const { id } = req.params;
   const currentDate = new Date();
   const updatedBlog = await Blog.findByIdAndUpdate(
-    { _id: id },
+    { _id: new mongoose.Types.ObjectId(id) },
     {
       status: BlogStatus.Published,
       published_at: currentDate // Set the published_at field to the current date/time
@@ -143,7 +143,7 @@ export const approveBlogController = asyncErrorHandler(async (req, res, next) =>
   }
 
   const updatedBlog = await Blog.findByIdAndUpdate(
-    id,
+    { _id: new mongoose.Types.ObjectId(id) },
     {
       status: BlogStatus.Approved,
       published_at: publish_timestamp // Set the published_at field to the current date/time
