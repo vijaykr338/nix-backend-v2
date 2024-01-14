@@ -4,7 +4,7 @@ import { Role, IRole } from "../models/rolesModel";
 
 export const add_or_update_role = asyncErrorHandler(async (req, res, next) => {
   const data = req.body as IRole;
-  const { name, permissions, id } = data;
+  const { name, permissions, _id : id } = data;
   if (!id) {
     const error = new CustomError("Role id not specified!", 400);
     return next(error);
@@ -19,7 +19,7 @@ export const add_or_update_role = asyncErrorHandler(async (req, res, next) => {
 
 
   // todo: should be under service logic
-  const role = await Role.updateOne({ id }, { name, permissions }, { upsert: true });
+  const role = await Role.updateOne({ _id : id }, { name, permissions }, { upsert: true });
   console.log(role);
 
   res.status(200).json({

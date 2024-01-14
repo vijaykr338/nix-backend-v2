@@ -8,12 +8,12 @@ import {
   logout,
 } from "../controllers/authController";
 import protected_route from "../middlewares/permsMiddlewareInit";
-import { CreateProfile } from "../helpers/permissions";
+import Permission from "../helpers/permissions";
 import { protect } from "../middlewares/authMiddleware";
 
 const router = express.Router();
 
-const signup_protect = protected_route([new CreateProfile()]);
+const signup_protect = protected_route([Permission.CreateProfile]);
 
 router.route("/signup").post(protect, signup_protect, signup);
 router.route("/login").post(login);

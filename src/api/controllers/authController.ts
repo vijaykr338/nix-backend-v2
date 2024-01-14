@@ -28,9 +28,6 @@ const makeRefreshToken = (email: string, user_id: mongoose.Schema.Types.ObjectId
  * Used when access tokens have expired. Generate a new access token and a new refresh token.
  *
  * @function
- * @param {Request} req - Express request object.
- * @param {Response} res - Express response object.
- * @param {NextFunction} next - Express next middleware function.
  */
 
 export const refresh = asyncErrorHandler(async (req, res, next) => {
@@ -71,9 +68,6 @@ export const refresh = asyncErrorHandler(async (req, res, next) => {
  * Create new user.
  *
  * @function
- * @param {Request} req - Express request object.
- * @param {Response} res - Express response object.
- * @param {NextFunction} next - Express next middleware function.
  */
 
 export const signup = asyncErrorHandler(async (req, res, next) => {
@@ -114,9 +108,6 @@ export const signup = asyncErrorHandler(async (req, res, next) => {
  * Handle user login. Generate new access and refresh tokens for user.
  *
  * @function
- * @param {Request} req - Express request object.
- * @param {Response} res - Express response object.
- * @param {NextFunction} next - Express next middleware function.
  */
 export const login = asyncErrorHandler(async (req, res, next) => {
   const { email, password } = req.body;
@@ -173,9 +164,6 @@ export const login = asyncErrorHandler(async (req, res, next) => {
  * Handle user password reset request. Send a mail to user with password reset link.
  *
  * @function
- * @param {Request} req - Express request object.
- * @param {Response} res - Express response object.
- * @param {NextFunction} next - Express next middleware function.
  */
 
 
@@ -265,9 +253,6 @@ export const forgotPassword = asyncErrorHandler(async (req, res, next) => {
  * Update new password in db and generate new access token and refresh token for user.
  *
  * @function
- * @param {Request} req - Express request object.
- * @param {Response} res - Express response object.
- * @param {NextFunction} next - Express next middleware function.
  */
 
 export const resetPassword = asyncErrorHandler(async (req, res, next) => {
@@ -318,9 +303,6 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
  * Handle user logout.
  *
  * @function
- * @param {Request} req - Express request object.
- * @param {Response} res - Express response object.
- * @param {NextFunction} next - Express next middleware function.
  */
 
 export const logout = asyncErrorHandler(async (req, res, _next) => {

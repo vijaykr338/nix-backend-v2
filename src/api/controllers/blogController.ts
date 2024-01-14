@@ -7,9 +7,6 @@ import { Blog, BlogStatus } from "../models/blogModel";
  * Get all blogs.
  *
  * @function
- * @param {Request} req - Express request object.
- * @param {Response} res - Express response object.
- * @param {NextFunction} next - Express next middleware function.
  * @returns {Object} - Returns a JSON object containing the retrieved blogs.
  */
 export const getAllBlogsController = asyncErrorHandler(async (req, res, next) => {
@@ -32,13 +29,10 @@ export const getAllBlogsController = asyncErrorHandler(async (req, res, next) =>
  * Create a new blog.
  *
  * @function
- * @param {Request} req - Express request object.
- * @param {Response} res - Express response object.
- * @param {NextFunction} next - Express next middleware function.
  * @returns {Object} - Returns a JSON object confirming the creation of the blog.
  */
 export const createBlogController = asyncErrorHandler(async (req, res, next) => {
-  const requiredFields = ["title", "biliner", "slug", "body", "category_id", "meta_title", "meta_description", "user_id"];
+  const requiredFields = ["title", "biliner", "slug", "body", "category_id", "meta_title", "meta_description", "user_id", "user_id"];
   // the condition !req.body[field] failed for category_id = 0
   const missingField = requiredFields.find(field => req.body[field] === undefined || req.body[field] === null);
   // umm ok we allow empty strings here, but ok itna dimag kon lagata hai
@@ -72,9 +66,6 @@ export const createBlogController = asyncErrorHandler(async (req, res, next) => 
  * Update a blog by ID.
  *
  * @function
- * @param {Request} req - Express request object containing blog data.
- * @param {Response} res - Express response object.
- * @param {NextFunction} next - Express next middleware function.
  * @returns {Object} - Returns a JSON object containing the updated blog.
  */
 export const updateBlogController = asyncErrorHandler(async (req, res, next) => {
@@ -97,9 +88,6 @@ export const updateBlogController = asyncErrorHandler(async (req, res, next) => 
  * Publish a blog by ID.
  *
  * @function
- * @param {Request} req - Express request object containing blog ID.
- * @param {Response} res - Express response object.
- * @param {NextFunction} next - Express next middleware function.
  * @returns {Object} - Returns a JSON object confirming the published blog.
  */
 export const publishBlogController = asyncErrorHandler(async (req, res, _next) => {
@@ -129,9 +117,6 @@ export const publishBlogController = asyncErrorHandler(async (req, res, _next) =
  * If the publish timestamp is in the past, it returns a 418 error (I'm a teapot).
  * 
  * @function
- * @param {Request} req - The request object.
- * @param {Response} res - The response object.
- * @param {NextFunction} next - The next middleware function.
  * @returns {Object} The updated blog object in the response.
  */
 export const approveBlogController = asyncErrorHandler(async (req, res, next) => {
@@ -171,9 +156,6 @@ export const approveBlogController = asyncErrorHandler(async (req, res, next) =>
  * Refreshes the status of a blog. Makes the blog with status "Approved" and publish date in the past to "Published".
  * 
  * @function
- * @param {Request} req - The request object.
- * @param {Response} res - The response object.
- * @param {NextFunction} next - The next middleware function.
  * @returns {Object} A JSON response indicating the success of the operation.
  */
 export const refreshBlogStatus = asyncErrorHandler(async (_req, res, _next) => {

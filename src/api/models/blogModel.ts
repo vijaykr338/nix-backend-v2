@@ -11,7 +11,7 @@ export enum BlogStatus {
 export interface IBlog extends Document {
   user_id: mongoose.Schema.Types.ObjectId;
   title: string;
-  biliner: string;
+  byliner: string;
   slug: string;
   body: string;
   status: BlogStatus;
@@ -34,7 +34,7 @@ const blogSchema = new Schema<IBlog>({
     type: String,
     required: [true, "Please enter title"],
   },
-  biliner: {
+  byliner: {
     type: String,
     required: [true, "Please enter bilinger"],
   },
