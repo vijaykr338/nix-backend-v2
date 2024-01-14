@@ -17,16 +17,20 @@ export interface ICheckUser {
 }
 
 export const checkUserExists = async ({ email, refreshToken, _id }: ICheckUser) => {
-  const bypass = "bypass";
-  const user = await User.findOne(
-    {
-      $or: [
-        { _id: _id ? _id : bypass },
-        { email: email ? email : bypass },
-        { refreshToken: refreshToken ? refreshToken : bypass }
-      ]
-    }).populate<{ role_id: IRole }>("role_id");
-  if (user) return user;
+  // replaced $or as it was creating confusion
+  // this impl should also be as effective as $or operation
+  if (_id) {
+    const user = await User.findOne({ _id: _id }).populate<{ role_id: IRole }>("role_id");
+    return user;
+  }
+  if (email) {
+    const user = await User.findOne({ email: email }).populate<{ role_id: IRole }>("role_id");
+    return user;
+  }
+  if (refreshToken) {
+    const user = await User.findOne({ refreshToken: refreshToken }).populate<{ role_id: IRole }>("role_id");
+    return user;
+  }
   return null;
 };
 
