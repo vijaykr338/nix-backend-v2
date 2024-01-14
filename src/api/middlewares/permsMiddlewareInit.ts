@@ -1,8 +1,9 @@
 import asyncErrorHandler from "../helpers/asyncErrorHandler";
 import CustomError from "../../config/CustomError";
-import { User } from "../models/userModel";
 import { Role } from "../models/rolesModel";
 import Permission from "../helpers/permissions";
+import * as UserService from "../services/userService";
+
 
 /**
  * This generates a middleware to check for certain given permissions
@@ -24,7 +25,7 @@ export default function protected_route(permissions_required: Permission[]) {
       const err = new CustomError("Not authorized", 401);
       return next(err);
     }
-    const user = await User.findOne({ email: email });
+    const user = await UserService.checkUserExists({ email: email });
     if (!user) {
       /** this code should be unreachable; only way to
         * reach this is code is if user was logged in

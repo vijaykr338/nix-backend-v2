@@ -6,8 +6,6 @@ import mongoose from "mongoose";
 
 /**
  * Get all blogs.
- *
- * @function
  * @returns {Object} - Returns a JSON object containing the retrieved blogs.
  */
 export const getAllBlogsController = asyncErrorHandler(async (req, res, next) => {
@@ -32,8 +30,6 @@ export const getAllBlogsController = asyncErrorHandler(async (req, res, next) =>
 
 /**
  * Create a new blog.
- *
- * @function
  * @returns {Object} - Returns a JSON object confirming the creation of the blog.
  */
 export const createBlogController = asyncErrorHandler(async (req, res, next) => {
@@ -69,8 +65,6 @@ export const createBlogController = asyncErrorHandler(async (req, res, next) => 
 
 /**
  * Update a blog by ID.
- *
- * @function
  * @returns {Object} - Returns a JSON object containing the updated blog.
  */
 export const updateBlogController = asyncErrorHandler(async (req, res, next) => {
@@ -91,8 +85,6 @@ export const updateBlogController = asyncErrorHandler(async (req, res, next) => 
 
 /**
  * Publish a blog by ID.
- *
- * @function
  * @returns {Object} - Returns a JSON object confirming the published blog.
  */
 export const publishBlogController = asyncErrorHandler(async (req, res, _next) => {

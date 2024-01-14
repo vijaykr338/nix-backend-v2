@@ -20,7 +20,7 @@ export const add_or_update_role = asyncErrorHandler(async (req, res, next) => {
 
   // todo: should be under service logic
   const role = await Role.updateOne({ _id : id }, { name, permissions }, { upsert: true });
-  console.log(role);
+  console.log("Role updated", role);
 
   res.status(200).json({
     status: "success",

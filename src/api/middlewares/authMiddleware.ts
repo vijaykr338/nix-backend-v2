@@ -29,9 +29,6 @@ export const protect = asyncErrorHandler(async (req, res, next) => {
       req.body.email = email as string;
       req.body.user_id = user_id as string;
 
-      console.log(req.body.email);
-      console.log(req.body.user_id);
-
       // Continue to the next middleware or route handler
       return next();
     } catch (err) {

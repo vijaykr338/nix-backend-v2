@@ -1,8 +1,8 @@
 import "dotenv/config";
 import "colors";
 process.on("uncaughtException", (err) => {
-  console.log(err.name.red.underline, err.message.red.underline);
-  console.log("Uncaught Exception occured! Shutting down...".magenta);
+  console.error(err.name.red.underline, err.message.red.underline);
+  console.error("Uncaught Exception occured! Shutting down...".magenta);
   process.exit(1);
 });
 import cors from "cors";
@@ -76,8 +76,8 @@ const server = app.listen(port, () => {
 });
 
 process.on("unhandledRejection", (err: Error) => {
-  console.log(err.name.magenta, err.message.magenta);
-  console.log("Unhandled rejection occured! Shutting down...".red);
+  console.error(err.name.magenta, err.message.magenta);
+  console.error("Unhandled rejection occured! Shutting down...".red);
   server.close(() => {
     process.exit(1);
   });

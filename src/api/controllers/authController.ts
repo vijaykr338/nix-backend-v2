@@ -5,10 +5,6 @@ import asyncErrorHandler from "../helpers/asyncErrorHandler";
 import CustomError from "../../config/CustomError";
 import passwordResetMail from "../services/emailService";
 import * as UserService from "../services/userService";
-import { User } from "../models/userModel";
-import generateRandomPassword from "../helpers/randomPassword";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { NextFunction, Request, Response } from "express";
 import mongoose from "mongoose";
 
 const makeAccessToken = (email: string, user_id: mongoose.Schema.Types.ObjectId) => {
@@ -26,8 +22,6 @@ const makeRefreshToken = (email: string, user_id: mongoose.Schema.Types.ObjectId
 
 /**
  * Used when access tokens have expired. Generate a new access token and a new refresh token.
- *
- * @function
  */
 
 export const refresh = asyncErrorHandler(async (req, res, next) => {
@@ -66,8 +60,6 @@ export const refresh = asyncErrorHandler(async (req, res, next) => {
 
 /**
  * Create new user.
- *
- * @function
  */
 
 export const signup = asyncErrorHandler(async (req, res, next) => {
@@ -106,8 +98,6 @@ export const signup = asyncErrorHandler(async (req, res, next) => {
 
 /**
  * Handle user login. Generate new access and refresh tokens for user.
- *
- * @function
  */
 export const login = asyncErrorHandler(async (req, res, next) => {
   const { email, password } = req.body;
@@ -143,6 +133,8 @@ export const login = asyncErrorHandler(async (req, res, next) => {
       secure: true,
     });
 
+    console.log("Logged in user", user);
+
     res.json({
       status: "success",
       message: "User successfully login!",
@@ -162,11 +154,7 @@ export const login = asyncErrorHandler(async (req, res, next) => {
 
 /**
  * Handle user password reset request. Send a mail to user with password reset link.
- *
- * @function
  */
-
-
 export const changePassword = asyncErrorHandler(async (req, res, next) => {
   interface ChangePasswordRequest {
     old_password: string;
@@ -179,7 +167,7 @@ export const changePassword = asyncErrorHandler(async (req, res, next) => {
     return next(err);
   }
 
-  const user = await User.findOne({ email: body.email });
+  const user = await UserService.checkUserExists({ email: body.email });
   if (!user) {
     const err = new CustomError("Invalid email", 400);
     return next(err);
@@ -192,6 +180,8 @@ export const changePassword = asyncErrorHandler(async (req, res, next) => {
   const hashed_password = await bcrypt.hash(body.new_password, 10);
   user.password = hashed_password;
   await user.save();
+
+  console.log("Password changed successfully for user", user);
   res.status(200).json({
     status: "success",
     message: "Password changed successfully",
@@ -203,7 +193,7 @@ export const forgotPassword = asyncErrorHandler(async (req, res, next) => {
   //get user based on post email from database
   const email = req.body.email;
   const username = req.body.username;
-  const user = await User.findOne({ email: email });
+  const user = await UserService.checkUserExists({ email: email });
 
   if (!user) {
     const error = new CustomError("No user exists with this email.", 404);
@@ -251,8 +241,6 @@ export const forgotPassword = asyncErrorHandler(async (req, res, next) => {
 
 /**
  * Update new password in db and generate new access token and refresh token for user.
- *
- * @function
  */
 
 export const resetPassword = asyncErrorHandler(async (req, res, next) => {
@@ -262,18 +250,10 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
     .digest("hex");
 
 
-  const password: string = generateRandomPassword(7);
-  const hashed_password: string = await bcrypt.hash(password, 10);
 
   // todo : add date and time to expire password reset token ?
   // todo: should be under service logic
-  const user = await User.findOneAndUpdate(
-    { passwordResetToken: token },
-    {
-      passwordResetToken: undefined,
-      password: hashed_password
-    },
-  );
+  const user = await UserService.resetUserPassword(token);
 
   if (!user) {
     const error = new CustomError("Token is invalid or has expired", 400);
@@ -288,21 +268,20 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
   user.refreshToken = refreshToken;
   await user.save();
 
+  console.log("Password reset successfully for user", user);
+
   res.status(200).json({
-    status: "sucess",
+    status: "success",
     data: {
       accessToken,
       refreshToken,
-      new_password: password,
-      user,
+      ...user,
     }
   });
 });
 
 /**
  * Handle user logout.
- *
- * @function
  */
 
 export const logout = asyncErrorHandler(async (req, res, _next) => {
@@ -325,5 +304,7 @@ export const logout = asyncErrorHandler(async (req, res, _next) => {
   // delete refreshToken present in db
   await UserService.deleteRefreshToken(foundUser.email);
   res.clearCookie("jwt", { httpOnly: true, sameSite: "none", secure: true });
+
+  console.log("User logged out successfully", foundUser);
   return res.sendStatus(204);
 });
