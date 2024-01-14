@@ -6,6 +6,6 @@ const router = express.Router();
 router.route("/")
   .get(protect, getAllUsers);
 
-router.route('/current-user').get(protect, getCurrentUserController);
+router.route("/current-user").get(protect, getCurrentUserController);
 
 export default router;

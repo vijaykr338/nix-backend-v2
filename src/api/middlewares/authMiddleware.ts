@@ -1,24 +1,33 @@
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import asyncErrorHandler from "../helpers/asyncErrorHandler";
 import CustomError from "../../config/CustomError";
 
 export const protect = asyncErrorHandler(async (req, res, next) => {
-  let token;
-
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith("Bearer")
   ) {
     // Get token from header
-    token = req.headers.authorization.split(" ")[1];
+    const token_split = req.headers.authorization.split(" ");
+    if (token_split.length !== 2) {
+      const err = new CustomError("Invalid JWT token! Please login again", 400);
+      return next(err);
+    }
+
+    const token = token_split[1];
+    if (!token) {
+      const err = new CustomError("Not authorized", 401);
+      return next(err);
+    }
 
     try {
       // Verify token
-      const decoded = jwt.verify(token, process.env.ACCESS_SECRET_KEY);
+      const { email, user_id }: JwtPayload = jwt.verify(token, process.env.ACCESS_SECRET_KEY) as JwtPayload;
+      if (!email || !user_id) return next(new CustomError("Invalid JWT token! Please login again", 403));
 
       // Add decoded information to the request body
-      req.body.email = decoded.email;
-      req.body.user_id = decoded.user_id;
+      req.body.email = email as string;
+      req.body.user_id = user_id as string;
 
       console.log(req.body.email);
       console.log(req.body.user_id);
@@ -29,9 +38,7 @@ export const protect = asyncErrorHandler(async (req, res, next) => {
       // Handle token verification error
       return next(new CustomError(err, 403));
     }
-  }
-
-  if (!token) {
+  } else {
     const err = new CustomError("Not authorized", 401);
     return next(err);
   }
