@@ -118,14 +118,15 @@ export const publishBlogController = asyncErrorHandler(async (req, res, _next) =
  * @returns {Object} The updated blog object in the response.
  */
 export const approveBlogController = asyncErrorHandler(async (req, res, next) => {
-  const { id, time } = req.params;
+  const { id } = req.params;
+  const {time} = req.body;
   if (!id || !time) {
     const error = new CustomError("Invalid request", 400);
     return next(error);
   }
   const publish_timestamp = new Date(time);
   if (!publish_timestamp) {
-    const error = new CustomError("Invalid request", 400);
+    const error = new CustomError("Invalid request! Time couldn't be parsed", 400);
     return next(error);
   }
   const currentDate = new Date();

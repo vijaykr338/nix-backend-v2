@@ -16,7 +16,9 @@ const read_protect = protected_route([Permission.ReadRole]);
 router.route("/")
   .get(protect, read_protect, get_all_roles);
 router.route("/update")
-  .get(protect, updation_protect, add_or_update_role);
+  .post(protect, updation_protect, add_or_update_role);
+
+// todo: impl delete route
 router.route("/delete")
   .delete(protect, deletion_protect);
 

@@ -63,35 +63,32 @@ export const refresh = asyncErrorHandler(async (req, res, next) => {
  */
 
 export const signup = asyncErrorHandler(async (req, res, next) => {
-  const { name, email, password } = req.body;
+  const { name, username: email } = req.body;
 
-  if (!email || !password || !name) {
+  if (!email || !name) {
     const error = new CustomError(
-      "Please provide name, email ID and password to sign up.",
+      "Please provide name and email ID to sign up.",
       400
     );
     return next(error);
   }
 
   const isDuplicate = await UserService.checkUserExists({ email: email });
+  console.log(isDuplicate);
 
   if (isDuplicate) {
     const error = new CustomError("Email already registered", 406);
     return next(error);
   }
 
-  const hasedPwd = await bcrypt.hash(password, 10);
-
-  const user = { name, email, password: hasedPwd };
-
-  const newUser = await UserService.createUser(user);
-
+  await UserService.createNewUser(name, email);
+  
   res.status(201).json({
     status: "success",
-    message: "User created successfully",
+    message: "User successfully created!",
     data: {
-      name: newUser.name,
-      email: newUser.email,
+      name,
+      email,
     },
   });
 });
@@ -100,7 +97,9 @@ export const signup = asyncErrorHandler(async (req, res, next) => {
  * Handle user login. Generate new access and refresh tokens for user.
  */
 export const login = asyncErrorHandler(async (req, res, next) => {
+  console.log(req.method);
   const { email, password } = req.body;
+  console.log("Login request", email);
 
   if (!email || !password) {
     const error = new CustomError(
@@ -133,13 +132,14 @@ export const login = asyncErrorHandler(async (req, res, next) => {
       secure: true,
     });
 
-    console.log("Logged in user", user);
+    console.log("Logged in user");
 
     res.json({
       status: "success",
       message: "User successfully login!",
       data: {
         accessToken,
+        refreshToken,
         user: {
           name: user!.name,
           email: user!.email,
@@ -192,7 +192,6 @@ export const changePassword = asyncErrorHandler(async (req, res, next) => {
 export const forgotPassword = asyncErrorHandler(async (req, res, next) => {
   //get user based on post email from database
   const email = req.body.email;
-  const username = req.body.username;
   const user = await UserService.checkUserExists({ email: email });
 
   if (!user) {
@@ -200,6 +199,7 @@ export const forgotPassword = asyncErrorHandler(async (req, res, next) => {
     return next(error);
   }
 
+  console.log(`Forgot password intitiated for ${email}`);
   //generate random reset token to send to user
   const resetToken = crypto.randomBytes(32).toString("hex");
 
@@ -217,13 +217,15 @@ export const forgotPassword = asyncErrorHandler(async (req, res, next) => {
   // user.passwordResetTokenExpires = passwordResetTokenExpires;
 
   await user.save();
+  console.log("Password reset token added to db", user);
 
   const resetUrl = `${req.protocol}://${req.get("host")}/api/v1/auth/resetPassword/${resetToken}`;
 
-  const mail = new passwordResetMail.passwordResetMail(username, resetUrl);
+  const mail = new passwordResetMail.passwordResetMail(email, resetUrl);
 
   try {
     await mail.sendTo(email);
+    console.log("Password reset email sent");
     res.status(200).json(
       {
         status: "success",
@@ -249,8 +251,6 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
     .update(req.params.token)
     .digest("hex");
 
-
-
   // todo : add date and time to expire password reset token ?
   // todo: should be under service logic
   const user = await UserService.resetUserPassword(token);
@@ -275,7 +275,8 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
     data: {
       accessToken,
       refreshToken,
-      ...user,
+      email: user.email,
+      name : user.name,
     }
   });
 });

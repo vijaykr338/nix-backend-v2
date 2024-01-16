@@ -3,11 +3,7 @@ import { IRole } from "../models/rolesModel";
 import { User } from "../models/userModel";
 import bcrypt from "bcrypt";
 import generateRandomPassword from "../helpers/randomPassword";
-
-export const createUser = async (user) => {
-  const newUser = await (await User.create(user)).populate<{ role_id: IRole }>("role_id");
-  return newUser;
-};
+import emailService from "./emailService";
 
 
 export interface ICheckUser {
@@ -58,6 +54,7 @@ export const getAllUsers = async (query) => {
 };
 
 export const resetUserPassword = async (token: string) => {
+  // todo: fix this, wrong impl
   const password: string = generateRandomPassword(7);
   const hashed_password: string = await bcrypt.hash(password, 10);
 
@@ -67,7 +64,22 @@ export const resetUserPassword = async (token: string) => {
       passwordResetToken: undefined,
       password: hashed_password
     },
-  ).populate<{ role_id: IRole }>("role_id");
+  );
   if (!user) return null;
+  return user;
+};
+
+export const createNewUser = async (name: string, email: string) => {
+  const password: string = generateRandomPassword(7);
+  const hashed_password: string = await bcrypt.hash(password, 10);
+  const reg_mail = new emailService.registerationMail(email, password);
+  await reg_mail.sendTo(email);
+  if (!reg_mail) return null;
+
+  const user = await User.create({
+    name: name,
+    email: email,
+    password: hashed_password,
+  });
   return user;
 };
