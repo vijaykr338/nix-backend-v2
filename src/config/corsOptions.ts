@@ -1,5 +1,6 @@
 import { CorsOptions } from "cors";
 import CustomError from "./CustomError";
+import StatusCode from "../api/helpers/httpStatusCode";
 
 export const allowedOrigins = ["http://localhost:5173", "chrome-extension://amknoiejhlmhancpahfcfcfhllgkpbld"];
 
@@ -9,8 +10,8 @@ export const corsOptions: CorsOptions = {
       callback(null, true);
     } else {
       console.log("CORS origin:", origin);
-      callback(new CustomError("Not allowed by CORS", 401));
+      callback(new CustomError("Not allowed by CORS", StatusCode.UNAUTHORIZED));
     }
   },
-  optionsSuccessStatus: 200,
+  optionsSuccessStatus: StatusCode.OK,
 };

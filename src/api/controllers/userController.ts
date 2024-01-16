@@ -3,6 +3,7 @@ import asyncErrorHandler from "../helpers/asyncErrorHandler";
 import CustomError from "../../config/CustomError";
 import mongoose from "mongoose";
 import Permission from "../helpers/permissions";
+import StatusCode from "../helpers/httpStatusCode";
 
 
 export const getAllUsers = asyncErrorHandler(async (req, res) => {
@@ -10,7 +11,7 @@ export const getAllUsers = asyncErrorHandler(async (req, res) => {
 
   const allUsers = await UserService.getAllUsers({});
 
-  res.status(200).json({
+  res.status(StatusCode.OK).json({
     status: "success",
     message: "Users fetched successfully",
     data: allUsers.map((user) => {
@@ -36,7 +37,7 @@ export const getCurrentUserController = asyncErrorHandler(async (req, res, next)
   const user_id = new mongoose.Types.ObjectId(req.body.user_id);
   const user  = await UserService.checkUserExists({ _id: user_id });
   if (!user) {
-    const error = new CustomError("Unable to get current user", 403);
+    const error = new CustomError("Unable to get current user", StatusCode.FORBIDDEN);
     next(error);
   }
   
@@ -47,7 +48,7 @@ export const getCurrentUserController = asyncErrorHandler(async (req, res, next)
 
   const permissions = [...allowed_perms];
 
-  res.status(200).json({
+  res.status(StatusCode.OK).json({
     status: "success",
     message: "User fetched successfully",
     data : {

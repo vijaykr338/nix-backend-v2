@@ -22,6 +22,7 @@ import blogRouter from "./api/routes/blogRoute";
 import logsRouter from "./api/routes/logsRoute";
 import { corsOptions } from "./config/corsOptions";
 import { credentials } from "./api/middlewares/credentials";
+import StatusCode from "./api/helpers/httpStatusCode";
 
 //creating express server
 const app = express();
@@ -64,7 +65,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.all("*", (req, res, next) => {
   const err = new CustomError(
     `Can't find ${req.originalUrl} on the server! Are you sure you wanted to make a ${req.method} request?`,
-    404
+    StatusCode.NOT_FOUND
   );
   //pass it to global error handler
   next(err);
