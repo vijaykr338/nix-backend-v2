@@ -1,12 +1,6 @@
 import "dotenv/config";
 import "colors";
 import compression from "compression";
-
-process.on("uncaughtException", (err) => {
-  console.error(err.name.red.underline, err.message.red.underline);
-  console.error("Uncaught Exception occured! Shutting down...".magenta);
-  process.exit(1);
-});
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import express from "express";
@@ -23,6 +17,14 @@ import logsRouter from "./api/routes/logsRoute";
 import { corsOptions } from "./config/corsOptions";
 import { credentials } from "./api/middlewares/credentials";
 import StatusCode from "./api/helpers/httpStatusCode";
+import Permission from "./api/helpers/permissions";
+
+const API_URL = "/api/v1";
+process.on("uncaughtException", (err) => {
+  console.error(err.name.red.underline, err.message.red.underline);
+  console.error("Uncaught Exception occured! Shutting down...".magenta);
+  process.exit(1);
+});
 
 //creating express server
 const app = express();
@@ -50,11 +52,25 @@ app.get("/", (req, res) => {
 });
 
 //
-app.use("/api/v1/user", userRouter);
-app.use("/api/v1/auth", authRouter);
-app.use("/api/v1/role", roleRouter);
-app.use("/api/v1/blog", blogRouter);
-app.use("/api/v1/logs", logsRouter);
+app.use(`${API_URL}/user`, userRouter);
+app.use(`${API_URL}/auth`, authRouter);
+app.use(`${API_URL}/role`, roleRouter);
+app.use(`${API_URL}/blog`, blogRouter);
+app.use(`${API_URL}/logs`, logsRouter);
+app.all(`${API_URL}/permissions`, (req, res) => {
+  const all_permissions = Object
+    .entries(Permission)
+    .filter(([, perm_id]) => typeof perm_id === "number")
+    .reduce((acc, [perm_name, perm_id]) => {
+      acc[perm_id] = perm_name;
+      return acc;
+    }, {});
+  res.status(StatusCode.OK).json({
+    status: "success",
+    message: "All permissions retrieved successfully",
+    data: all_permissions,
+  });
+});
 
 
 //middleware for swagger
