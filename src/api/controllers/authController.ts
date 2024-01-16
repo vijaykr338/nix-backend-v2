@@ -6,6 +6,8 @@ import CustomError from "../../config/CustomError";
 import passwordResetMail from "../services/emailService";
 import * as UserService from "../services/userService";
 import mongoose from "mongoose";
+import StatusCode from "../helpers/httpStatusCode";
+
 
 const makeAccessToken = (email: string, user_id: mongoose.Schema.Types.ObjectId) => {
   return jwt.sign({ email, user_id }, process.env.ACCESS_SECRET_KEY, {
@@ -26,29 +28,29 @@ const makeRefreshToken = (email: string, user_id: mongoose.Schema.Types.ObjectId
 
 export const refresh = asyncErrorHandler(async (req, res, next) => {
   const cookies = req.cookies;
-  if (!cookies) return next(new CustomError("User not logged in or cookies disabled!", 401));
+  if (!cookies) return next(new CustomError("User not logged in or cookies disabled!", StatusCode.UNAUTHORIZED));
 
   const refreshToken = cookies.jwt as string;
 
   if (!refreshToken) {
-    const err = new CustomError("No refreshToken found! Please login again!", 401);
+    const err = new CustomError("No refreshToken found! Please login again!", StatusCode.UNAUTHORIZED);
     return next(err);
   }
 
   const foundUser = await UserService.checkUserExists({ refreshToken: refreshToken });
 
   if (!foundUser) {
-    return next(new CustomError("Invalid refresh token", 403));
+    return next(new CustomError("Invalid refresh token", StatusCode.FORBIDDEN));
   }
 
   jwt.verify(refreshToken, process.env.REFRESH_SECRET_KEY, (err, decoded: JwtPayload) => {
     if (err || foundUser.email != decoded.email) {
-      return next(new CustomError("Invalid refresh token", 403));
+      return next(new CustomError("Invalid refresh token", StatusCode.FORBIDDEN));
     }
 
     const newAccessToken = makeAccessToken(foundUser.email, foundUser._id);
 
-    res.status(200).json({
+    res.status(StatusCode.OK).json({
       status: "success",
       message: "AccessToken generated successfully",
       data: {
@@ -68,7 +70,7 @@ export const signup = asyncErrorHandler(async (req, res, next) => {
   if (!email || !name) {
     const error = new CustomError(
       "Please provide name and email ID to sign up.",
-      400
+      StatusCode.BAD_REQUEST
     );
     return next(error);
   }
@@ -77,13 +79,13 @@ export const signup = asyncErrorHandler(async (req, res, next) => {
   console.log(isDuplicate);
 
   if (isDuplicate) {
-    const error = new CustomError("Email already registered", 406);
+    const error = new CustomError("Email already registered", StatusCode.NOT_ACCEPTABLE);
     return next(error);
   }
 
   await UserService.createNewUser(name, email);
-  
-  res.status(201).json({
+
+  res.status(StatusCode.CREATED).json({
     status: "success",
     message: "User successfully created!",
     data: {
@@ -104,7 +106,7 @@ export const login = asyncErrorHandler(async (req, res, next) => {
   if (!email || !password) {
     const error = new CustomError(
       "Please provide email ID and Password for login.",
-      400
+      StatusCode.BAD_REQUEST
     );
     return next(error);
   }
@@ -113,7 +115,7 @@ export const login = asyncErrorHandler(async (req, res, next) => {
   const foundUser = await UserService.checkUserExists({ email: email });
 
   if (!foundUser) {
-    const error = new CustomError("No user exists with this email.", 401);
+    const error = new CustomError("No user exists with this email.", StatusCode.UNAUTHORIZED);
     return next(error);
   }
 
@@ -147,7 +149,7 @@ export const login = asyncErrorHandler(async (req, res, next) => {
       },
     });
   } else {
-    const error = new CustomError("Password is wrong!", 401);
+    const error = new CustomError("Password is wrong!", StatusCode.UNAUTHORIZED);
     return next(error);
   }
 });
@@ -163,17 +165,17 @@ export const changePassword = asyncErrorHandler(async (req, res, next) => {
   }
   const body = req.body as ChangePasswordRequest;
   if (!body.email || !body.old_password || !body.new_password) {
-    const err = new CustomError("Invalid request", 400);
+    const err = new CustomError("Invalid request", StatusCode.BAD_REQUEST);
     return next(err);
   }
 
   const user = await UserService.checkUserExists({ email: body.email });
   if (!user) {
-    const err = new CustomError("Invalid email", 400);
+    const err = new CustomError("Invalid email", StatusCode.BAD_REQUEST);
     return next(err);
   }
   if (!bcrypt.compare(body.old_password, user.password)) {
-    const err = new CustomError("Invalid old password", 400);
+    const err = new CustomError("Invalid old password", StatusCode.BAD_REQUEST);
     return next(err);
   }
 
@@ -182,7 +184,7 @@ export const changePassword = asyncErrorHandler(async (req, res, next) => {
   await user.save();
 
   console.log("Password changed successfully for user", user);
-  res.status(200).json({
+  res.status(StatusCode.OK).json({
     status: "success",
     message: "Password changed successfully",
     data: { user }
@@ -195,7 +197,7 @@ export const forgotPassword = asyncErrorHandler(async (req, res, next) => {
   const user = await UserService.checkUserExists({ email: email });
 
   if (!user) {
-    const error = new CustomError("No user exists with this email.", 404);
+    const error = new CustomError("No user exists with this email.", StatusCode.NOT_FOUND);
     return next(error);
   }
 
@@ -226,7 +228,7 @@ export const forgotPassword = asyncErrorHandler(async (req, res, next) => {
   try {
     await mail.sendTo(email);
     console.log("Password reset email sent");
-    res.status(200).json(
+    res.status(StatusCode.OK).json(
       {
         status: "success",
         message: "Password reset link successfully sent."
@@ -235,7 +237,7 @@ export const forgotPassword = asyncErrorHandler(async (req, res, next) => {
   } catch (err) {
     const error = new CustomError(
       "There was an error in sending password reset email. Please try again.",
-      500
+      StatusCode.INTERNAL_SERVER_ERROR
     );
     return next(error);
   }
@@ -256,7 +258,7 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
   const user = await UserService.resetUserPassword(token);
 
   if (!user) {
-    const error = new CustomError("Token is invalid or has expired", 400);
+    const error = new CustomError("Token is invalid or has expired", StatusCode.BAD_REQUEST);
     return next(error);
   }
 
@@ -270,13 +272,13 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
 
   console.log("Password reset successfully for user", user);
 
-  res.status(200).json({
+  res.status(StatusCode.OK).json({
     status: "success",
     data: {
       accessToken,
       refreshToken,
       email: user.email,
-      name : user.name,
+      name: user.name,
     }
   });
 });
@@ -290,7 +292,7 @@ export const logout = asyncErrorHandler(async (req, res, _next) => {
 
   //if no refreshToken present
   if (!cookies?.jwt) {
-    return res.sendStatus(204);
+    return res.sendStatus(StatusCode.NO_CONTENT);
   }
 
   const refreshToken = cookies.jwt as string;
@@ -299,7 +301,7 @@ export const logout = asyncErrorHandler(async (req, res, _next) => {
   const foundUser = await UserService.checkUserExists({ refreshToken: refreshToken });
   if (!foundUser) {
     res.clearCookie("jwt", { httpOnly: true, sameSite: "none", secure: true });
-    return res.sendStatus(204);
+    return res.sendStatus(StatusCode.NO_CONTENT);
   }
 
   // delete refreshToken present in db
@@ -307,5 +309,5 @@ export const logout = asyncErrorHandler(async (req, res, _next) => {
   res.clearCookie("jwt", { httpOnly: true, sameSite: "none", secure: true });
 
   console.log("User logged out successfully", foundUser);
-  return res.sendStatus(204);
+  return res.sendStatus(StatusCode.NO_CONTENT);
 });

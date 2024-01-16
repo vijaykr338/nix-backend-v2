@@ -2,6 +2,7 @@ import asyncErrorHandler from "../helpers/asyncErrorHandler";
 import CustomError from "../../config/CustomError";
 import Permission from "../helpers/permissions";
 import * as UserService from "../services/userService";
+import StatusCode from "../helpers/httpStatusCode";
 
 
 /**
@@ -21,7 +22,7 @@ export default function protected_route(permissions_required: Permission[]) {
     }
     const email = req.body.email;
     if (!email) {
-      const err = new CustomError("Not authorized", 401);
+      const err = new CustomError("Not authorized", StatusCode.UNAUTHORIZED);
       return next(err);
     }
     const user = await UserService.checkUserExists({ email: email });
@@ -31,14 +32,14 @@ export default function protected_route(permissions_required: Permission[]) {
         * before the entry was deleted from db
         * must be a bad user
         */
-      const err = new CustomError("Cannot find your login in database! hehe", 401);
+      const err = new CustomError("Cannot find your login in database! hehe", StatusCode.UNAUTHORIZED);
       return next(err);
     }
 
     const role = user.role_id;
 
     if (!role) {
-      const err = new CustomError(`Invalid role! ${role}`, 409);
+      const err = new CustomError(`Invalid role! ${role}`, StatusCode.CONFLICT);
       return next(err);
     }
     if (role.id?.toString() === process.env.SUPERUSER_ROLE_ID) {
@@ -62,7 +63,7 @@ export default function protected_route(permissions_required: Permission[]) {
       return next();
     }
 
-    const err = new CustomError("You do not have permission to access this setting.", 403);
+    const err = new CustomError("You do not have permission to access this setting.", StatusCode.FORBIDDEN);
     return next(err);
   });
 

@@ -3,6 +3,7 @@ import CustomError from "../../config/CustomError";
 import { Blog, BlogStatus } from "../models/blogModel";
 import mongoose from "mongoose";
 import { IUser } from "../models/userModel";
+import StatusCode from "../helpers/httpStatusCode";
 
 
 /**
@@ -18,11 +19,11 @@ export const getAllBlogsController = asyncErrorHandler(async (req, res, next) =>
     .lean();
 
   if (!blogs || blogs.length === 0) {
-    const error = new CustomError("No blogs found", 201);
+    const error = new CustomError("No blogs found", StatusCode.NOT_FOUND);
     return next(error);
   }
 
-  res.status(200).json({
+  res.status(StatusCode.OK).json({
     status: "success",
     message: "Blogs fetched successfully",
     data: blogs
@@ -40,7 +41,7 @@ export const createBlogController = asyncErrorHandler(async (req, res, next) => 
   // umm ok we allow empty strings here, but ok itna dimag kon lagata hai
 
   if (missingField) {
-    const error = new CustomError(`Please enter ${missingField.replace("_", " ")}`, 400);
+    const error = new CustomError(`Please enter ${missingField.replace("_", " ")}`, StatusCode.BAD_REQUEST);
     return next(error);
   }
 
@@ -57,7 +58,7 @@ export const createBlogController = asyncErrorHandler(async (req, res, next) => 
   const blog = new Blog(newBlogData);
   await blog.save();
 
-  res.status(200).json({
+  res.status(StatusCode.OK).json({
     status: "success",
     message: "Blog created successfully",
     data: blog
@@ -73,11 +74,11 @@ export const updateBlogController = asyncErrorHandler(async (req, res, next) => 
   const blog = await Blog.findByIdAndUpdate({ _id: new mongoose.Types.ObjectId(id) }, { ...req.body }, { new: true });
 
   if (!blog) {
-    const error = new CustomError("Blog not found", 404);
+    const error = new CustomError("Blog not found", StatusCode.NOT_FOUND);
     return next(error);
   }
 
-  res.status(200).json({
+  res.status(StatusCode.OK).json({
     status: "success",
     message: "Blog updated successfully",
     data: blog
@@ -100,7 +101,7 @@ export const publishBlogController = asyncErrorHandler(async (req, res, _next) =
     { new: true }
   );
 
-  res.status(200).json({
+  res.status(StatusCode.OK).json({
     status: "success",
     message: "Blog published successfully",
     data: updatedBlog
@@ -121,18 +122,18 @@ export const approveBlogController = asyncErrorHandler(async (req, res, next) =>
   const { id } = req.params;
   const {time} = req.body;
   if (!id || !time) {
-    const error = new CustomError("Invalid request", 400);
+    const error = new CustomError("Invalid request", StatusCode.BAD_REQUEST);
     return next(error);
   }
   const publish_timestamp = new Date(time);
   if (!publish_timestamp) {
-    const error = new CustomError("Invalid request! Time couldn't be parsed", 400);
+    const error = new CustomError("Invalid request! Time couldn't be parsed", StatusCode.BAD_REQUEST);
     return next(error);
   }
   const currentDate = new Date();
   if (currentDate > publish_timestamp) {
     // i am a teapot
-    const error = new CustomError("You can't change the past buddy, that's how life is. The puslish timings should be somewhere in the future.", 418);
+    const error = new CustomError("You can't change the past buddy, that's how life is. The puslish timings should be somewhere in the future.", StatusCode.IM_A_TEAPOT);
     return next(error);
   }
 
@@ -144,7 +145,7 @@ export const approveBlogController = asyncErrorHandler(async (req, res, next) =>
     },
     { new: true }
   );
-  res.status(200).json({
+  res.status(StatusCode.OK).json({
     status: "success",
     message: "Blog will soon be published",
     data: updatedBlog
@@ -159,7 +160,7 @@ export const approveBlogController = asyncErrorHandler(async (req, res, next) =>
  */
 export const refreshBlogStatus = asyncErrorHandler(async (_req, res, _next) => {
   const updation = await refresh_blog_status();
-  res.status(200).json({
+  res.status(StatusCode.OK).json({
     status: "success",
     message: "Blog status refreshed successfully",
     data: updation

@@ -1,5 +1,6 @@
 export default function generateRandomPassword(length: number): string {
-  const characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  // removed certain characters to avoid confusion due to font
+  const characters = "abcdefghkmnpqrstuvwxyzABCDEFGHKMNPRSTUVWXYZ123456789";
   let password = "";
     
   for (let i = 0; i < length; i++) {

@@ -4,6 +4,7 @@
 import { NextFunction, Request, Response } from "express";
 import CustomError from "../../config/CustomError";
 import { CastError, Error } from "mongoose";
+import StatusCode from "./httpStatusCode";
 
 const devErrors = (res: Response, error: CustomError) => {
   console.error(error);
@@ -17,14 +18,14 @@ const devErrors = (res: Response, error: CustomError) => {
 
 const castErrorHandler = (err: CastError) => {
   const msg = `Invalid value for ${err.path}: ${err.value}!`;
-  return new CustomError(msg, 400);
+  return new CustomError(msg, StatusCode.BAD_REQUEST);
 };
 
 const duplicateKeyErrorHandler = (err: any) => {
   const name = err.keyValue.name;
   const msg = `There is already a movie with name ${name}. Please use another name!`;
 
-  return new CustomError(msg, 400);
+  return new CustomError(msg, StatusCode.BAD_REQUEST);
 };
 
 const validationErrorHandler = (err: any) => {
@@ -32,7 +33,7 @@ const validationErrorHandler = (err: any) => {
   const errorMessages = errors.join(". ");
   const msg = `Invalid input data: ${errorMessages}`;
 
-  return new CustomError(msg, 400);
+  return new CustomError(msg, StatusCode.BAD_REQUEST);
 };
 
 const prodErrors = (res: Response, error: CustomError | Error) => {
@@ -43,7 +44,7 @@ const prodErrors = (res: Response, error: CustomError | Error) => {
       message: error.message
     });
   } else {
-    res.status(500).json({
+    res.status(StatusCode.INTERNAL_SERVER_ERROR).json({
       status: "error",
       message: "Something went wrong! Please try again later."
     });
@@ -53,7 +54,7 @@ const prodErrors = (res: Response, error: CustomError | Error) => {
 
 
 export default function globalErrorHandler(error: any, _req: Request, res: Response, _next: NextFunction) {
-  error.statusCode = error.statusCode || 500;
+  error.statusCode = error.statusCode || StatusCode.INTERNAL_SERVER_ERROR;
   error.status = error.status || "error";
 
   if (process.env.NODE_ENV === "development") {
