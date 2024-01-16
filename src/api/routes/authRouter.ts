@@ -16,11 +16,13 @@ const router = express.Router();
 const signup_protect = protected_route([Permission.CreateProfile]);
 
 router.route("/signup").post(protect, signup_protect, signup);
-router.route("/login").post(login);
+router.post("/login", login);
 router.get("/refresh", refresh);
 router.get("/logout", logout);
 
 router.post("/forgotPassword", forgotPassword);
+
+// wrong implementation rn
 router.patch("/resetPassword/:token", resetPassword);
 
 export default router;
