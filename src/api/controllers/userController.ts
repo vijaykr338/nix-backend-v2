@@ -28,7 +28,7 @@ export const getAllUsers = asyncErrorHandler(async (req, res) => {
         name: user.name,
         email: user.email,
         permissions: permissions,
-        role: user.role_id.name,
+        role: user.role_id?.name,
         created_at: user.date_joined,
       };
     }),
