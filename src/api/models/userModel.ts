@@ -10,6 +10,7 @@ export interface IUser extends Document {
   role_id: mongoose.Schema.Types.ObjectId;
   extra_permissions?: Permission[];
   removed_permissions?: Permission[];
+  date_joined: Date;
 }
 
 const userSchema = new Schema<IUser>({
@@ -45,7 +46,15 @@ const userSchema = new Schema<IUser>({
   removed_permissions: {
     type: [Number],
     enum: Object.values(Permission),
+  },
+  date_joined: {
+    type: Date,
   }
+}, {
+  timestamps: {
+    createdAt: "date_joined",
+    updatedAt: false,
+  },
 });
 
 const User = mongoose.model("user", userSchema);

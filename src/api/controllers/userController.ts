@@ -28,6 +28,8 @@ export const getAllUsers = asyncErrorHandler(async (req, res) => {
         name: user.name,
         email: user.email,
         permissions: permissions,
+        role_id: user.role_id,
+        created_at: user.date_joined,
       };
     }),
   });
@@ -35,12 +37,12 @@ export const getAllUsers = asyncErrorHandler(async (req, res) => {
 
 export const getCurrentUserController = asyncErrorHandler(async (req, res, next) => {
   const user_id = new mongoose.Types.ObjectId(req.body.user_id);
-  const user  = await UserService.checkUserExists({ _id: user_id });
+  const user = await UserService.checkUserExists({ _id: user_id });
   if (!user) {
     const error = new CustomError("Unable to get current user", StatusCode.FORBIDDEN);
     next(error);
   }
-  
+
   const allowed_perms: Set<Permission> = new Set();
   user.extra_permissions?.forEach((perm) => allowed_perms.add(perm));
   user?.role_id?.permissions?.forEach((perm) => allowed_perms.add(perm));
@@ -51,7 +53,7 @@ export const getCurrentUserController = asyncErrorHandler(async (req, res, next)
   res.status(StatusCode.OK).json({
     status: "success",
     message: "User fetched successfully",
-    data : {
+    data: {
       permissions: permissions,
       id: user._id,
       name: user.name,
