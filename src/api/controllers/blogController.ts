@@ -50,9 +50,12 @@ export const createBlogController = asyncErrorHandler(async (req, res, next) => 
   // but who and why someone will do that so let's keep it the way it is
   const user_id = new mongoose.Types.ObjectId(req.body.user_id);
 
+  const saveAsDraft = req.body.saveAsDraft === true;
+
   const newBlogData = {
     ...req.body,
-    user: user_id
+    user: user_id,
+    status: saveAsDraft ? BlogStatus.Draft : BlogStatus.Pending
   };
 
   const blog = new Blog(newBlogData);
@@ -60,7 +63,7 @@ export const createBlogController = asyncErrorHandler(async (req, res, next) => 
 
   res.status(StatusCode.OK).json({
     status: "success",
-    message: "Blog created successfully",
+    message: saveAsDraft ? "Blog saved as draft successfully" : "Blog created successfully",
     data: blog
   });
 });
@@ -120,7 +123,7 @@ export const publishBlogController = asyncErrorHandler(async (req, res, _next) =
  */
 export const approveBlogController = asyncErrorHandler(async (req, res, next) => {
   const { id } = req.params;
-  const {time} = req.body;
+  const { time } = req.body;
   if (!id || !time) {
     const error = new CustomError("Invalid request", StatusCode.BAD_REQUEST);
     return next(error);
@@ -181,3 +184,20 @@ async function refresh_blog_status(): Promise<import("mongoose").UpdateWriteOpRe
   }
   return refresh_result;
 }
+
+export const submitForApprovalController = asyncErrorHandler(async (req, res, next) => {
+  const { id } = req.params;
+  const updatedBlog = await Blog.findByIdAndUpdate(
+    { _id: new mongoose.Types.ObjectId(id) },
+    {
+      status: BlogStatus.Pending,
+    },
+    { new: true }
+  );
+
+  res.status(StatusCode.OK).json({
+    status: "success",
+    message: "Blog submitted for approval",
+    data: updatedBlog
+  });
+});

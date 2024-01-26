@@ -6,6 +6,7 @@ export enum BlogStatus {
   Published = 1,
   // auto publish at a given time
   Approved = 2,
+  Draft = 3,
 }
 
 export interface IBlog extends Document {
@@ -22,6 +23,8 @@ export interface IBlog extends Document {
   meta_title: string;
   meta_description: string;
   published_at: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 const blogSchema = new Schema<IBlog>({
@@ -79,7 +82,18 @@ const blogSchema = new Schema<IBlog>({
     type: Date,
     default: null,
   },
-}, { timestamps: true });
+  createdAt: {
+    type: Date,
+  },
+  updatedAt: {
+    type: Date,
+  }
+}, {
+  timestamps: {
+    createdAt: "createdAt",
+    updatedAt: "updatedAt"
+  }
+});
 
 const Blog = mongoose.model<IBlog>("blog", blogSchema);
 
