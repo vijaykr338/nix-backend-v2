@@ -1,5 +1,5 @@
-import mongoose, { Document, Schema } from 'mongoose';
-import Permission from '../helpers/permissions';
+import mongoose, { Document, Schema } from "mongoose";
+import Permission from "../helpers/permissions";
 
 export interface IRole extends Document {
   name: string;
@@ -9,7 +9,7 @@ export interface IRole extends Document {
 const rolesSchema = new Schema<IRole>({
   name: {
     type: String,
-    required: [true, 'Enter role name'],
+    required: [true, "Enter role name"],
   },
   permissions: {
     type: [Number],
@@ -29,10 +29,10 @@ const rolesSchema = new Schema<IRole>({
       Permission.PublishBlog,
       Permission.AccessLogs,
     ],
-    required: [true, 'Enter permissions'],
+    required: [true, "Enter permissions"],
   },
 });
 
-const Role = mongoose.model<IRole>('role', rolesSchema);
+const Role = mongoose.model<IRole>("role", rolesSchema);
 
 export { Role };

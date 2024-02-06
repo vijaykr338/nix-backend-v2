@@ -16,6 +16,7 @@ enum Permission {
   DeleteBlog = 11,
   PublishBlog = 12,
   AccessLogs = 13,
+  UploadImage = 14,
 }
 
 export default Permission;

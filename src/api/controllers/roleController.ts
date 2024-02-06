@@ -8,18 +8,18 @@ export const add_or_update_role = asyncErrorHandler(async (req, res, next) => {
   const data = req.body;
   const { role_name: name, permissions, role_id: id } = data;
 
-  console.log('Permissions:', permissions);
+  console.log("Permissions:", permissions);
 
   // Check if id is provided for updating an existing role
   if (id) {
     // Update existing role with id
     // todo: should be under service logic
     const role = await Role.updateOne({ _id: id }, { name, permissions });
-    console.log('Role updated', role);
+    console.log("Role updated", role);
 
     return res.status(StatusCode.OK).json({
-      status: 'success',
-      message: 'Role updated successfully',
+      status: "success",
+      message: "Role updated successfully",
       role,
     });
   }
@@ -33,7 +33,7 @@ export const add_or_update_role = asyncErrorHandler(async (req, res, next) => {
 
     if (!isPermissionsValid) {
       const error = new CustomError(
-        'Invalid permission value in the array.',
+        "Invalid permission value in the array.",
         StatusCode.BAD_REQUEST
       );
       return next(error);
@@ -42,18 +42,18 @@ export const add_or_update_role = asyncErrorHandler(async (req, res, next) => {
     // Create a new role
     // todo: should be under service logic
     const newRole = await Role.create({ name, permissions });
-    console.log('Role created', newRole);
+    console.log("Role created", newRole);
 
     return res.status(StatusCode.CREATED).json({
-      status: 'success',
-      message: 'Role created successfully',
+      status: "success",
+      message: "Role created successfully",
       data: newRole,
     });
   }
 
   // If neither id nor (name and permissions) is provided, return an error
   const error = new CustomError(
-    'Please provide either role_id for updating or both role_name and permissions for creating a role.',
+    "Please provide either role_id for updating or both role_name and permissions for creating a role.",
     StatusCode.BAD_REQUEST
   );
   return next(error);
