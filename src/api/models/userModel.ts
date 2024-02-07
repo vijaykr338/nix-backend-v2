@@ -41,11 +41,11 @@ const userSchema = new Schema<IUser>({
   },
   extra_permissions: {
     type: [Number],
-    enum: Object.values(Permission),
+    enum: Object.values(Permission).filter(value => typeof value === "number"),
   },
   removed_permissions: {
     type: [Number],
-    enum: Object.values(Permission),
+    enum: Object.values(Permission).filter(value => typeof value === "number"),
   },
   date_joined: {
     type: Date,

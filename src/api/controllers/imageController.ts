@@ -25,17 +25,17 @@ export const upload_image = asyncErrorHandler(async (req, res, next) => {
     return next(err);
   }
 
-  console.log("Uploading image" , req_file);
+  console.log("Uploading image", req_file);
   const image = sharp(req_file.path);
   const image_png = image.png();
   if (is_thumbnail) {
-    const thumbnail = await generate_thumbnail(image_png, req_file.filename);
+    await generate_thumbnail(image_png, req_file.filename);
 
     return res.status(201).json({
       success: true,
       message: "Image uploaded successfully",
       data: {
-        thumbnail: thumbnail.toString("base64"),
+        name: req_file.filename,
       }
     });
   }
@@ -44,12 +44,11 @@ export const upload_image = asyncErrorHandler(async (req, res, next) => {
     success: true,
     message: "Image uploaded successfully",
   });
-  res.contentType("png").send(await image_png.toBuffer());
 });
 
 export const get_image = asyncErrorHandler(async (req, res, next) => {
-  const { filename, thumbnail } = req.body;
-
+  const { filename } = req.params;
+  const { thumbnail } = req.query;
   if (!filename) {
     return next(new CustomError("Filename is required", StatusCode.BAD_REQUEST));
   }
@@ -65,11 +64,15 @@ export const get_image = asyncErrorHandler(async (req, res, next) => {
       const thumbnail = await generate_thumbnail(image_png, filename);
       res.contentType("png").send(thumbnail);
     }
+  } else {
+    const image = sharp(`uploads/${filename}`);
+    const image_png_buffer = await image.png().toBuffer();
+    res.contentType("png").send(image_png_buffer);
   }
 });
 
 export const delete_image = asyncErrorHandler(async (req, res, next) => {
-  const { filename } = req.body;
+  const { filename } = req.params;
 
   if (!filename) {
     return next(new CustomError("Filename is required", StatusCode.BAD_REQUEST));
@@ -94,11 +97,9 @@ export const delete_image = asyncErrorHandler(async (req, res, next) => {
   });
 });
 
-// todo: Upadate an image in place
 export const update_image = asyncErrorHandler(async (req, res, next) => {
-  // not implemented
   const req_file = req.file;
-  if(!req_file) {
+  if (!req_file) {
     const err = new CustomError("Please upload an image and with a proper extension", StatusCode.BAD_REQUEST);
     return next(err);
   }
@@ -107,16 +108,15 @@ export const update_image = asyncErrorHandler(async (req, res, next) => {
   if (!filename) {
     return next(new CustomError("Filename to be updated is required", StatusCode.BAD_REQUEST));
   }
-
-  const image = sharp(req_file.path);
-  const image_png = image.png();
-  const thumbnail = await generate_thumbnail(image_png, filename);
+  // check if thumbnail exists and update it if it does
+  const thumbnail_path = `thumbnails/${filename}`;
+  await unlink(thumbnail_path).then(() => generate_thumbnail(sharp(req_file.path), filename)).catch(() => console.log("No thumbnail found for image, hence not updated", filename));
 
   res.status(200).json({
     success: true,
     message: "Image updated successfully",
     data: {
-      thumbnail: thumbnail.toString("base64"),
+      name: req_file.filename,
     }
   });
 });

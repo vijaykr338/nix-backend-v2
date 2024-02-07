@@ -9,7 +9,7 @@
 
 <body>
     <p id="feedback-message"></p>
-    <form action="http://localhost:8080/echo" method="POST" id="uploadForm" enctype="multipart/form-data">
+    <form action="http://localhost:8080/api/v1/images/upload?thumbnail=true" method="POST" id="uploadForm" enctype="multipart/form-data">
         <label for="File">File: </label>
         <input type="file" name="avatar" />
         <br />
