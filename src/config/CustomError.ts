@@ -2,8 +2,10 @@
 
 //extend native Error object , according to our need, whenever need to create a error , use this CustomError
 
+import StatusCode from "../api/helpers/httpStatusCode";
+
 class CustomError extends Error {
-  statusCode: number;
+  statusCode: StatusCode;
   status: string;
   isOperational: boolean;
 

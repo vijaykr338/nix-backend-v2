@@ -14,6 +14,7 @@ import authRouter from "./api/routes/authRouter";
 import roleRouter from "./api/routes/roleRoute";
 import blogRouter from "./api/routes/blogRoute";
 import logsRouter from "./api/routes/logsRoute";
+import imageRouter from "./api/routes/imageRouter";
 import { corsOptions } from "./config/corsOptions";
 import { credentials } from "./api/middlewares/credentials";
 import StatusCode from "./api/helpers/httpStatusCode";
@@ -57,6 +58,7 @@ app.use(`${API_URL}/auth`, authRouter);
 app.use(`${API_URL}/role`, roleRouter);
 app.use(`${API_URL}/blog`, blogRouter);
 app.use(`${API_URL}/logs`, logsRouter);
+app.use(`${API_URL}/images`, imageRouter);
 app.all(`${API_URL}/permissions`, (req, res) => {
   const all_permissions = Object
     .entries(Permission)

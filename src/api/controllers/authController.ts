@@ -10,13 +10,21 @@ import StatusCode from "../helpers/httpStatusCode";
 
 
 const makeAccessToken = (email: string, user_id: mongoose.Schema.Types.ObjectId) => {
-  return jwt.sign({ email, user_id }, process.env.ACCESS_SECRET_KEY, {
+  const access_secret_key = process.env.ACCESS_SECRET_KEY;
+  if (!access_secret_key) {
+    throw Error("Access secret key not found in env");
+  }
+  return jwt.sign({ email, user_id }, access_secret_key, {
     expiresIn: "1d",
   });
 };
 
 const makeRefreshToken = (email: string, user_id: mongoose.Schema.Types.ObjectId) => {
-  return jwt.sign({ email, user_id }, process.env.REFRESH_SECRET_KEY, {
+  const refresh_secret_key = process.env.REFRESH_SECRET_KEY;
+  if (!refresh_secret_key) {
+    throw Error("Refresh secret key not found in env");
+  }
+  return jwt.sign({ email, user_id }, refresh_secret_key, {
     expiresIn: "7d",
   });
 };
@@ -42,8 +50,12 @@ export const refresh = asyncErrorHandler(async (req, res, next) => {
   if (!foundUser) {
     return next(new CustomError("Invalid refresh token", StatusCode.FORBIDDEN));
   }
+  const refresh_secret_key = process.env.REFRESH_SECRET_KEY;
+  if (!refresh_secret_key) {
+    return next(new CustomError("Refresh secret key not found in env", StatusCode.INTERNAL_SERVER_ERROR));
+  }
 
-  jwt.verify(refreshToken, process.env.REFRESH_SECRET_KEY, (err, decoded: JwtPayload) => {
+  jwt.verify(refreshToken, refresh_secret_key, (err, decoded: JwtPayload) => {
     if (err || foundUser.email != decoded.email) {
       return next(new CustomError("Invalid refresh token", StatusCode.FORBIDDEN));
     }

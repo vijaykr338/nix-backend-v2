@@ -40,7 +40,7 @@ export const getCurrentUserController = asyncErrorHandler(async (req, res, next)
   const user = await UserService.checkUserExists({ _id: user_id });
   if (!user) {
     const error = new CustomError("Unable to get current user", StatusCode.FORBIDDEN);
-    next(error);
+    return next(error);
   }
 
   const allowed_perms: Set<Permission> = new Set();

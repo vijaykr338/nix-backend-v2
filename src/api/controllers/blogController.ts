@@ -80,12 +80,16 @@ export const updateBlogController = asyncErrorHandler(async (req, res, next) => 
     const error = new CustomError("Blog not found", StatusCode.NOT_FOUND);
     return next(error);
   }
-
-  res.status(StatusCode.OK).json({
-    status: "success",
-    message: "Blog updated successfully",
-    data: blog
-  });
+  if (blog.status == BlogStatus.Draft) {
+    res.status(StatusCode.OK).json({
+      status: "success",
+      message: "Blog updated successfully",
+      data: blog
+    });
+  } else {
+    const error = new CustomError("Only drafts can be updated", StatusCode.NOT_ACCEPTABLE);
+    return next(error);
+  }
 });
 
 /**
@@ -185,7 +189,7 @@ async function refresh_blog_status(): Promise<import("mongoose").UpdateWriteOpRe
   return refresh_result;
 }
 
-export const submitForApprovalController = asyncErrorHandler(async (req, res, next) => {
+export const submitForApprovalController = asyncErrorHandler(async (req, res, _next) => {
   const { id } = req.params;
   const updatedBlog = await Blog.findByIdAndUpdate(
     { _id: new mongoose.Types.ObjectId(id) },
