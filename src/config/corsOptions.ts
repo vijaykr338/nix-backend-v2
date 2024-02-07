@@ -3,6 +3,8 @@ import CustomError from "./CustomError";
 import StatusCode from "../api/helpers/httpStatusCode";
 
 export const allowedOrigins = [
+  // nix frontend origin
+  "http://134.209.159.97:5173",
   // frontend localhost origin
   "http://localhost:5173",
   // vs code live server plugin port
