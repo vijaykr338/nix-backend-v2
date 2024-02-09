@@ -29,6 +29,9 @@ export const getAllUsers = asyncErrorHandler(async (req, res) => {
         email: user.email,
         permissions: permissions,
         role: user.role_id?.name,
+        role_id: user.role_id?._id,
+        avatar: user.avatar,
+        bio: user.bio,
         created_at: user.date_joined,
       };
     }),
@@ -58,6 +61,9 @@ export const getCurrentUserController = asyncErrorHandler(async (req, res, next)
       id: user._id,
       name: user.name,
       email: user.email,
+      avatar: user.avatar,
+      bio: user.bio,
+      role: user.role_id?.name,
     }
   });
 });

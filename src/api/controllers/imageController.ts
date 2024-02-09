@@ -11,7 +11,7 @@ const unlink = util.promisify(fs.unlink);
 
 const generate_thumbnail = async (image: sharp.Sharp, filename: string) => {
   console.log("Creating thumbnail for", filename);
-  const thumbnail = await image.resize(50, 50).toBuffer();
+  const thumbnail = await image.resize(128, 128, { fit: "inside" }).toBuffer();
   await writeFile(`thumbnails/${filename}`, thumbnail);
   return thumbnail;
 };
@@ -66,7 +66,19 @@ export const get_image = asyncErrorHandler(async (req, res, next) => {
     }
   } else {
     const image = sharp(`uploads/${filename}`);
-    const image_png_buffer = await image.png().toBuffer();
+    const image_png = image.png();
+    try {
+      const size = thumbnail && (parseInt(thumbnail.toString()));
+      if (size) {
+        const image_resized = image.resize(size, size, { fit: "inside" });
+        const image_png_resized = image_resized.png();
+        const image_png_resized_buff = await image_png_resized.toBuffer();
+        return res.contentType("png").send(image_png_resized_buff);
+      }
+    } catch (err) {
+      console.error("Error resizing image", err);
+    }
+    const image_png_buffer = await image_png.toBuffer();
     res.contentType("png").send(image_png_buffer);
   }
 });
