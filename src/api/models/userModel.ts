@@ -8,6 +8,8 @@ export interface IUser extends Document {
   refreshToken?: string;
   passwordResetToken?: string;
   role_id: mongoose.Schema.Types.ObjectId;
+  avatar: string;
+  bio: string;
   extra_permissions?: Permission[];
   removed_permissions?: Permission[];
   date_joined: Date;
@@ -22,6 +24,14 @@ const userSchema = new Schema<IUser>({
     type: String,
     required: [true, "Please add an email"],
     unique: true,
+  },
+  avatar: {
+    type: String,
+    default: "dummy.jpg",
+  },
+  bio: {
+    type: String,
+    default: "error 404: bio not found :)",
   },
   password: {
     type: String,
