@@ -66,7 +66,19 @@ export const get_image = asyncErrorHandler(async (req, res, next) => {
     }
   } else {
     const image = sharp(`uploads/${filename}`);
-    const image_png_buffer = await image.png().toBuffer();
+    const image_png = image.png();
+    try {
+      const size = thumbnail && (parseInt(thumbnail.toString()));
+      if (size) {
+        const image_resized = image.resize(size, size);
+        const image_png_resized = image_resized.png();
+        const image_png_resized_buff = await image_png_resized.toBuffer();
+        return res.contentType("png").send(image_png_resized_buff);
+      }
+    } catch (err) {
+      console.error("Error resizing image", err);
+    }
+    const image_png_buffer = await image_png.toBuffer();
     res.contentType("png").send(image_png_buffer);
   }
 });
