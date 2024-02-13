@@ -3,6 +3,7 @@ import asyncErrorHandler from "../helpers/asyncErrorHandler";
 import StatusCode from "../helpers/httpStatusCode";
 import { Role } from "../models/rolesModel";
 import Permission from "../helpers/permissions";
+import { User } from "../models/userModel";
 
 export const add_or_update_role = asyncErrorHandler(async (req, res, next) => {
   const data = req.body;
@@ -57,6 +58,39 @@ export const add_or_update_role = asyncErrorHandler(async (req, res, next) => {
     StatusCode.BAD_REQUEST
   );
   return next(error);
+});
+
+export const delete_role = asyncErrorHandler(async (req, res, next) => {
+  const id = req.params.id;
+
+  if (id) {
+    const user = await User.findOne({ role_id: id });
+    if (user) {
+      const error = new CustomError(
+        "Cannot delete a role that is assigned to a user.",
+        StatusCode.BAD_REQUEST
+      );
+      return next(error);
+    }
+    const role = await Role.findByIdAndDelete(id);
+    if (!role) {
+      const error = new CustomError(
+        "Role not found.",
+        StatusCode.NOT_FOUND
+      );
+      return next(error);
+    }
+    return res.status(StatusCode.OK).json({
+      status: "success",
+      message: "Role deleted successfully",
+    });
+  } else {
+    const error = new CustomError(
+      "Please provide role_id to delete a role.",
+      StatusCode.BAD_REQUEST
+    );
+    return next(error);
+  }
 });
 
 export const get_all_roles = asyncErrorHandler(async (_req, res, _next) => {
