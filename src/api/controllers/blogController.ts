@@ -205,3 +205,43 @@ export const submitForApprovalController = asyncErrorHandler(async (req, res, _n
     data: updatedBlog
   });
 });
+
+export const deleteBlogController = asyncErrorHandler(async (req, res, next) => {
+  const { id } = req.params;
+  const blog = await Blog.findByIdAndDelete({ _id: new mongoose.Types.ObjectId(id) });
+
+  if (!blog) {
+    const error = new CustomError("Blog not found", StatusCode.NOT_FOUND);
+    return next(error);
+  }
+
+  console.log("Blog deleted", blog);
+
+  res.status(StatusCode.OK).json({
+    status: "success",
+    message: "Blog deleted successfully",
+    data: blog
+  });
+});
+
+export const takeDownBlogController = asyncErrorHandler(async (req, res, next) => {
+  const { id } = req.params;
+  const blog = await Blog.findByIdAndUpdate(
+    { _id: new mongoose.Types.ObjectId(id) },
+    { status: BlogStatus.Draft },
+    { new: true }
+  );
+
+  if (!blog) {
+    const error = new CustomError("Blog not found", StatusCode.NOT_FOUND);
+    return next(error);
+  }
+
+  console.log("Blog taken down", blog);
+
+  res.status(StatusCode.OK).json({
+    status: "success",
+    message: "Blog taken down successfully",
+    data: blog
+  });
+});
