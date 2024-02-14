@@ -153,7 +153,6 @@ export const login = asyncErrorHandler(async (req, res, next) => {
     foundUser.extra_permissions?.forEach((perm) => allowed_perms.add(perm));
     foundUser.role_id?.permissions?.forEach((perm) => allowed_perms.add(perm));
     foundUser.removed_permissions?.forEach((perm) => allowed_perms.delete(perm));
-
     res.json({
       status: "success",
       message: "User successfully login!",
@@ -168,6 +167,7 @@ export const login = asyncErrorHandler(async (req, res, next) => {
           avatar: foundUser.avatar,
           role: foundUser.role_id.name,
           permissions: [...allowed_perms],
+          is_superuser: foundUser.role_id._id.toString() === process.env.SUPERUSER_ROLE_ID,
         },
       },
     });

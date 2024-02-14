@@ -64,6 +64,7 @@ export const getCurrentUserController = asyncErrorHandler(async (req, res, next)
       avatar: user.avatar,
       bio: user.bio,
       role: user.role_id?.name,
+      is_superuser: user._id.toString() === process.env.SUPERUSER_ROLE_ID,
     }
   });
 });

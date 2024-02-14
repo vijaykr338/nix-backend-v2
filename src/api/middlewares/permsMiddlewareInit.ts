@@ -20,12 +20,12 @@ export default function protected_route(permissions_required: Permission[]) {
       // no permissions required is a no-op
       return next();
     }
-    const email = req.body.email;
-    if (!email) {
+    const user_id = req.body.user_id;
+    if (!user_id) {
       const err = new CustomError("Not authorized", StatusCode.UNAUTHORIZED);
       return next(err);
     }
-    const user = await UserService.checkUserExists({ email: email });
+    const user = await UserService.checkUserExists({ _id: user_id });
     if (!user) {
       /** this code should be unreachable; only way to
         * reach this is code is if user was logged in
