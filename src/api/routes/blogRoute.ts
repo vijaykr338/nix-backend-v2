@@ -21,7 +21,7 @@ router.route("/publish-blog/:id").put(protect, publishBlogProtect, publishBlogCo
 router.route("/submit-for-approval/:id").put(protect, createBlogProtect, submitForApprovalController);
 router.route("/approve-blog/:id").put(protect, publishBlogProtect, approveBlogController);
 router.route("/update-blog/:id").put(protect, updateBlogProtect, updateBlogController);
-router.route("/take-down-blog/:id").put(protect, updateBlogController, takeDownBlogController);
+router.route("/take-down-blog/:id").put(protect, deleteBlogProtect, takeDownBlogController);
 router.route("/delete-blog/:id").delete(protect, deleteBlogProtect, deleteBlogController);
 
 // todo: delete blog route
