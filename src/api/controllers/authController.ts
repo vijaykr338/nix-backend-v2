@@ -7,6 +7,7 @@ import passwordResetMail from "../services/emailService";
 import * as UserService from "../services/userService";
 import mongoose from "mongoose";
 import StatusCode from "../helpers/httpStatusCode";
+import Permission from "../helpers/permissions";
 
 
 const makeAccessToken = (email: string, user_id: mongoose.Schema.Types.ObjectId) => {
@@ -137,7 +138,8 @@ export const login = asyncErrorHandler(async (req, res, next) => {
     const accessToken = makeAccessToken(email, foundUser._id);
     const refreshToken = makeRefreshToken(email, foundUser._id);
 
-    const user = await UserService.addRefreshToken(email, refreshToken);
+    foundUser.refreshToken = refreshToken;
+    await foundUser.save();
 
     res.cookie("jwt", refreshToken, {
       httpOnly: true,
@@ -147,6 +149,10 @@ export const login = asyncErrorHandler(async (req, res, next) => {
     });
 
     console.log("Logged in user");
+    const allowed_perms: Set<Permission> = new Set();
+    foundUser.extra_permissions?.forEach((perm) => allowed_perms.add(perm));
+    foundUser.role_id?.permissions?.forEach((perm) => allowed_perms.add(perm));
+    foundUser.removed_permissions?.forEach((perm) => allowed_perms.delete(perm));
 
     res.json({
       status: "success",
@@ -155,8 +161,13 @@ export const login = asyncErrorHandler(async (req, res, next) => {
         accessToken,
         refreshToken,
         user: {
-          name: user!.name,
-          email: user!.email,
+          id: foundUser._id,
+          name: foundUser.name,
+          email: foundUser.email,
+          bio: foundUser.bio,
+          avatar: foundUser.avatar,
+          role: foundUser.role_id.name,
+          permissions: [...allowed_perms],
         },
       },
     });
@@ -300,26 +311,25 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
  */
 
 export const logout = asyncErrorHandler(async (req, res, _next) => {
-  const cookies = req.cookies;
+  /** todo: i would like to describe the security flaw here, this never expires the access token
+   * so if someone gets access to the access token, they can use it to access the user's account
+   * until it is valid even after logout request is served. To fix this, one could possibly add
+   * boolean in db to check if user is logged out and then check for that boolean in authMiddleware
+   * but this got another flaw as well, if the user logs out from one device, the other device will
+   * also be logged out, but hey, atleast the access token is not valid anymore.
+   */
+  console.log(req.body.user_id);
+  const foundUser = await UserService.checkUserExists({ _id: new mongoose.Types.ObjectId(req.body.user_id) });
 
-  //if no refreshToken present
-  if (!cookies?.jwt) {
-    return res.sendStatus(StatusCode.NO_CONTENT);
-  }
-
-  const refreshToken = cookies.jwt as string;
-
-  //if no refreshToken present in db
-  const foundUser = await UserService.checkUserExists({ refreshToken: refreshToken });
   if (!foundUser) {
-    res.clearCookie("jwt", { httpOnly: true, sameSite: "none", secure: true });
+    console.error("WHOA! Logout request from a ghost!", req.ip, req.headers);
     return res.sendStatus(StatusCode.NO_CONTENT);
   }
 
   // delete refreshToken present in db
-  await UserService.deleteRefreshToken(foundUser.email);
-  res.clearCookie("jwt", { httpOnly: true, sameSite: "none", secure: true });
+  foundUser.refreshToken = undefined;
+  await foundUser.save();
 
-  console.log("User logged out successfully", foundUser);
+  console.log("User logged out successfully", foundUser.email);
   return res.sendStatus(StatusCode.NO_CONTENT);
 });
