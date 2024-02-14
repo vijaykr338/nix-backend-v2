@@ -5,6 +5,24 @@ import mongoose from "mongoose";
 import { IUser } from "../models/userModel";
 import StatusCode from "../helpers/httpStatusCode";
 
+export const getBlogController = asyncErrorHandler(async (req, res, next) => {
+  const { id } = req.params;
+  const blog = await Blog
+    .findById({ _id: new mongoose.Types.ObjectId(id) })
+    .populate<{ user: IUser }>("user", "_id name email")
+    .lean();
+
+  if (!blog) {
+    const error = new CustomError("Blog not found", StatusCode.NOT_FOUND);
+    return next(error);
+  }
+
+  res.status(StatusCode.OK).json({
+    status: "success",
+    message: "Blog fetched successfully",
+    data: blog
+  });
+});
 
 /**
  * Get all blogs.
