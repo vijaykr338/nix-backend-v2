@@ -2,7 +2,7 @@ import express from "express";
 import { protect } from "../middlewares/authMiddleware";
 import protected_route from "../middlewares/permsMiddlewareInit";
 import Permission from "../helpers/permissions";
-import { approveBlogController, createBlogController, deleteBlogController, getAllBlogsController, publishBlogController, submitForApprovalController, takeDownBlogController, updateBlogController } from "../controllers/blogController";
+import { approveBlogController, createBlogController, deleteBlogController, getAllBlogsController, getBlogController, publishBlogController, submitForApprovalController, takeDownBlogController, updateBlogController } from "../controllers/blogController";
 
 const router = express.Router();
 
@@ -15,6 +15,7 @@ const deleteBlogProtect = protected_route([Permission.DeleteBlog]);
 
 //routes
 router.route("/").get(protect, readBlogProtect, getAllBlogsController);
+router.route("/get-blog/:id").get(protect, readBlogProtect, getBlogController);
 router.route("/create-blog").post(protect, createBlogProtect, createBlogController);
 router.route("/update-blog/:id").put(protect, updateBlogProtect, updateBlogController);
 router.route("/publish-blog/:id").put(protect, publishBlogProtect, publishBlogController);
