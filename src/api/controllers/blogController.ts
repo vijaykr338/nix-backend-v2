@@ -30,8 +30,9 @@ export const getBlogController = asyncErrorHandler(async (req, res, next) => {
  */
 export const getAllBlogsController = asyncErrorHandler(async (req, res, next) => {
   await refresh_blog_status();
+  const userOnlyFlag = req.body.userOnly || false;
   const blogs = await Blog
-    .find({}, "-body")
+    .find(userOnlyFlag ? { user: new mongoose.Types.ObjectId(req.body.user_id) } : {}, "-body")
     .populate<{ user: IUser }>("user", "_id name email")
     .sort({ created_at: -1 })
     .lean();
