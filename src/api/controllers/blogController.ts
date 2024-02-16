@@ -4,7 +4,7 @@ import asyncErrorHandler from "../helpers/asyncErrorHandler";
 import StatusCode from "../helpers/httpStatusCode";
 import { Blog, BlogStatus } from "../models/blogModel";
 import { IUser } from "../models/userModel";
-import { blogForApprovalMail } from "./emailController";
+import { blogForApprovalMail } from "../helpers/emailHelper";
 
 export const getBlogController = asyncErrorHandler(async (req, res, next) => {
   const { id } = req.params;

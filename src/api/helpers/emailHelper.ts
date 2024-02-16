@@ -1,7 +1,7 @@
 import { User } from "../models/userModel";
 import mongoose from "mongoose";
 import * as UserService from "../services/userService";
-import Permission from "../helpers/permissions";
+import Permission from "./permissions";
 import emailService from "../services/emailService";
 import { IBlog } from "../models/blogModel";
 
