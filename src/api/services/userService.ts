@@ -72,7 +72,7 @@ export const resetUserPassword = async (token: string) => {
 export const createNewUser = async (name: string, email: string) => {
   const password: string = generateRandomPassword(7);
   const hashed_password: string = await bcrypt.hash(password, 10);
-  const reg_mail = new emailService.registerationMail(email, password);
+  const reg_mail = new emailService.RegisterationMail(email, password);
   await reg_mail.sendTo(email);
   if (!reg_mail) return null;
 

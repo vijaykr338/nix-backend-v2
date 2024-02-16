@@ -1,9 +1,10 @@
-import asyncErrorHandler from "../helpers/asyncErrorHandler";
-import CustomError from "../../config/CustomError";
-import { Blog, BlogStatus } from "../models/blogModel";
 import mongoose from "mongoose";
-import { IUser } from "../models/userModel";
+import CustomError from "../../config/CustomError";
+import asyncErrorHandler from "../helpers/asyncErrorHandler";
 import StatusCode from "../helpers/httpStatusCode";
+import { Blog, BlogStatus } from "../models/blogModel";
+import { IUser } from "../models/userModel";
+import { blogForApprovalMail } from "./emailController";
 
 export const getBlogController = asyncErrorHandler(async (req, res, next) => {
   const { id } = req.params;
@@ -110,6 +111,8 @@ export const updateBlogController = asyncErrorHandler(async (req, res, next) => 
       message: "Blog submitted for approval!",
       data: blog
     });
+    res.end();
+    blogForApprovalMail(blog);
   } else {
     res.status(StatusCode.OK).json({
       status: "success",
@@ -216,7 +219,7 @@ async function refresh_blog_status(): Promise<import("mongoose").UpdateWriteOpRe
   return refresh_result;
 }
 
-export const submitForApprovalController = asyncErrorHandler(async (req, res, _next) => {
+export const submitForApprovalController = asyncErrorHandler(async (req, res, next) => {
   const { id } = req.params;
   const updatedBlog = await Blog.findByIdAndUpdate(
     { _id: new mongoose.Types.ObjectId(id) },
@@ -226,11 +229,17 @@ export const submitForApprovalController = asyncErrorHandler(async (req, res, _n
     { new: true }
   );
 
+  if (!updatedBlog) {
+    const error = new CustomError("Blog not found! Must have been deleted.", StatusCode.NOT_FOUND);
+    return next(error);
+  }
+
   res.status(StatusCode.OK).json({
     status: "success",
     message: "Blog submitted for approval",
     data: updatedBlog
   });
+  blogForApprovalMail(updatedBlog);
 });
 
 export const deleteBlogController = asyncErrorHandler(async (req, res, next) => {

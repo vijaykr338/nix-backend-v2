@@ -1,8 +1,8 @@
 import express from "express";
+import { approveBlogController, createBlogController, deleteBlogController, getAllBlogsController, getBlogController, publishBlogController, submitForApprovalController, takeDownBlogController, updateBlogController } from "../controllers/blogController";
+import Permission from "../helpers/permissions";
 import { protect } from "../middlewares/authMiddleware";
 import protected_route from "../middlewares/permsMiddlewareInit";
-import Permission from "../helpers/permissions";
-import { approveBlogController, createBlogController, deleteBlogController, getAllBlogsController, getBlogController, publishBlogController, submitForApprovalController, takeDownBlogController, updateBlogController } from "../controllers/blogController";
 
 const router = express.Router();
 
