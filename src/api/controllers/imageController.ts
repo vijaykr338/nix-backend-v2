@@ -83,24 +83,44 @@ export const get_image = asyncErrorHandler(async (req, res, next) => {
   }
 });
 
+export const delete_avatar = asyncErrorHandler(async (req, res, next) => {
+  const filename = req.body.user_id;
+
+  if (!filename) {
+    return next(new CustomError("Relogin to proceed with this request!", StatusCode.BAD_REQUEST));
+  }
+
+  try {
+    delete_image_fs(filename);
+  } catch (err) {
+    const e = new CustomError("Error deleting image", StatusCode.INTERNAL_SERVER_ERROR);
+    return next(e);
+  }
+});
+
+// may throw error if file not found
+const delete_image_fs = async (filename: string) => {
+  console.log("Deleting image", filename);
+  try {
+    await unlink(`thumbnails/${filename}`);
+  } catch {
+    console.log("No thumbnail found for image");
+  }
+  await unlink(`uploads/${filename}`);
+};
+
 export const delete_image = asyncErrorHandler(async (req, res, next) => {
   const { filename } = req.params;
 
   if (!filename) {
     return next(new CustomError("Filename is required", StatusCode.BAD_REQUEST));
   }
-  console.log("Deleting image", filename);
 
   try {
-    await unlink(`thumbnails/${filename}`);
-  } catch {
-    console.log("No thumbnail found for image");
-  }
-
-  try {
-    await unlink(`uploads/${filename}`);
+    delete_image_fs(filename);
   } catch (err) {
-    return next(new CustomError("Error deleting image", StatusCode.INTERNAL_SERVER_ERROR));
+    const e = new CustomError("Error deleting image", StatusCode.INTERNAL_SERVER_ERROR);
+    return next(e);
   }
 
   res.status(200).json({
