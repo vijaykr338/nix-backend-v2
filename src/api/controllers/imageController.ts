@@ -43,11 +43,15 @@ export const upload_image = asyncErrorHandler(async (req, res, next) => {
   res.status(201).json({
     success: true,
     message: "Image uploaded successfully",
+    data: {
+      name: req_file.filename
+    }
   });
 });
 
 export const get_image = asyncErrorHandler(async (req, res, next) => {
-  const { filename } = req.params;
+  const { filename: file } = req.params;
+  const filename = file.split("?")[0];
   const { thumbnail } = req.query;
   if (!filename) {
     return next(new CustomError("Filename is required", StatusCode.BAD_REQUEST));
