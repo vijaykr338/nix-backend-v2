@@ -166,7 +166,7 @@ export const login = asyncErrorHandler(async (req, res, next) => {
           bio: foundUser.bio,
           avatar: foundUser.avatar,
           role: foundUser.role_id.name,
-          permissions: [...allowed_perms],
+          permission: [...allowed_perms],
           is_superuser: foundUser.role_id._id.toString() === process.env.SUPERUSER_ROLE_ID,
         },
       },

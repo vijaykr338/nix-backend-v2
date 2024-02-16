@@ -57,7 +57,7 @@ export const getCurrentUserController = asyncErrorHandler(async (req, res, next)
     status: "success",
     message: "User fetched successfully",
     data: {
-      permissions: permissions,
+      permission: permissions,
       id: user._id,
       name: user.name,
       email: user.email,
