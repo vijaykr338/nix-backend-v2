@@ -246,7 +246,7 @@ export const forgotPassword = asyncErrorHandler(async (req, res, next) => {
 
   const resetUrl = `${req.protocol}://${req.get("host")}/api/v1/auth/resetPassword/${resetToken}`;
 
-  const mail = new passwordResetMail.passwordResetMail(email, resetUrl);
+  const mail = new passwordResetMail.PasswordResetMail(email, resetUrl);
 
   try {
     await mail.sendTo(email);
