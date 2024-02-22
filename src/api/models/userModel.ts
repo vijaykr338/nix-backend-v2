@@ -9,7 +9,6 @@ export interface IUser extends Document {
   passwordResetToken?: string;
   passwordResetTokenExpires?: string;
   role_id: mongoose.Schema.Types.ObjectId;
-  avatar: string;
   bio: string;
   extra_permissions?: Permission[];
   removed_permissions?: Permission[];
@@ -25,10 +24,6 @@ const userSchema = new Schema<IUser>({
     type: String,
     required: [true, "Please add an email"],
     unique: true,
-  },
-  avatar: {
-    type: String,
-    default: "dummy.jpg",
   },
   bio: {
     type: String,

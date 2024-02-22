@@ -164,7 +164,6 @@ export const login = asyncErrorHandler(async (req, res, next) => {
           name: foundUser.name,
           email: foundUser.email,
           bio: foundUser.bio,
-          avatar: foundUser.avatar,
           role: foundUser.role_id.name,
           permission: [...allowed_perms],
           is_superuser: foundUser.role_id._id.toString() === process.env.SUPERUSER_ROLE_ID,
@@ -274,13 +273,13 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
   const resetToken = req.params.token;
 
   // Decode the token to get the user's email
-  const decodedToken: any = jwt.decode(resetToken);
+  const decodedToken = jwt.decode(resetToken) as jwt.JwtPayload | undefined;
 
   if (!decodedToken || !decodedToken.email) {
-    const error = new CustomError('Invalid or expired reset token', StatusCode.BAD_REQUEST);
+    const error = new CustomError("Invalid or expired reset token", StatusCode.BAD_REQUEST);
     return next(error);
   }
-  
+
   const user = await UserService.checkUserExists({ email: decodedToken.email });
 
   if (!user || user.passwordResetToken !== resetToken) {
@@ -290,7 +289,7 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
 
   // Check if the reset token has expired
   if (user.passwordResetTokenExpires && new Date(user.passwordResetTokenExpires) < new Date()) {
-    const error = new CustomError('Token has expired', StatusCode.BAD_REQUEST);
+    const error = new CustomError("Token has expired", StatusCode.BAD_REQUEST);
     return next(error);
   }
 
