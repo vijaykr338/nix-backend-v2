@@ -236,10 +236,10 @@ export const forgotPassword = asyncErrorHandler(async (req, res, next) => {
     .digest("hex");
 
   // todo: maybe add expiration?
-  // const passwordResetTokenExpires = Date.now() + 10 * 60 * 1000;
+  const passwordResetTokenExpires = (Date.now() + 10 * 60 * 1000).toString();
 
   user.passwordResetToken = passwordResetToken;
-  // user.passwordResetTokenExpires = passwordResetTokenExpires;
+  user.passwordResetTokenExpires = passwordResetTokenExpires;
 
   await user.save();
   console.log("Password reset token added to db", user);
@@ -271,17 +271,26 @@ export const forgotPassword = asyncErrorHandler(async (req, res, next) => {
  */
 
 export const resetPassword = asyncErrorHandler(async (req, res, next) => {
-  const token = crypto
-    .createHash("sha256")
-    .update(req.params.token)
-    .digest("hex");
+  const resetToken = req.params.token;
 
-  // todo : add date and time to expire password reset token ?
-  // todo: should be under service logic
-  const user = await UserService.resetUserPassword(token);
+  // Decode the token to get the user's email
+  const decodedToken: any = jwt.decode(resetToken);
 
-  if (!user) {
+  if (!decodedToken || !decodedToken.email) {
+    const error = new CustomError('Invalid or expired reset token', StatusCode.BAD_REQUEST);
+    return next(error);
+  }
+  
+  const user = await UserService.checkUserExists({ email: decodedToken.email });
+
+  if (!user || user.passwordResetToken !== resetToken) {
     const error = new CustomError("Token is invalid or has expired", StatusCode.BAD_REQUEST);
+    return next(error);
+  }
+
+  // Check if the reset token has expired
+  if (user.passwordResetTokenExpires && new Date(user.passwordResetTokenExpires) < new Date()) {
+    const error = new CustomError('Token has expired', StatusCode.BAD_REQUEST);
     return next(error);
   }
 
@@ -290,6 +299,8 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
   const refreshToken = makeRefreshToken(user.email, user._id);
 
   // todo : move to service logic
+  user.passwordResetToken = undefined;
+  user.passwordResetTokenExpires = undefined;
   user.refreshToken = refreshToken;
   await user.save();
 

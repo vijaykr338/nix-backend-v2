@@ -7,6 +7,7 @@ export interface IUser extends Document {
   password: string;
   refreshToken?: string;
   passwordResetToken?: string;
+  passwordResetTokenExpires?: string;
   role_id: mongoose.Schema.Types.ObjectId;
   avatar: string;
   bio: string;
@@ -42,6 +43,9 @@ const userSchema = new Schema<IUser>({
   },
   passwordResetToken: {
     type: String,
+  },
+  passwordResetTokenExpires: {
+    type: Date,
   },
   role_id: {
     type: mongoose.Schema.Types.ObjectId,
