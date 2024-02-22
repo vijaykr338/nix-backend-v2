@@ -49,6 +49,54 @@ export const upload_image = asyncErrorHandler(async (req, res, next) => {
   });
 });
 
+export const get_avatar = asyncErrorHandler(async (req, res, _next) => {
+  const filename = req.params.id;
+  const { thumbnail } = req.query;
+
+  if (thumbnail === "true") {
+    try {
+      const image = sharp(`thumbnails/${filename}`);
+      const image_png_buff = await image.png().toBuffer();
+      return res.contentType("png").send(image_png_buff);
+    } catch (err) {
+      try {
+        const image = sharp(`uploads/${filename}`);
+        const image_png = image.png();
+        const thumbnail = await generate_thumbnail(image_png, filename);
+        res.contentType("png").send(thumbnail);
+      } catch {
+        const image = sharp("thumbnails/default-avatar.png");
+        const img = await image.toBuffer();
+        res.contentType("png").send(img);
+      }
+    }
+  } else {
+    try {
+      const image = sharp(`uploads/${filename}`);
+      const image_png = image.png();
+      try {
+        const size = thumbnail && (parseInt(thumbnail.toString()));
+        if (size) {
+          const image_resized = image.resize(size, size, { fit: "inside" });
+          const image_png_resized = image_resized.png();
+          const image_png_resized_buff = await image_png_resized.toBuffer();
+          
+          return res.contentType("png").send(image_png_resized_buff);
+        }
+      } catch (err) {
+        console.error("Error resizing image", err);
+      }
+      const image_png_buffer = await image_png.toBuffer();
+      res.contentType("png").send(image_png_buffer);
+    } catch {
+      console.log("No avatar found for user", filename);
+      const image = sharp("uploads/default-avatar.png");
+      const img = await image.toBuffer();
+      res.contentType("png").send(img);
+    }
+  }
+});
+
 export const get_image = asyncErrorHandler(async (req, res, next) => {
   const { filename: file } = req.params;
   const filename = file.split("?")[0];
