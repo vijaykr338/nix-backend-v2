@@ -35,5 +35,8 @@ next-env.d.ts
 dist
 
 # uploads
-uploads
-thumbnails
+uploads/*
+!uploads/default-*.png
+thumbnails/*
+!thumbnails/default-*.png
+old_db
