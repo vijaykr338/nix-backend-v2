@@ -53,20 +53,34 @@ export const getAllUsers = async (query) => {
   return allUsers;
 };
 
-export const resetUserPassword = async (token: string) => {
-  // todo: fix this, wrong impl
-  const password: string = generateRandomPassword(7);
-  const hashed_password: string = await bcrypt.hash(password, 10);
+export const resetUserPassword = async (token: string, newPassword: string) => {
+  // Find the user by the reset token
+  const user = await User.findOne({ passwordResetToken: token });
 
-  const user = await User.findOneAndUpdate(
+  // Check if the user exists
+  if (!user) {
+    return null;
+  }
+
+  // Check if the reset token has expired
+  if (user.passwordResetTokenExpires && new Date(user.passwordResetTokenExpires) < new Date()) {
+    return null;
+  }
+
+  // Hash the new password
+  const hashedPassword: string = await bcrypt.hash(newPassword, 10);
+
+  // Update user fields in the database
+  const updatedUser = await User.findOneAndUpdate(
     { passwordResetToken: token },
     {
       passwordResetToken: undefined,
-      password: hashed_password
+      password: hashedPassword,
     },
+    { new: true }
   );
-  if (!user) return null;
-  return user;
+
+  return updatedUser;
 };
 
 export const createNewUser = async (name: string, email: string) => {
