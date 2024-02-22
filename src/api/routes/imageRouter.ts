@@ -1,5 +1,5 @@
 import express from "express";
-import { delete_avatar, delete_image, get_image, update_image, upload_image } from "../controllers/imageController";
+import { delete_avatar, delete_image, get_avatar, get_image, update_image, upload_image } from "../controllers/imageController";
 import Permission from "../helpers/permissions";
 import { protect } from "../middlewares/authMiddleware";
 import { avatarStorage, storage } from "../middlewares/imageMiddleware";
@@ -17,6 +17,7 @@ router.route("/upload").post(protect, protect_upload, storage.single("image"), u
 router.route("/upload-avatar").post(protect, avatarStorage.single("avatar"), upload_image);
 router.route("/delete-avatar").delete(protect, delete_avatar);
 router.route("/get/:filename").get(get_image);
+router.route("/get-avatar/:id").get(get_avatar);
 router.route("/delete/:filename").delete(protect, protect_delete, delete_image);
 
 export default router;
