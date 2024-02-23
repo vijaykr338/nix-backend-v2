@@ -38,6 +38,9 @@ class Email {
     console.assert(reciever, "Reciever is required");
     console.assert(this.subject, "Subject is required");
     console.assert(this.html, "Body is required");
+    if (!this.subject || !this.html || !reciever) {
+      return false;
+    }
 
     const transporter = nodemailer.createTransport({
       service: "gmail",
@@ -47,15 +50,16 @@ class Email {
       }
     });
 
-    const mailOptions = {
+    const mailOptions: nodemailer.SendMailOptions = {
       from: process.env.EMAIL_SERVICE_USER,
       bcc: reciever,
       subject: this.subject,
       html: this.html
-    } as nodemailer.SendMailOptions;
+    };
 
     try {
-      await transporter.sendMail(mailOptions);
+      const mail = await transporter.sendMail(mailOptions);
+      console.log(mail);
       return true;
     } catch (error) {
       console.error(error);
@@ -190,4 +194,4 @@ class StorySubmittedForApproval extends Email {
   }
 }
 
-export default { PendingApprovalMail, RegisterationMail, StoryPublishedMail, PasswordResetMail, StorySubmittedForApproval};
+export default { PendingApprovalMail, RegisterationMail, StoryPublishedMail, PasswordResetMail, StorySubmittedForApproval };

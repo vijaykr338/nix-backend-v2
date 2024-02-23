@@ -214,10 +214,14 @@ export const changePassword = asyncErrorHandler(async (req, res, next) => {
 });
 
 export const forgotPassword = asyncErrorHandler(async (req, res, next) => {
-  //get user based on post email from database
-  const email = req.body.email;
-  const user = await UserService.checkUserExists({ email: email });
+  const refresh_secret_key = process.env.REFRESH_SECRET_KEY;
+  if (!refresh_secret_key) {
+    throw Error("Refresh/Reset secret key not found in env");
+  }
 
+  //get user based on post email from database
+  const email: string = req.body.email;
+  const user = await UserService.checkUserExists({ email: email });
   if (!user) {
     const error = new CustomError("No user exists with this email.", StatusCode.NOT_FOUND);
     return next(error);
@@ -225,25 +229,17 @@ export const forgotPassword = asyncErrorHandler(async (req, res, next) => {
 
   console.log(`Forgot password intitiated for ${email}`);
   //generate random reset token to send to user
-  const resetToken = crypto.randomBytes(32).toString("hex");
+  const resetToken = jwt.sign({ email: user.email }, refresh_secret_key, {
+    expiresIn: "10m",
+  });
 
-  //encrypted reset token to store in db
-  //store in db todo
-  const passwordResetToken = crypto
-    .createHash("sha256")
-    .update(resetToken)
-    .digest("hex");
-
-  // todo: maybe add expiration?
-  const passwordResetTokenExpires = (Date.now() + 10 * 60 * 1000).toString();
-
-  user.passwordResetToken = passwordResetToken;
-  user.passwordResetTokenExpires = passwordResetTokenExpires;
+  user.passwordResetToken = resetToken;
 
   await user.save();
   console.log("Password reset token added to db", user);
 
-  const resetUrl = `${req.protocol}://${req.get("host")}/api/v1/auth/resetPassword/${resetToken}`;
+  // todo: add proper frontend url using .env file
+  const resetUrl = `http://localhost:5173/reset-password?token=${resetToken}`;
 
   const mail = new passwordResetMail.PasswordResetMail(email, resetUrl);
 
@@ -271,36 +267,39 @@ export const forgotPassword = asyncErrorHandler(async (req, res, next) => {
 
 export const resetPassword = asyncErrorHandler(async (req, res, next) => {
   const resetToken = req.params.token;
-
+  const { newPassword } = req.body;
+  const hashed_password = await bcrypt.hash(newPassword, 10);
+  const key = process.env.REFRESH_SECRET_KEY;
+  if (!key) {
+    const error = new CustomError("Refresh/Reset secret key not found in env", StatusCode.INTERNAL_SERVER_ERROR);
+    return next(error);
+  }
   // Decode the token to get the user's email
-  const decodedToken = jwt.decode(resetToken) as jwt.JwtPayload | undefined;
+  let decoded_payload: jwt.JwtPayload;
+  try {
+    decoded_payload = jwt.verify(resetToken, key) as jwt.JwtPayload;
+  } catch (e) {
+    const err = new CustomError("Invalid/Expired Token", StatusCode.BAD_REQUEST);
+    return next(err);
+  }
 
-  if (!decodedToken || !decodedToken.email) {
-    const error = new CustomError("Invalid or expired reset token", StatusCode.BAD_REQUEST);
+  const email: string | undefined = decoded_payload.email;
+  if (!email) {
+    const error = new CustomError("Generated reset link is invalid!", StatusCode.BAD_REQUEST);
     return next(error);
   }
 
-  const user = await UserService.checkUserExists({ email: decodedToken.email });
+  const user = await UserService.checkUserExists({ email: email });
 
   if (!user || user.passwordResetToken !== resetToken) {
-    const error = new CustomError("Token is invalid or has expired", StatusCode.BAD_REQUEST);
+    const error = new CustomError("Token has been invalidated!", StatusCode.BAD_REQUEST);
     return next(error);
   }
 
-  // Check if the reset token has expired
-  if (user.passwordResetTokenExpires && new Date(user.passwordResetTokenExpires) < new Date()) {
-    const error = new CustomError("Token has expired", StatusCode.BAD_REQUEST);
-    return next(error);
-  }
-
-  //login the user
-  const accessToken = makeAccessToken(user.email, user._id);
-  const refreshToken = makeRefreshToken(user.email, user._id);
-
-  // todo : move to service logic
+  user.password = hashed_password;
   user.passwordResetToken = undefined;
   user.passwordResetTokenExpires = undefined;
-  user.refreshToken = refreshToken;
+  user.refreshToken = undefined;
   await user.save();
 
   console.log("Password reset successfully for user", user);
@@ -308,8 +307,6 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
   res.status(StatusCode.OK).json({
     status: "success",
     data: {
-      accessToken,
-      refreshToken,
       email: user.email,
       name: user.name,
     }
