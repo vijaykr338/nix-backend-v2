@@ -297,7 +297,6 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
 
   user.password = hashed_password;
   user.passwordResetToken = undefined;
-  user.passwordResetTokenExpires = undefined;
   user.refreshToken = undefined;
   await user.save();
 
