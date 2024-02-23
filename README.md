@@ -1,0 +1,1 @@
+Refer to .env.local file and create your own .env file as required
