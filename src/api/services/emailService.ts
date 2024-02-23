@@ -129,13 +129,7 @@ class StoryPublishedMail extends Email {
 
 
 class StorySubmittedForApproval extends Email {
-  /**
-    * @description Generates an email for published story
-    * @param {string} story_title - Title of the story
-    * @param {string} story_byliner - byliner of the story
-    * @param {string} img_url - Image URL of the story (with domain)
-    * @param {string} story_link - Link to the story
-    */
+  /** Generates an email for published story */
   constructor(blog: IBlog) {
     super();
     this.subject = "Blog submiited for approval!";
