@@ -237,10 +237,7 @@ export const forgotPassword = asyncErrorHandler(async (req, res, next) => {
   await user.save();
   console.log("Password reset token added to db", user);
 
-  // todo: add proper frontend url using .env file
-  const resetUrl = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
-
-  const mail = new passwordResetMail.PasswordResetMail(email, resetUrl);
+  const mail = new passwordResetMail.PasswordResetMail(user);
 
   try {
     await mail.sendTo(email);

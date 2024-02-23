@@ -56,14 +56,16 @@ export const getAllUsers = async (query) => {
 export const createNewUser = async (name: string, email: string) => {
   const password: string = generateRandomPassword(7);
   const hashed_password: string = await bcrypt.hash(password, 10);
-  const reg_mail = new emailService.RegisterationMail(email, password);
-  await reg_mail.sendTo(email);
-  if (!reg_mail) return null;
 
   const user = await User.create({
     name: name,
     email: email,
     password: hashed_password,
   });
+
+  const reg_mail = new emailService.RegisterationMail(user, password);
+  await reg_mail.sendTo(email);
+  if (!reg_mail) return null;
+
   return user;
 };
