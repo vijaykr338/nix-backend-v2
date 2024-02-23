@@ -9,8 +9,8 @@ import util from "util";
 const writeFile = util.promisify(fs.writeFile);
 const unlink = util.promisify(fs.unlink);
 
-const generate_thumbnail = async (image: sharp.Sharp, filename: string) => {
-  console.log("Creating thumbnail for", filename);
+const generate_thumbnail = async (image: sharp.Sharp, filename: string, { suppress_console } = { suppress_console: false }) => {
+  if (!suppress_console) { console.log("Creating thumbnail for", filename); }
   const thumbnail = await image.resize(128, 128, { fit: "inside" }).toBuffer();
   await writeFile(`thumbnails/${filename}`, thumbnail);
   return thumbnail;
@@ -62,7 +62,7 @@ export const get_avatar = asyncErrorHandler(async (req, res, _next) => {
       try {
         const image = sharp(`uploads/${filename}`);
         const image_png = image.png();
-        const thumbnail = await generate_thumbnail(image_png, filename);
+        const thumbnail = await generate_thumbnail(image_png, filename, { suppress_console: true });
         res.contentType("png").send(thumbnail);
       } catch {
         const image = sharp("thumbnails/default-avatar.png");
@@ -80,7 +80,7 @@ export const get_avatar = asyncErrorHandler(async (req, res, _next) => {
           const image_resized = image.resize(size, size, { fit: "inside" });
           const image_png_resized = image_resized.png();
           const image_png_resized_buff = await image_png_resized.toBuffer();
-          
+
           return res.contentType("png").send(image_png_resized_buff);
         }
       } catch (err) {
