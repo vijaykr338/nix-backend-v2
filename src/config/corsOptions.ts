@@ -12,7 +12,9 @@ export const allowedOrigins = [
   // vs code live server plugin port
   "http://localhost:5500",
   // hoppscotch extension
-  "moz-extension://aa18bae2-65b3-4d24-9ed8-80054a9c21f5"
+  "moz-extension://aa18bae2-65b3-4d24-9ed8-80054a9c21f5",
+  "http://next.dtutimes.com",
+  "https://next.dtutimes.com"
 ];
 
 export const corsOptions: CorsOptions = {
