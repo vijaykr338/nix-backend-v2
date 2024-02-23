@@ -1,5 +1,6 @@
 import mongoose, { Document, Schema } from "mongoose";
 import Permission from "../helpers/permissions";
+import { IRole } from "./rolesModel";
 
 export interface IUser extends Document {
   name: string;
@@ -63,5 +64,6 @@ const userSchema = new Schema<IUser>({
 });
 
 const User = mongoose.model("user", userSchema);
+type PopulatedUser = Omit<IUser, "role_id"> & { role_id: IRole; };
 
-export { User };
+export { User, PopulatedUser };
