@@ -45,8 +45,4 @@ router.route("/take-down-blog/:id").put(protect, deleteBlogProtect, takeDownBlog
 // protected for deleting a blog by admin or drafts by user
 router.route("/delete-blog/:id").delete(protect, deleteMyBlogController, deleteBlogProtect, deleteBlogController);
 
-// todo: delete blog route
-
-
-
 export default router;
