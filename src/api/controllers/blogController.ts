@@ -6,8 +6,48 @@ import { Blog, BlogStatus } from "../models/blogModel";
 import { IUser } from "../models/userModel";
 import { blogForApprovalMail } from "../helpers/emailHelper";
 
+export const getMyBlogController = asyncErrorHandler(async (req, res, next) => {
+  const user_id = new mongoose.Types.ObjectId(req.body.user_id);
+  const { id } = req.params;
+
+  const blog = await Blog
+    .findById({ _id: new mongoose.Types.ObjectId(id), user: user_id})
+    .populate<{ user: IUser }>("user", "_id name email")
+    .lean();
+
+  if (!blog) {
+    return next();
+  }
+
+  res.status(StatusCode.OK).json({
+    status: "success",
+    message: "Blog fetched successfully",
+    data: blog
+  });
+});
+
+export const getPublishedBlogsController = asyncErrorHandler(async (req, res, next) => {
+  const blogs = await Blog
+    .find({ status: BlogStatus.Published }, "-body")
+    .populate<{ user: IUser }>("user", "_id name email")
+    .sort({ created_at: -1 })
+    .lean();
+
+  if (!blogs || blogs.length === 0) {
+    const error = new CustomError("No blogs found", StatusCode.NOT_FOUND);
+    return next(error);
+  }
+
+  res.status(StatusCode.OK).json({
+    status: "success",
+    message: "Blogs fetched successfully",
+    data: blogs
+  });
+});
+
 export const getBlogController = asyncErrorHandler(async (req, res, next) => {
   const { id } = req.params;
+
   const blog = await Blog
     .findById({ _id: new mongoose.Types.ObjectId(id) })
     .populate<{ user: IUser }>("user", "_id name email")
@@ -25,15 +65,34 @@ export const getBlogController = asyncErrorHandler(async (req, res, next) => {
   });
 });
 
+export const myBlogsController = asyncErrorHandler(async (req, res, next) => {
+  const user_id = new mongoose.Types.ObjectId(req.body.user_id);
+  const blogs = await Blog
+    .find({ user: user_id }, "-body")
+    .populate<{ user: IUser }>("user", "_id name email")
+    .sort({ created_at: -1 })
+    .lean();
+
+  if (!blogs || blogs.length === 0) {
+    const error = new CustomError("No blogs found", StatusCode.NOT_FOUND);
+    return next(error);
+  }
+
+  res.status(StatusCode.OK).json({
+    status: "success",
+    message: "Blogs fetched successfully",
+    data: blogs
+  });
+});
+
 /**
- * Get all blogs.
+ * Get all blogs which are not draft. (Pending, Approved, Published blogs only)
  * @returns {Object} - Returns a JSON object containing the retrieved blogs.
  */
 export const getAllBlogsController = asyncErrorHandler(async (req, res, next) => {
   await refresh_blog_status();
-  const userOnlyFlag = req.body.userOnly || false;
   const blogs = await Blog
-    .find(userOnlyFlag ? { user: new mongoose.Types.ObjectId(req.body.user_id) } : {}, "-body")
+    .find({ status: { $ne: BlogStatus.Draft } }, "-body")
     .populate<{ user: IUser }>("user", "_id name email")
     .sort({ created_at: -1 })
     .lean();
@@ -240,6 +299,24 @@ export const submitForApprovalController = asyncErrorHandler(async (req, res, ne
     data: updatedBlog
   });
   blogForApprovalMail(updatedBlog);
+});
+
+export const deleteMyBlogController = asyncErrorHandler(async (req, res, next) => {
+  const user_id = new mongoose.Types.ObjectId(req.body.user_id);
+  const { id } = req.params;
+  const blog = await Blog.findOneAndDelete({ _id: new mongoose.Types.ObjectId(id), user: user_id });
+
+  if (!blog) {
+    return next();
+  }
+
+  console.log("Draft deleted", blog);
+
+  res.status(StatusCode.OK).json({
+    status: "success",
+    message: "Blog deleted successfully",
+    data: blog
+  });
 });
 
 export const deleteBlogController = asyncErrorHandler(async (req, res, next) => {
