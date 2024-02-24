@@ -11,7 +11,7 @@ export const getMyBlogController = asyncErrorHandler(async (req, res, next) => {
   const { id } = req.params;
 
   const blog = await Blog
-    .findById({ _id: new mongoose.Types.ObjectId(id), user: user_id})
+    .findById({ _id: new mongoose.Types.ObjectId(id), user: user_id })
     .populate<{ user: IUser }>("user", "_id name email")
     .lean();
 
@@ -128,13 +128,15 @@ export const createBlogController = asyncErrorHandler(async (req, res, next) => 
   // this can potentially allow user to publish blog with other's name
   // but who and why someone will do that so let's keep it the way it is
   const user_id = new mongoose.Types.ObjectId(req.body.user_id);
-
-  const saveAsDraft = req.body.saveAsDraft === true;
+  let status: BlogStatus = req.body.status;
+  if (!req.body.status || req.body.status === BlogStatus.Published || req.body.status === BlogStatus.Approved) {
+    status = BlogStatus.Draft;
+  }
 
   const newBlogData = {
     ...req.body,
     user: user_id,
-    status: saveAsDraft ? BlogStatus.Draft : BlogStatus.Pending
+    status: status
   };
 
   const blog = new Blog(newBlogData);
@@ -142,7 +144,7 @@ export const createBlogController = asyncErrorHandler(async (req, res, next) => 
 
   res.status(StatusCode.OK).json({
     status: "success",
-    message: saveAsDraft ? "Blog saved as draft successfully" : "Blog created successfully",
+    message: status === BlogStatus.Draft ? "Blog saved as draft successfully" : "Blog created successfully",
     data: blog
   });
 });
@@ -153,6 +155,10 @@ export const createBlogController = asyncErrorHandler(async (req, res, next) => 
  */
 export const updateBlogController = asyncErrorHandler(async (req, res, next) => {
   const { id } = req.params;
+
+  if (!req.body.status || req.body.status === BlogStatus.Published || req.body.status === BlogStatus.Approved) {
+    req.body.status = BlogStatus.Draft;
+  }
   const blog = await Blog.findOneAndUpdate(
     { _id: new mongoose.Types.ObjectId(id), status: BlogStatus.Draft },
     { ...req.body },
