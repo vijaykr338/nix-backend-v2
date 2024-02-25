@@ -4,36 +4,10 @@ import asyncErrorHandler from "../helpers/asyncErrorHandler";
 import CustomError from "../../config/CustomError";
 import passwordResetMail from "../services/emailService";
 import * as UserService from "../services/userService";
-import mongoose from "mongoose";
 import StatusCode from "../helpers/httpStatusCode";
 import Permission from "../helpers/permissions";
 import { User } from "../models/userModel";
-
-const makeAccessToken = (
-  email: string,
-  user_id: mongoose.Schema.Types.ObjectId
-) => {
-  const access_secret_key = process.env.ACCESS_SECRET_KEY;
-  if (!access_secret_key) {
-    throw Error("Access secret key not found in env");
-  }
-  return jwt.sign({ email, user_id }, access_secret_key, {
-    expiresIn: "10s",
-  });
-};
-
-const makeRefreshToken = (
-  email: string,
-  user_id: mongoose.Schema.Types.ObjectId
-) => {
-  const refresh_secret_key = process.env.REFRESH_SECRET_KEY;
-  if (!refresh_secret_key) {
-    throw Error("Refresh secret key not found in env");
-  }
-  return jwt.sign({ email, user_id }, refresh_secret_key, {
-    expiresIn: "1d",
-  });
-};
+import { makeAccessToken, makeRefreshToken } from "../helpers/common";
 
 /**
  * Used when access tokens have expired. Generate a new access token and a new refresh token.
@@ -367,7 +341,6 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
  */
 
 export const logout = asyncErrorHandler(async (req, res, _next) => {
-
   const cookies = req.cookies;
   if (!cookies?.jwt) return res.sendStatus(StatusCode.NO_CONTENT);
   const refreshToken = cookies.jwt;
