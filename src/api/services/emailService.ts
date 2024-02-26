@@ -6,7 +6,7 @@ import { IUser, PopulatedUser } from "../models/userModel";
 
 const APP_URL = process.env.HOST || "https://team.dtutimes.com";
 const COPYRIGHT_YEAR = new Date().getFullYear();
-const DEVELOPER_FOOTER = "dvishal485 | m-siya | pranjal-trvd";
+const DEVELOPER_FOOTER = "Batch 2025";
 
 /**
 * @description Email class for sending emails
