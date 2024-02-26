@@ -18,8 +18,7 @@ const signup_protect = protected_route([Permission.CreateProfile]);
 router.route("/signup").post(protect, signup_protect, signup);
 router.post("/login", login);
 router.get("/refresh", refresh);
-router.post("/logout", protect, logout);
-
+router.post("/logout", logout);
 router.post("/forgotPassword", forgotPassword);
 
 // wrong implementation rn

@@ -74,10 +74,7 @@ export const delete_role = asyncErrorHandler(async (req, res, next) => {
     }
     const role = await Role.findByIdAndDelete(id);
     if (!role) {
-      const error = new CustomError(
-        "Role not found.",
-        StatusCode.NOT_FOUND
-      );
+      const error = new CustomError("Role not found.", StatusCode.NOT_FOUND);
       return next(error);
     }
     return res.status(StatusCode.OK).json({
@@ -93,10 +90,9 @@ export const delete_role = asyncErrorHandler(async (req, res, next) => {
   }
 });
 
-export const get_all_roles = asyncErrorHandler(async (_req, res, _next) => {
+export const get_all_roles = asyncErrorHandler(async (req, res, _next) => {
   // todo: should be under service
   const roles = await Role.find({});
-
   res.status(StatusCode.OK).json({
     status: "success",
     message: "Roles fetched successfully",

@@ -16,7 +16,7 @@ const deleteBlogProtect = protected_route([Permission.DeleteBlog]);
 router.route("/").get(protect, readBlogProtect, getAllBlogsController);
 
 // for the main dtutimes frontend
-router.route("published-blogs").get(getPublishedBlogsController);
+router.route("/published-blogs").get(getPublishedBlogsController);
 
 // protected for "Your Stories" page (all blogs by this user ONLY)
 router.route("/my-blogs").get(protect, myBlogsController);
