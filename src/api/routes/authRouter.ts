@@ -21,8 +21,6 @@ router.get("/refresh", refresh);
 router.post("/logout", protect, logout);
 
 router.post("/forgotPassword", forgotPassword);
-
-// wrong implementation rn
 router.patch("/resetPassword/:token", resetPassword);
 
 export default router;
