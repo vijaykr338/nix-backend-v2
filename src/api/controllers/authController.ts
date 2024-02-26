@@ -4,31 +4,10 @@ import asyncErrorHandler from "../helpers/asyncErrorHandler";
 import CustomError from "../../config/CustomError";
 import passwordResetMail from "../services/emailService";
 import * as UserService from "../services/userService";
-import mongoose from "mongoose";
 import StatusCode from "../helpers/httpStatusCode";
 import Permission from "../helpers/permissions";
-
-
-const makeAccessToken = (email: string, user_id: mongoose.Schema.Types.ObjectId) => {
-  const access_secret_key = process.env.ACCESS_SECRET_KEY;
-  if (!access_secret_key) {
-    throw Error("Access secret key not found in env");
-  }
-  return jwt.sign({ email, user_id }, access_secret_key, {
-    expiresIn: "1d",
-  });
-};
-
-const makeRefreshToken = (email: string, user_id: mongoose.Schema.Types.ObjectId) => {
-  const refresh_secret_key = process.env.REFRESH_SECRET_KEY;
-  if (!refresh_secret_key) {
-    throw Error("Refresh secret key not found in env");
-  }
-  return jwt.sign({ email, user_id }, refresh_secret_key, {
-    expiresIn: "7d",
-  });
-};
-
+import { User } from "../models/userModel";
+import { makeAccessToken, makeRefreshToken } from "../helpers/common";
 
 /**
  * Used when access tokens have expired. Generate a new access token and a new refresh token.
@@ -36,28 +15,52 @@ const makeRefreshToken = (email: string, user_id: mongoose.Schema.Types.ObjectId
 
 export const refresh = asyncErrorHandler(async (req, res, next) => {
   const cookies = req.cookies;
-  if (!cookies) return next(new CustomError("User not logged in or cookies disabled!", StatusCode.UNAUTHORIZED));
+  if (!cookies)
+    return next(
+      new CustomError(
+        "User not logged in or cookies disabled!",
+        StatusCode.UNAUTHORIZED
+      )
+    );
 
   const refreshToken = cookies.jwt as string;
 
   if (!refreshToken) {
-    const err = new CustomError("No refreshToken found! Please login again!", StatusCode.UNAUTHORIZED);
+    const err = new CustomError(
+      "No refreshToken found! Please login again!",
+      StatusCode.UNAUTHORIZED
+    );
     return next(err);
   }
 
-  const foundUser = await UserService.checkUserExists({ refreshToken: refreshToken });
+  const foundUser = await UserService.checkUserExists({
+    refreshToken: refreshToken,
+  });
 
   if (!foundUser) {
+    res.clearCookie("jwt", { httpOnly: true, sameSite: "none", secure: true });
     return next(new CustomError("Invalid refresh token", StatusCode.FORBIDDEN));
   }
   const refresh_secret_key = process.env.REFRESH_SECRET_KEY;
   if (!refresh_secret_key) {
-    return next(new CustomError("Refresh secret key not found in env", StatusCode.INTERNAL_SERVER_ERROR));
+    return next(
+      new CustomError(
+        "Refresh secret key not found in env",
+        StatusCode.INTERNAL_SERVER_ERROR
+      )
+    );
   }
 
   jwt.verify(refreshToken, refresh_secret_key, (err, decoded: JwtPayload) => {
     if (err || foundUser.email != decoded.email) {
-      return next(new CustomError("Invalid refresh token", StatusCode.FORBIDDEN));
+      res.clearCookie("jwt", {
+        httpOnly: true,
+        sameSite: "none",
+        secure: true,
+      });
+      return next(
+        new CustomError("Invalid refresh token", StatusCode.FORBIDDEN)
+      );
     }
 
     const newAccessToken = makeAccessToken(foundUser.email, foundUser._id);
@@ -91,7 +94,10 @@ export const signup = asyncErrorHandler(async (req, res, next) => {
   console.log(isDuplicate);
 
   if (isDuplicate) {
-    const error = new CustomError("Email already registered", StatusCode.NOT_ACCEPTABLE);
+    const error = new CustomError(
+      "Email already registered",
+      StatusCode.NOT_ACCEPTABLE
+    );
     return next(error);
   }
 
@@ -127,7 +133,10 @@ export const login = asyncErrorHandler(async (req, res, next) => {
   const foundUser = await UserService.checkUserExists({ email: email });
 
   if (!foundUser) {
-    const error = new CustomError("No user exists with this email.", StatusCode.UNAUTHORIZED);
+    const error = new CustomError(
+      "No user exists with this email.",
+      StatusCode.UNAUTHORIZED
+    );
     return next(error);
   }
 
@@ -140,6 +149,7 @@ export const login = asyncErrorHandler(async (req, res, next) => {
     foundUser.refreshToken = refreshToken;
     await foundUser.save();
 
+    //set refreshToken cookie (whose name is jwt) in headers of response which will store in browser
     res.cookie("jwt", refreshToken, {
       httpOnly: true,
       maxAge: 24 * 60 * 60 * 1000, //1 day
@@ -151,13 +161,14 @@ export const login = asyncErrorHandler(async (req, res, next) => {
     const allowed_perms: Set<Permission> = new Set();
     foundUser.extra_permissions?.forEach((perm) => allowed_perms.add(perm));
     foundUser.role_id?.permissions?.forEach((perm) => allowed_perms.add(perm));
-    foundUser.removed_permissions?.forEach((perm) => allowed_perms.delete(perm));
+    foundUser.removed_permissions?.forEach((perm) =>
+      allowed_perms.delete(perm)
+    );
     res.json({
       status: "success",
       message: "User successfully login!",
       data: {
         accessToken,
-        refreshToken,
         user: {
           id: foundUser._id,
           name: foundUser.name,
@@ -165,12 +176,16 @@ export const login = asyncErrorHandler(async (req, res, next) => {
           bio: foundUser.bio,
           role: foundUser.role_id.name,
           permission: [...allowed_perms],
-          is_superuser: foundUser.role_id._id.toString() === process.env.SUPERUSER_ROLE_ID,
+          is_superuser:
+            foundUser.role_id._id.toString() === process.env.SUPERUSER_ROLE_ID,
         },
       },
     });
   } else {
-    const error = new CustomError("Password is wrong!", StatusCode.UNAUTHORIZED);
+    const error = new CustomError(
+      "Password is wrong!",
+      StatusCode.UNAUTHORIZED
+    );
     return next(error);
   }
 });
@@ -208,7 +223,7 @@ export const changePassword = asyncErrorHandler(async (req, res, next) => {
   res.status(StatusCode.OK).json({
     status: "success",
     message: "Password changed successfully",
-    data: { user }
+    data: { user },
   });
 });
 
@@ -222,7 +237,10 @@ export const forgotPassword = asyncErrorHandler(async (req, res, next) => {
   const email: string = req.body.email;
   const user = await UserService.checkUserExists({ email: email });
   if (!user) {
-    const error = new CustomError("No user exists with this email.", StatusCode.NOT_FOUND);
+    const error = new CustomError(
+      "No user exists with this email.",
+      StatusCode.NOT_FOUND
+    );
     return next(error);
   }
 
@@ -242,12 +260,10 @@ export const forgotPassword = asyncErrorHandler(async (req, res, next) => {
   try {
     await mail.sendTo(email);
     console.log("Password reset email sent");
-    res.status(StatusCode.OK).json(
-      {
-        status: "success",
-        message: "Password reset link successfully sent."
-      }
-    );
+    res.status(StatusCode.OK).json({
+      status: "success",
+      message: "Password reset link successfully sent.",
+    });
   } catch (err) {
     const error = new CustomError(
       "There was an error in sending password reset email. Please try again.",
@@ -267,7 +283,10 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
   const hashed_password = await bcrypt.hash(newPassword, 10);
   const key = process.env.REFRESH_SECRET_KEY;
   if (!key) {
-    const error = new CustomError("Refresh/Reset secret key not found in env", StatusCode.INTERNAL_SERVER_ERROR);
+    const error = new CustomError(
+      "Refresh/Reset secret key not found in env",
+      StatusCode.INTERNAL_SERVER_ERROR
+    );
     return next(error);
   }
   // Decode the token to get the user's email
@@ -275,20 +294,29 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
   try {
     decoded_payload = jwt.verify(resetToken, key) as jwt.JwtPayload;
   } catch (e) {
-    const err = new CustomError("Invalid/Expired Token", StatusCode.BAD_REQUEST);
+    const err = new CustomError(
+      "Invalid/Expired Token",
+      StatusCode.BAD_REQUEST
+    );
     return next(err);
   }
 
   const email: string | undefined = decoded_payload.email;
   if (!email) {
-    const error = new CustomError("Generated reset link is invalid!", StatusCode.BAD_REQUEST);
+    const error = new CustomError(
+      "Generated reset link is invalid!",
+      StatusCode.BAD_REQUEST
+    );
     return next(error);
   }
 
   const user = await UserService.checkUserExists({ email: email });
 
   if (!user || user.passwordResetToken !== resetToken) {
-    const error = new CustomError("Token has been invalidated!", StatusCode.BAD_REQUEST);
+    const error = new CustomError(
+      "Token has been invalidated!",
+      StatusCode.BAD_REQUEST
+    );
     return next(error);
   }
 
@@ -304,7 +332,7 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
     data: {
       email: user.email,
       name: user.name,
-    }
+    },
   });
 });
 
@@ -313,25 +341,21 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
  */
 
 export const logout = asyncErrorHandler(async (req, res, _next) => {
-  /** todo: i would like to describe the security flaw here, this never expires the access token
-   * so if someone gets access to the access token, they can use it to access the user's account
-   * until it is valid even after logout request is served. To fix this, one could possibly add
-   * boolean in db to check if user is logged out and then check for that boolean in authMiddleware
-   * but this got another flaw as well, if the user logs out from one device, the other device will
-   * also be logged out, but hey, atleast the access token is not valid anymore.
-   */
-  console.log(req.body.user_id);
-  const foundUser = await UserService.checkUserExists({ _id: new mongoose.Types.ObjectId(req.body.user_id) });
+  const cookies = req.cookies;
+  if (!cookies?.jwt) return res.sendStatus(StatusCode.NO_CONTENT);
+  const refreshToken = cookies.jwt;
+
+  const foundUser = await User.findOne({ refreshToken }).exec();
 
   if (!foundUser) {
-    console.error("WHOA! Logout request from a ghost!", req.ip, req.headers);
+    res.clearCookie("jwt", { httpOnly: true, sameSite: "none", secure: true });
     return res.sendStatus(StatusCode.NO_CONTENT);
   }
 
   // delete refreshToken present in db
-  foundUser.refreshToken = undefined;
+  foundUser.refreshToken = "";
   await foundUser.save();
 
-  console.log("User logged out successfully", foundUser.email);
-  return res.sendStatus(StatusCode.NO_CONTENT);
+  res.clearCookie("jwt", { httpOnly: true, sameSite: "none", secure: true });
+  res.sendStatus(StatusCode.NO_CONTENT);
 });
