@@ -124,9 +124,6 @@ export const createBlogController = asyncErrorHandler(async (req, res, next) => 
     return next(error);
   }
 
-  // todo: we didn't verify if user who sent the request sent their user_id only
-  // this can potentially allow user to publish blog with other's name
-  // but who and why someone will do that so let's keep it the way it is
   const user_id = new mongoose.Types.ObjectId(req.body.user_id);
   let status: BlogStatus = req.body.status;
   if (!req.body.status || req.body.status === BlogStatus.Published || req.body.status === BlogStatus.Approved) {
