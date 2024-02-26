@@ -150,9 +150,9 @@ export const createBlogController = asyncErrorHandler(
     const user_id = new mongoose.Types.ObjectId(req.body.user_id);
     let status: BlogStatus = req.body.status;
     if (
-      !req.body.status ||
-      req.body.status === BlogStatus.Published ||
-      req.body.status === BlogStatus.Approved
+      !status ||
+      status === BlogStatus.Published ||
+      status === BlogStatus.Approved
     ) {
       status = BlogStatus.Draft;
     }
