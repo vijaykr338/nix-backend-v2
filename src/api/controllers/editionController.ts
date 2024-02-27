@@ -81,7 +81,7 @@ export const deleteEdition = asyncErrorHandler(async (req, res, next) => {
 });
 
 export const upsertEdition = asyncErrorHandler(async (req, res, next) => {
-  const edition_name = req.body.name;
+  const edition_name = req.body.edition_name;
   const edition_id = req.body.edition_id || req.params.id;
   const edition_link = req.body.edition_link;
 
