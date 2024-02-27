@@ -3,7 +3,7 @@ import { IRole } from "../models/rolesModel";
 import { User } from "../models/userModel";
 import bcrypt from "bcrypt";
 import generateRandomPassword from "../helpers/randomPassword";
-import emailService from "./emailService";
+import RegisterationMail from "./emails/registeration";
 
 
 export interface ICheckUser {
@@ -63,7 +63,7 @@ export const createNewUser = async (name: string, email: string) => {
     password: hashed_password,
   });
 
-  const reg_mail = new emailService.RegisterationMail(user, password);
+  const reg_mail = new RegisterationMail(user, password);
   await reg_mail.sendTo(email);
   if (!reg_mail) return null;
 

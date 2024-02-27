@@ -324,7 +324,7 @@ export const refreshBlogStatus = asyncErrorHandler(async (_req, res, _next) => {
  */
 async function refresh_blog_status(): Promise<
   import("mongoose").UpdateWriteOpResult
-> {
+  > {
   const refresh_result = await Blog.updateMany(
     { status: BlogStatus.Approved, published_at: { $lte: new Date() } },
     { status: BlogStatus.Published }

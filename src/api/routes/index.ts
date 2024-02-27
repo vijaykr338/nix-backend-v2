@@ -10,13 +10,13 @@ import imageRouter from "./imageRouter";
 
 const router = express.Router();
 
-router.use(`/user`, userRouter);
-router.use(`/auth`, authRouter);
-router.use(`/role`, roleRouter);
-router.use(`/blog`, blogRouter);
-router.use(`/logs`, logsRouter);
-router.use(`/images`, imageRouter);
-router.all(`/permissions`, (req, res) => {
+router.use("/user", userRouter);
+router.use("/auth", authRouter);
+router.use("/role", roleRouter);
+router.use("/blog", blogRouter);
+router.use("/logs", logsRouter);
+router.use("/images", imageRouter);
+router.all("/permissions", (req, res) => {
   const all_permissions = Object.entries(Permission)
     .filter(([, perm_id]) => typeof perm_id === "number")
     .reduce((acc, [perm_name, perm_id]) => {

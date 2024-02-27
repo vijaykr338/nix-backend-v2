@@ -4,6 +4,7 @@ import * as UserService from "../services/userService";
 import Permission from "./permissions";
 import emailService from "../services/emailService";
 import { IBlog } from "../models/blogModel";
+import PendingApprovalMail from "../services/emails/pendingApproval";
 
 type ObjectId = mongoose.Types.ObjectId;
 
@@ -40,7 +41,7 @@ export const getUsersPermissionBased = async (permissions: Permission[][]) => {
 export const blogForApprovalMail = async (blog: IBlog) => {
   getUsersPermissionBased([[Permission.PublishBlog]]).then((users) => {
     const emails = users.map((user) => user.email);
-    const email_message = new emailService.StorySubmittedForApproval(blog);
+    const email_message = new PendingApprovalMail(blog);
     email_message.sendTo(emails);
   });
 };
