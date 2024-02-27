@@ -27,73 +27,76 @@ export interface IBlog extends Document {
   updatedAt: Date;
 }
 
-const blogSchema = new Schema<IBlog>({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "user",
-    required: [true, "User_id is required"],
+const blogSchema = new Schema<IBlog>(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "user",
+      required: [true, "User_id is required"],
+    },
+    title: {
+      type: String,
+      required: [true, "Please enter title"],
+    },
+    byliner: {
+      type: String,
+      required: [true, "Please enter bilinger"],
+    },
+    slug: {
+      type: String,
+      required: [true, "Please enter slug"],
+    },
+    body: {
+      type: String,
+      required: [true, "Please enter body"],
+    },
+    status: {
+      type: Number,
+      enum: BlogStatus,
+      default: BlogStatus.Pending,
+    },
+    category_id: {
+      type: Number,
+      required: [true, "Please enter category_id"],
+    },
+    cover: {
+      type: String,
+      default: null,
+    },
+    views: {
+      type: Number,
+      default: 0,
+    },
+    likes: {
+      type: Number,
+      default: 0,
+    },
+    meta_title: {
+      type: String,
+      required: [true, "Please enter meta_title"],
+    },
+    meta_description: {
+      type: String,
+      required: [true, "Please enter meta_description"],
+    },
+    published_at: {
+      type: Date,
+      default: null,
+    },
+    createdAt: {
+      type: Date,
+    },
+    updatedAt: {
+      type: Date,
+    },
   },
-  title: {
-    type: String,
-    required: [true, "Please enter title"],
+  {
+    timestamps: {
+      createdAt: "createdAt",
+      updatedAt: "updatedAt",
+    },
   },
-  byliner: {
-    type: String,
-    required: [true, "Please enter bilinger"],
-  },
-  slug: {
-    type: String,
-    required: [true, "Please enter slug"],
-  },
-  body: {
-    type: String,
-    required: [true, "Please enter body"],
-  },
-  status: {
-    type: Number,
-    enum: BlogStatus,
-    default: BlogStatus.Pending,
-  },
-  category_id: {
-    type: Number,
-    required: [true, "Please enter category_id"],
-  },
-  cover: {
-    type: String,
-    default: null,
-  },
-  views: {
-    type: Number,
-    default: 0,
-  },
-  likes: {
-    type: Number,
-    default: 0,
-  },
-  meta_title: {
-    type: String,
-    required: [true, "Please enter meta_title"],
-  },
-  meta_description: {
-    type: String,
-    required: [true, "Please enter meta_description"],
-  },
-  published_at: {
-    type: Date,
-    default: null,
-  },
-  createdAt: {
-    type: Date,
-  },
-  updatedAt: {
-    type: Date,
-  }
-}, {
-  timestamps: {
-    createdAt: "createdAt",
-    updatedAt: "updatedAt"
-  }
-});
+);
 
 const Blog = mongoose.model<IBlog>("blog", blogSchema);
 

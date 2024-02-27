@@ -12,7 +12,7 @@ const devErrors = (res: Response, error: CustomError) => {
     status: error.statusCode,
     message: error.message,
     stackTrace: error.stack,
-    error: error
+    error: error,
   });
 };
 
@@ -41,19 +41,22 @@ const prodErrors = (res: Response, error: CustomError | Error) => {
   if (error instanceof CustomError) {
     res.status(error.statusCode).json({
       status: error.statusCode,
-      message: error.message
+      message: error.message,
     });
   } else {
     res.status(StatusCode.INTERNAL_SERVER_ERROR).json({
       status: "error",
-      message: "Something went wrong! Please try again later."
+      message: "Something went wrong! Please try again later.",
     });
   }
 };
 
-
-
-export default function globalErrorHandler(error: any, _req: Request, res: Response, _next: NextFunction) {
+export default function globalErrorHandler(
+  error: any,
+  _req: Request,
+  res: Response,
+  _next: NextFunction,
+) {
   error.statusCode = error.statusCode || StatusCode.INTERNAL_SERVER_ERROR;
   error.status = error.status || "error";
 

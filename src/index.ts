@@ -61,7 +61,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.all("*", (req, res, next) => {
   const err = new CustomError(
     `Can't find ${req.originalUrl} on the server! Are you sure you wanted to make a ${req.method} request?`,
-    StatusCode.NOT_FOUND
+    StatusCode.NOT_FOUND,
   );
   //pass it to global error handler
   next(err);

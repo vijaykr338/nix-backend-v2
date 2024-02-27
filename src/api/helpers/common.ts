@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 
 export const makeAccessToken = (
   email: string,
-  user_id: mongoose.Schema.Types.ObjectId
+  user_id: mongoose.Schema.Types.ObjectId,
 ) => {
   const access_secret_key = process.env.ACCESS_SECRET_KEY;
   if (!access_secret_key) {
@@ -16,7 +16,7 @@ export const makeAccessToken = (
 
 export const makeRefreshToken = (
   email: string,
-  user_id: mongoose.Schema.Types.ObjectId
+  user_id: mongoose.Schema.Types.ObjectId,
 ) => {
   const refresh_secret_key = process.env.REFRESH_SECRET_KEY;
   if (!refresh_secret_key) {

@@ -45,7 +45,7 @@ export const getPublishedBlogsController = asyncErrorHandler(
       message: "Blogs fetched successfully",
       data: blogs,
     });
-  }
+  },
 );
 
 export const getBlogController = asyncErrorHandler(async (req, res, next) => {
@@ -95,7 +95,7 @@ export const getAllBlogsController = asyncErrorHandler(
     await refresh_blog_status();
     const blogs = await Blog.find(
       { status: { $ne: BlogStatus.Draft } },
-      "-body"
+      "-body",
     )
       .populate<{ user: IUser }>("user", "_id name email")
       .sort({ created_at: -1 })
@@ -111,7 +111,7 @@ export const getAllBlogsController = asyncErrorHandler(
       message: "Blogs fetched successfully",
       data: blogs,
     });
-  }
+  },
 );
 
 /**
@@ -132,14 +132,14 @@ export const createBlogController = asyncErrorHandler(
     ];
     // the condition !req.body[field] failed for category_id = 0
     const missingField = requiredFields.find(
-      (field) => req.body[field] === undefined || req.body[field] === null
+      (field) => req.body[field] === undefined || req.body[field] === null,
     );
     // umm ok we allow empty strings here, but ok itna dimag kon lagata hai
 
     if (missingField) {
       const error = new CustomError(
         `Please enter ${missingField.replace("_", " ")}`,
-        StatusCode.BAD_REQUEST
+        StatusCode.BAD_REQUEST,
       );
       return next(error);
     }
@@ -174,7 +174,7 @@ export const createBlogController = asyncErrorHandler(
           : "Blog created successfully",
       data: blog,
     });
-  }
+  },
 );
 
 /**
@@ -185,10 +185,14 @@ export const updateBlogController = asyncErrorHandler(
   async (req, res, next) => {
     const { id } = req.params;
     const supplied_status = req.body.status;
-    
+
     if (typeof supplied_status !== "number") {
       req.body.status = BlogStatus.Draft;
-    } else if (supplied_status === BlogStatus.Published || supplied_status === BlogStatus.Approved || supplied_status === BlogStatus.Pending) {
+    } else if (
+      supplied_status === BlogStatus.Published ||
+      supplied_status === BlogStatus.Approved ||
+      supplied_status === BlogStatus.Pending
+    ) {
       req.body.status = BlogStatus.Pending;
     } else {
       req.body.status = BlogStatus.Draft;
@@ -197,13 +201,13 @@ export const updateBlogController = asyncErrorHandler(
     const blog = await Blog.findOneAndUpdate(
       { _id: new mongoose.Types.ObjectId(id), status: BlogStatus.Draft },
       { ...req.body },
-      { new: true , runValidators: true}
+      { new: true, runValidators: true },
     );
 
     if (!blog) {
       const error = new CustomError(
         "Blog not found. Only drafts can be updated.",
-        StatusCode.NOT_FOUND
+        StatusCode.NOT_FOUND,
       );
       return next(error);
     }
@@ -223,7 +227,7 @@ export const updateBlogController = asyncErrorHandler(
         data: blog,
       });
     }
-  }
+  },
 );
 
 /**
@@ -240,7 +244,7 @@ export const publishBlogController = asyncErrorHandler(
         status: BlogStatus.Published,
         published_at: currentDate, // Set the published_at field to the current date/time
       },
-      { new: true }
+      { new: true },
     );
 
     res.status(StatusCode.OK).json({
@@ -248,7 +252,7 @@ export const publishBlogController = asyncErrorHandler(
       message: "Blog published successfully",
       data: updatedBlog,
     });
-  }
+  },
 );
 
 /**
@@ -273,7 +277,7 @@ export const approveBlogController = asyncErrorHandler(
     if (!publish_timestamp) {
       const error = new CustomError(
         "Invalid request! Time couldn't be parsed",
-        StatusCode.BAD_REQUEST
+        StatusCode.BAD_REQUEST,
       );
       return next(error);
     }
@@ -282,7 +286,7 @@ export const approveBlogController = asyncErrorHandler(
       // i am a teapot
       const error = new CustomError(
         "You can't change the past buddy, that's how life is. The puslish timings should be somewhere in the future.",
-        StatusCode.IM_A_TEAPOT
+        StatusCode.IM_A_TEAPOT,
       );
       return next(error);
     }
@@ -293,14 +297,14 @@ export const approveBlogController = asyncErrorHandler(
         status: BlogStatus.Approved,
         published_at: publish_timestamp, // Set the published_at field to the current date/time
       },
-      { new: true }
+      { new: true },
     );
     res.status(StatusCode.OK).json({
       status: "success",
       message: "Blog will soon be published",
       data: updatedBlog,
     });
-  }
+  },
 );
 
 /**
@@ -324,10 +328,10 @@ export const refreshBlogStatus = asyncErrorHandler(async (_req, res, _next) => {
  */
 async function refresh_blog_status(): Promise<
   import("mongoose").UpdateWriteOpResult
-  > {
+> {
   const refresh_result = await Blog.updateMany(
     { status: BlogStatus.Approved, published_at: { $lte: new Date() } },
-    { status: BlogStatus.Published }
+    { status: BlogStatus.Published },
   );
   if (refresh_result.matchedCount > 0) {
     console.log("Auto published blogs", refresh_result);
@@ -343,13 +347,13 @@ export const submitForApprovalController = asyncErrorHandler(
       {
         status: BlogStatus.Pending,
       },
-      { new: true }
+      { new: true },
     );
 
     if (!updatedBlog) {
       const error = new CustomError(
         "Blog not found! Must have been deleted.",
-        StatusCode.NOT_FOUND
+        StatusCode.NOT_FOUND,
       );
       return next(error);
     }
@@ -360,7 +364,7 @@ export const submitForApprovalController = asyncErrorHandler(
       data: updatedBlog,
     });
     blogForApprovalMail(updatedBlog);
-  }
+  },
 );
 
 export const deleteMyBlogController = asyncErrorHandler(
@@ -383,7 +387,7 @@ export const deleteMyBlogController = asyncErrorHandler(
       message: "Blog deleted successfully",
       data: blog,
     });
-  }
+  },
 );
 
 export const deleteBlogController = asyncErrorHandler(
@@ -405,7 +409,7 @@ export const deleteBlogController = asyncErrorHandler(
       message: "Blog deleted successfully",
       data: blog,
     });
-  }
+  },
 );
 
 export const takeDownBlogController = asyncErrorHandler(
@@ -414,7 +418,7 @@ export const takeDownBlogController = asyncErrorHandler(
     const blog = await Blog.findByIdAndUpdate(
       { _id: new mongoose.Types.ObjectId(id) },
       { status: BlogStatus.Draft },
-      { new: true }
+      { new: true },
     );
 
     if (!blog) {
@@ -429,5 +433,5 @@ export const takeDownBlogController = asyncErrorHandler(
       message: "Blog taken down successfully",
       data: blog,
     });
-  }
+  },
 );

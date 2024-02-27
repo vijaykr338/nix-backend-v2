@@ -1,5 +1,9 @@
 import { PopulatedUser } from "../../models/userModel";
-import Email, { APP_URL, COPYRIGHT_YEAR, DEVELOPER_FOOTER } from "../emailService";
+import Email, {
+  APP_URL,
+  COPYRIGHT_YEAR,
+  DEVELOPER_FOOTER,
+} from "../emailService";
 
 /** Mail for password reset link */
 class PasswordResetMail extends Email {

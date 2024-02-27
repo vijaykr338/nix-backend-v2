@@ -9,8 +9,14 @@ import util from "util";
 const writeFile = util.promisify(fs.writeFile);
 const unlink = util.promisify(fs.unlink);
 
-const generate_thumbnail = async (image: sharp.Sharp, filename: string, { suppress_console } = { suppress_console: false }) => {
-  if (!suppress_console) { console.log("Creating thumbnail for", filename); }
+const generate_thumbnail = async (
+  image: sharp.Sharp,
+  filename: string,
+  { suppress_console } = { suppress_console: false },
+) => {
+  if (!suppress_console) {
+    console.log("Creating thumbnail for", filename);
+  }
   const thumbnail = await image.resize(128, 128, { fit: "inside" }).toBuffer();
   await writeFile(`thumbnails/${filename}`, thumbnail);
   return thumbnail;
@@ -21,7 +27,10 @@ export const upload_image = asyncErrorHandler(async (req, res, next) => {
   const is_thumbnail = req.query.thumbnail === "true";
 
   if (!req_file) {
-    const err = new CustomError("Please upload an image and with a proper extension", StatusCode.BAD_REQUEST);
+    const err = new CustomError(
+      "Please upload an image and with a proper extension",
+      StatusCode.BAD_REQUEST,
+    );
     return next(err);
   }
 
@@ -36,7 +45,7 @@ export const upload_image = asyncErrorHandler(async (req, res, next) => {
       message: "Image uploaded successfully",
       data: {
         name: req_file.filename,
-      }
+      },
     });
   }
 
@@ -44,8 +53,8 @@ export const upload_image = asyncErrorHandler(async (req, res, next) => {
     success: true,
     message: "Image uploaded successfully",
     data: {
-      name: req_file.filename
-    }
+      name: req_file.filename,
+    },
   });
 });
 
@@ -62,7 +71,9 @@ export const get_avatar = asyncErrorHandler(async (req, res, _next) => {
       try {
         const image = sharp(`uploads/${filename}`);
         const image_png = image.png();
-        const thumbnail = await generate_thumbnail(image_png, filename, { suppress_console: true });
+        const thumbnail = await generate_thumbnail(image_png, filename, {
+          suppress_console: true,
+        });
         res.contentType("png").send(thumbnail);
       } catch {
         const image = sharp("thumbnails/default-avatar.png");
@@ -75,7 +86,7 @@ export const get_avatar = asyncErrorHandler(async (req, res, _next) => {
       const image = sharp(`uploads/${filename}`);
       const image_png = image.png();
       try {
-        const size = thumbnail && (parseInt(thumbnail.toString()));
+        const size = thumbnail && parseInt(thumbnail.toString());
         if (size) {
           const image_resized = image.resize(size, size, { fit: "inside" });
           const image_png_resized = image_resized.png();
@@ -102,7 +113,9 @@ export const get_image = asyncErrorHandler(async (req, res, next) => {
   const filename = file.split("?")[0];
   const { thumbnail } = req.query;
   if (!filename) {
-    return next(new CustomError("Filename is required", StatusCode.BAD_REQUEST));
+    return next(
+      new CustomError("Filename is required", StatusCode.BAD_REQUEST),
+    );
   }
 
   if (thumbnail === "true") {
@@ -120,7 +133,7 @@ export const get_image = asyncErrorHandler(async (req, res, next) => {
     const image = sharp(`uploads/${filename}`);
     const image_png = image.png();
     try {
-      const size = thumbnail && (parseInt(thumbnail.toString()));
+      const size = thumbnail && parseInt(thumbnail.toString());
       if (size) {
         const image_resized = image.resize(size, size, { fit: "inside" });
         const image_png_resized = image_resized.png();
@@ -139,13 +152,21 @@ export const delete_avatar = asyncErrorHandler(async (req, res, next) => {
   const filename = req.body.user_id;
 
   if (!filename) {
-    return next(new CustomError("Relogin to proceed with this request!", StatusCode.BAD_REQUEST));
+    return next(
+      new CustomError(
+        "Relogin to proceed with this request!",
+        StatusCode.BAD_REQUEST,
+      ),
+    );
   }
 
   try {
     delete_image_fs(filename);
   } catch (err) {
-    const e = new CustomError("Error deleting image", StatusCode.INTERNAL_SERVER_ERROR);
+    const e = new CustomError(
+      "Error deleting image",
+      StatusCode.INTERNAL_SERVER_ERROR,
+    );
     return next(e);
   }
 });
@@ -165,13 +186,18 @@ export const delete_image = asyncErrorHandler(async (req, res, next) => {
   const { filename } = req.params;
 
   if (!filename) {
-    return next(new CustomError("Filename is required", StatusCode.BAD_REQUEST));
+    return next(
+      new CustomError("Filename is required", StatusCode.BAD_REQUEST),
+    );
   }
 
   try {
     delete_image_fs(filename);
   } catch (err) {
-    const e = new CustomError("Error deleting image", StatusCode.INTERNAL_SERVER_ERROR);
+    const e = new CustomError(
+      "Error deleting image",
+      StatusCode.INTERNAL_SERVER_ERROR,
+    );
     return next(e);
   }
 
@@ -184,23 +210,35 @@ export const delete_image = asyncErrorHandler(async (req, res, next) => {
 export const update_image = asyncErrorHandler(async (req, res, next) => {
   const req_file = req.file;
   if (!req_file) {
-    const err = new CustomError("Please upload an image and with a proper extension", StatusCode.BAD_REQUEST);
+    const err = new CustomError(
+      "Please upload an image and with a proper extension",
+      StatusCode.BAD_REQUEST,
+    );
     return next(err);
   }
   const { filename } = req.params;
 
   if (!filename) {
-    return next(new CustomError("Filename to be updated is required", StatusCode.BAD_REQUEST));
+    return next(
+      new CustomError(
+        "Filename to be updated is required",
+        StatusCode.BAD_REQUEST,
+      ),
+    );
   }
   // check if thumbnail exists and update it if it does
   const thumbnail_path = `thumbnails/${filename}`;
-  await unlink(thumbnail_path).then(() => generate_thumbnail(sharp(req_file.path), filename)).catch(() => console.log("No thumbnail found for image, hence not updated", filename));
+  await unlink(thumbnail_path)
+    .then(() => generate_thumbnail(sharp(req_file.path), filename))
+    .catch(() =>
+      console.log("No thumbnail found for image, hence not updated", filename),
+    );
 
   res.status(200).json({
     success: true,
     message: "Image updated successfully",
     data: {
       name: req_file.filename,
-    }
+    },
   });
 });

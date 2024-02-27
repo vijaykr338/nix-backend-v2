@@ -5,9 +5,8 @@ import mongoose from "mongoose";
 import Permission from "../helpers/permissions";
 import StatusCode from "../helpers/httpStatusCode";
 
-
 export const getAllUsers = asyncErrorHandler(async (req, res) => {
-  //add logic here 
+  //add logic here
 
   const allUsers = await UserService.getAllUsers({});
 
@@ -37,32 +36,37 @@ export const getAllUsers = asyncErrorHandler(async (req, res) => {
   });
 });
 
-export const getCurrentUserController = asyncErrorHandler(async (req, res, next) => {
-  const user_id = new mongoose.Types.ObjectId(req.body.user_id);
-  const user = await UserService.checkUserExists({ _id: user_id });
-  if (!user) {
-    const error = new CustomError("Unable to get current user", StatusCode.FORBIDDEN);
-    return next(error);
-  }
-
-  const allowed_perms: Set<Permission> = new Set();
-  user.extra_permissions?.forEach((perm) => allowed_perms.add(perm));
-  user?.role_id?.permissions?.forEach((perm) => allowed_perms.add(perm));
-  user.removed_permissions?.forEach((perm) => allowed_perms.delete(perm));
-
-  const permissions = [...allowed_perms];
-
-  res.status(StatusCode.OK).json({
-    status: "success",
-    message: "User fetched successfully",
-    data: {
-      permission: permissions,
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      bio: user.bio,
-      role: user.role_id?.name,
-      is_superuser: user._id.toString() === process.env.SUPERUSER_ROLE_ID,
+export const getCurrentUserController = asyncErrorHandler(
+  async (req, res, next) => {
+    const user_id = new mongoose.Types.ObjectId(req.body.user_id);
+    const user = await UserService.checkUserExists({ _id: user_id });
+    if (!user) {
+      const error = new CustomError(
+        "Unable to get current user",
+        StatusCode.FORBIDDEN,
+      );
+      return next(error);
     }
-  });
-});
+
+    const allowed_perms: Set<Permission> = new Set();
+    user.extra_permissions?.forEach((perm) => allowed_perms.add(perm));
+    user?.role_id?.permissions?.forEach((perm) => allowed_perms.add(perm));
+    user.removed_permissions?.forEach((perm) => allowed_perms.delete(perm));
+
+    const permissions = [...allowed_perms];
+
+    res.status(StatusCode.OK).json({
+      status: "success",
+      message: "User fetched successfully",
+      data: {
+        permission: permissions,
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        bio: user.bio,
+        role: user.role_id?.name,
+        is_superuser: user._id.toString() === process.env.SUPERUSER_ROLE_ID,
+      },
+    });
+  },
+);
