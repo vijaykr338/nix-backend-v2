@@ -1,10 +1,10 @@
 import express from "express";
 
 import {
-    deleteEdition,
-    getAllEditions,
-    getPublishedEditions,
-    upsertEdition,
+  deleteEdition,
+  getAllEditions,
+  getPublishedEditions,
+  upsertEdition,
 } from "../controllers/editionController";
 import Permission from "../helpers/permissions";
 import { protect } from "../middlewares/authMiddleware";
