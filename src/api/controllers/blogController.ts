@@ -148,28 +148,36 @@ export const createBlogController = asyncErrorHandler(
     // this can potentially allow user to publish blog with other's name
     // but who and why someone will do that so let's keep it the way it is
     const user_id = new mongoose.Types.ObjectId(req.body.user_id);
-    let status: BlogStatus = req.body.status;
-    if (
-      !status ||
-      status === BlogStatus.Published ||
-      status === BlogStatus.Approved
+    const supplied_status: BlogStatus = req.body.status;
+
+    if (typeof supplied_status !== "number") {
+      req.body.status = BlogStatus.Draft;
+    } else if (
+      supplied_status === BlogStatus.Published ||
+      supplied_status === BlogStatus.Approved ||
+      supplied_status === BlogStatus.Pending
     ) {
-      status = BlogStatus.Draft;
+      req.body.status = BlogStatus.Pending;
+    } else {
+      req.body.status = BlogStatus.Draft;
     }
 
     const newBlogData = {
       ...req.body,
       user: user_id,
-      status: status,
     };
 
     const blog = new Blog(newBlogData);
     await blog.save();
 
+    if (blog.status === BlogStatus.Pending) {
+      blogForApprovalMail(blog);
+    }
+
     res.status(StatusCode.OK).json({
       status: "success",
       message:
-        status === BlogStatus.Draft
+        req.body.status === BlogStatus.Draft
           ? "Blog saved as draft successfully"
           : "Blog created successfully",
       data: blog,
