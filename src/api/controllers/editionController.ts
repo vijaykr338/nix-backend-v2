@@ -82,7 +82,8 @@ export const deleteEdition = asyncErrorHandler(async (req, res, next) => {
 
 export const upsertEdition = asyncErrorHandler(async (req, res, next) => {
   const edition_name = req.body.edition_name;
-  const edition_id = req.body.edition_id || req.params.id;
+  const edition_id = req.body.edition_id;
+  const edition_obj_id = req.params.id;
   const edition_link = req.body.edition_link;
 
   if (!edition_name || !edition_id || !edition_link) {
@@ -118,20 +119,51 @@ export const upsertEdition = asyncErrorHandler(async (req, res, next) => {
   } else {
     req.body.status = EditionStatus.Draft;
   }
+  if (edition_obj_id) {
+    const edition = await Edition.findByIdAndUpdate(
+      {
+        _id: new mongoose.Types.ObjectId(edition_obj_id),
+      },
+      {
+        name: edition_name,
+        edition_id: edition_id,
+        status: req.body.status,
+        edition_link: edition_link,
+        published_at:
+          req.body.status === EditionStatus.Draft
+            ? null
+            : req.body.published_at,
+      },
+      {
+        new: true,
+        runValidators: true,
+      },
+    );
 
-  const edition = await Edition.findOneAndUpdate(
-    { edition_id: edition_id },
-    {
-      name: edition_name,
-      status: req.body.status,
-      edition_link: edition_link,
-      published_at:
-        req.body.status === EditionStatus.Draft ? null : req.body.published_at,
-    },
-    { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true },
-  );
+    if (!edition) {
+      const error = new CustomError("Edition not found", StatusCode.NOT_FOUND);
+      return next(error);
+    }
 
-  res.status(StatusCode.OK).json({
+    return res.status(StatusCode.OK).json({
+      status: "success",
+      message:
+        edition.status === EditionStatus.Draft
+          ? "Edition saved as draft successfully"
+          : "Edition posted successfully",
+      data: edition,
+    });
+  }
+  const edition = await Edition.create({
+    name: edition_name,
+    edition_id: edition_id,
+    status: req.body.status,
+    edition_link: edition_link,
+    published_at:
+      req.body.status === EditionStatus.Draft ? null : req.body.published_at,
+  });
+
+  return res.status(StatusCode.OK).json({
     status: "success",
     message:
       edition.status === EditionStatus.Draft
