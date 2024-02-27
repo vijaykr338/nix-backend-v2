@@ -4,10 +4,9 @@ import Permission from "../helpers/permissions";
 import * as UserService from "../services/userService";
 import StatusCode from "../helpers/httpStatusCode";
 
-
 /**
  * This generates a middleware to check for certain given permissions
- * 
+ *
  * Note: This is not a middleware in itself
  *
  * @export
@@ -28,11 +27,14 @@ export default function protected_route(permissions_required: Permission[]) {
     const user = await UserService.checkUserExists({ _id: user_id });
     if (!user) {
       /** this code should be unreachable; only way to
-        * reach this is code is if user was logged in
-        * before the entry was deleted from db
-        * must be a bad user
-        */
-      const err = new CustomError("Cannot find your login in database! hehe", StatusCode.UNAUTHORIZED);
+       * reach this is code is if user was logged in
+       * before the entry was deleted from db
+       * must be a bad user
+       */
+      const err = new CustomError(
+        "Cannot find your login in database! hehe",
+        StatusCode.UNAUTHORIZED,
+      );
       return next(err);
     }
 
@@ -52,7 +54,9 @@ export default function protected_route(permissions_required: Permission[]) {
         return false;
       }
 
-      const perm_given = role.permissions.includes(perm) || user.extra_permissions?.includes(perm);
+      const perm_given =
+        role.permissions.includes(perm) ||
+        user.extra_permissions?.includes(perm);
       if (!perm_given) {
         console.log(`Permission ${perm} not satisfied (${Permission[perm]})`);
       }
@@ -63,7 +67,10 @@ export default function protected_route(permissions_required: Permission[]) {
       return next();
     }
 
-    const err = new CustomError("You do not have permission to access this setting.", StatusCode.FORBIDDEN);
+    const err = new CustomError(
+      "You do not have permission to access this setting.",
+      StatusCode.FORBIDDEN,
+    );
     return next(err);
   });
 

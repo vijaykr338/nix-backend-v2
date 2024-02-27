@@ -1,5 +1,9 @@
 import { IBlog } from "../../models/blogModel";
-import Email, { APP_URL, COPYRIGHT_YEAR, DEVELOPER_FOOTER } from "../emailService";
+import Email, {
+  APP_URL,
+  COPYRIGHT_YEAR,
+  DEVELOPER_FOOTER,
+} from "../emailService";
 
 /** Blog approval mail */
 class PendingApprovalMail extends Email {
@@ -12,7 +16,7 @@ class PendingApprovalMail extends Email {
     super();
 
     this.subject = "Blog submitted for approval!";
-    
+
     this.html = `<html>
       <head>
           <link href="https://fonts.googleapis.com/css?family=Montserrat" rel="stylesheet">

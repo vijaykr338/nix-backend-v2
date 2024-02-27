@@ -1,5 +1,19 @@
 import express from "express";
-import { approveBlogController, createBlogController, deleteBlogController, deleteMyBlogController, getAllBlogsController, getBlogController, getMyBlogController, getPublishedBlogsController, myBlogsController, publishBlogController, submitForApprovalController, takeDownBlogController, updateBlogController } from "../controllers/blogController";
+import {
+  approveBlogController,
+  createBlogController,
+  deleteBlogController,
+  deleteMyBlogController,
+  getAllBlogsController,
+  getBlogController,
+  getMyBlogController,
+  getPublishedBlogsController,
+  myBlogsController,
+  publishBlogController,
+  submitForApprovalController,
+  takeDownBlogController,
+  updateBlogController,
+} from "../controllers/blogController";
 import Permission from "../helpers/permissions";
 import { protect } from "../middlewares/authMiddleware";
 import protected_route from "../middlewares/permsMiddlewareInit";
@@ -22,27 +36,48 @@ router.route("/published-blogs").get(getPublishedBlogsController);
 router.route("/my-blogs").get(protect, myBlogsController);
 
 // blogs by this user ONLY (including drafts) + blogs by other users if person is an admin (with read rights)
-router.route("/get-blog/:id").get(protect, getMyBlogController, readBlogProtect, getBlogController);
+router
+  .route("/get-blog/:id")
+  .get(protect, getMyBlogController, readBlogProtect, getBlogController);
 
 // protected for creating a new blog
-router.route("/create-blog").post(protect, createBlogProtect, createBlogController);
+router
+  .route("/create-blog")
+  .post(protect, createBlogProtect, createBlogController);
 
 // protected for updating a draft blogs
-router.route("/update-blog/:id").put(protect, updateBlogProtect, updateBlogController);
+router
+  .route("/update-blog/:id")
+  .put(protect, updateBlogProtect, updateBlogController);
 
 // protected for publishing a pending blog
-router.route("/publish-blog/:id").put(protect, publishBlogProtect, publishBlogController);
+router
+  .route("/publish-blog/:id")
+  .put(protect, publishBlogProtect, publishBlogController);
 
 // user can submit their drafts for approval this will change its status to pending
-router.route("/submit-for-approval/:id").put(protect, createBlogProtect, submitForApprovalController);
+router
+  .route("/submit-for-approval/:id")
+  .put(protect, createBlogProtect, submitForApprovalController);
 
 // admins can approve pending blogs
-router.route("/approve-blog/:id").put(protect, publishBlogProtect, approveBlogController);
+router
+  .route("/approve-blog/:id")
+  .put(protect, publishBlogProtect, approveBlogController);
 
 // admins can change pending/approved/published blogs to draft
-router.route("/take-down-blog/:id").put(protect, deleteBlogProtect, takeDownBlogController);
+router
+  .route("/take-down-blog/:id")
+  .put(protect, deleteBlogProtect, takeDownBlogController);
 
 // protected for deleting a blog by admin or drafts by user
-router.route("/delete-blog/:id").delete(protect, deleteMyBlogController, deleteBlogProtect, deleteBlogController);
+router
+  .route("/delete-blog/:id")
+  .delete(
+    protect,
+    deleteMyBlogController,
+    deleteBlogProtect,
+    deleteBlogController,
+  );
 
 export default router;

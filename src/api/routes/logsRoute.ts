@@ -4,7 +4,6 @@ import Permission from "../helpers/permissions";
 import { clear_logs, get_logs } from "../middlewares/logsMiddleware";
 import { protect } from "../middlewares/authMiddleware";
 
-
 const router = express.Router();
 
 const protect_logs = protected_route([Permission.AccessLogs]);

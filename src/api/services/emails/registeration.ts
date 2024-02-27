@@ -1,13 +1,17 @@
 import { IUser } from "../../models/userModel";
-import Email, { APP_URL, COPYRIGHT_YEAR, DEVELOPER_FOOTER } from "../emailService";
+import Email, {
+  APP_URL,
+  COPYRIGHT_YEAR,
+  DEVELOPER_FOOTER,
+} from "../emailService";
 
 /** Mail for new registeration of a user */
 class RegisterationMail extends Email {
   /**
-    * @description Generates an email for new user registeration
-    * @param {IUser} user - User object
-    * @param {string} password - Unhashed Password
-    */
+   * @description Generates an email for new user registeration
+   * @param {IUser} user - User object
+   * @param {string} password - Unhashed Password
+   */
   constructor(user: IUser, password: string) {
     super();
     const { name } = user;

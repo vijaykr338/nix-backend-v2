@@ -1,5 +1,3 @@
-
-
 //extend native Error object , according to our need, whenever need to create a error , use this CustomError
 
 import StatusCode from "../api/helpers/httpStatusCode";

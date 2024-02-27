@@ -18,7 +18,7 @@ enum Permission {
   AccessLogs = 13,
   UploadImage = 14,
   DeleteImage = 15,
-  UpdateImage = 16
+  UpdateImage = 16,
 }
 
 export default Permission;

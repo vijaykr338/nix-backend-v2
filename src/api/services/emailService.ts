@@ -26,12 +26,12 @@ const minification_options: html_minfy.Options = {
 };
 
 /**
-* @description Email class for sending emails
-* Should not be invoked directly but rather
-* through the child classes.
-*
-* Available child classes are in the folder /emails
-*/
+ * @description Email class for sending emails
+ * Should not be invoked directly but rather
+ * through the child classes.
+ *
+ * Available child classes are in the folder /emails
+ */
 class Email {
   subject: null | string;
   html: null | string;
@@ -49,10 +49,10 @@ class Email {
   }
 
   /**
-    * @description Sends an email from the email service
-    * @param {string|string[]} reciever - Reciever's email address (or array of email addresses)
-    * @returns {Promise<boolean>} After awaiting, returns true if email is sent successfully
-    */
+   * @description Sends an email from the email service
+   * @param {string|string[]} reciever - Reciever's email address (or array of email addresses)
+   * @returns {Promise<boolean>} After awaiting, returns true if email is sent successfully
+   */
   async sendTo(reciever: string | string[]): Promise<boolean> {
     console.assert(reciever, "Reciever is required");
     console.assert(this.subject, "Subject is required");
@@ -65,8 +65,8 @@ class Email {
       service: "gmail",
       auth: {
         user: process.env.EMAIL_SERVICE_USER,
-        pass: process.env.EMAIL_SERVICE_PASS
-      }
+        pass: process.env.EMAIL_SERVICE_PASS,
+      },
     });
     const multiple_recievers = reciever instanceof Array;
 
@@ -77,7 +77,7 @@ class Email {
       to: !multiple_recievers ? reciever : process.env.EMAIL_SERVICE_USER,
       bcc: multiple_recievers ? reciever : undefined,
       subject: this.subject,
-      html: this.html
+      html: this.html,
     };
 
     try {
@@ -90,6 +90,5 @@ class Email {
     }
   }
 }
-
 
 export default Email;

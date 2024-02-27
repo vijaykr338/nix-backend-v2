@@ -15,55 +15,62 @@ export interface IUser extends Document {
   date_joined: Date;
 }
 
-const userSchema = new Schema<IUser>({
-  name: {
-    type: String,
-    required: [true, "Please enter your name"],
+const userSchema = new Schema<IUser>(
+  {
+    name: {
+      type: String,
+      required: [true, "Please enter your name"],
+    },
+    email: {
+      type: String,
+      required: [true, "Please add an email"],
+      unique: true,
+    },
+    bio: {
+      type: String,
+      default: "error 404: bio not found :)",
+    },
+    password: {
+      type: String,
+      required: [true, "Please add a password"],
+    },
+    refreshToken: {
+      type: String,
+    },
+    passwordResetToken: {
+      type: String,
+    },
+    role_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "role",
+      // warn: default role from env
+      default: new mongoose.Types.ObjectId(process.env.DEFAULT_ROLE_ID),
+    },
+    extra_permissions: {
+      type: [Number],
+      enum: Object.values(Permission).filter(
+        (value) => typeof value === "number",
+      ),
+    },
+    removed_permissions: {
+      type: [Number],
+      enum: Object.values(Permission).filter(
+        (value) => typeof value === "number",
+      ),
+    },
+    date_joined: {
+      type: Date,
+    },
   },
-  email: {
-    type: String,
-    required: [true, "Please add an email"],
-    unique: true,
+  {
+    timestamps: {
+      createdAt: "date_joined",
+      updatedAt: false,
+    },
   },
-  bio: {
-    type: String,
-    default: "error 404: bio not found :)",
-  },
-  password: {
-    type: String,
-    required: [true, "Please add a password"],
-  },
-  refreshToken: {
-    type: String
-  },
-  passwordResetToken: {
-    type: String,
-  },
-  role_id: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "role",
-    // warn: default role from env
-    default: new mongoose.Types.ObjectId(process.env.DEFAULT_ROLE_ID)
-  },
-  extra_permissions: {
-    type: [Number],
-    enum: Object.values(Permission).filter(value => typeof value === "number"),
-  },
-  removed_permissions: {
-    type: [Number],
-    enum: Object.values(Permission).filter(value => typeof value === "number"),
-  },
-  date_joined: {
-    type: Date,
-  }
-}, {
-  timestamps: {
-    createdAt: "date_joined",
-    updatedAt: false,
-  },
-});
+);
 
 const User = mongoose.model("user", userSchema);
-type PopulatedUser = Omit<IUser, "role_id"> & { role_id: IRole; };
+type PopulatedUser = Omit<IUser, "role_id"> & { role_id: IRole };
 
 export { User, PopulatedUser };

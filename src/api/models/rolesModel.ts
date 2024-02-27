@@ -13,7 +13,9 @@ const rolesSchema = new Schema<IRole>({
   },
   permissions: {
     type: [Number],
-    enum: Object.values(Permission).filter(value => typeof value === "number"),
+    enum: Object.values(Permission).filter(
+      (value) => typeof value === "number",
+    ),
     required: [true, "Enter permissions"],
   },
 });

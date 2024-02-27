@@ -19,8 +19,8 @@ export const refresh = asyncErrorHandler(async (req, res, next) => {
     return next(
       new CustomError(
         "User not logged in or cookies disabled!",
-        StatusCode.UNAUTHORIZED
-      )
+        StatusCode.UNAUTHORIZED,
+      ),
     );
 
   const refreshToken = cookies.jwt as string;
@@ -28,7 +28,7 @@ export const refresh = asyncErrorHandler(async (req, res, next) => {
   if (!refreshToken) {
     const err = new CustomError(
       "No refreshToken found! Please login again!",
-      StatusCode.UNAUTHORIZED
+      StatusCode.UNAUTHORIZED,
     );
     return next(err);
   }
@@ -46,8 +46,8 @@ export const refresh = asyncErrorHandler(async (req, res, next) => {
     return next(
       new CustomError(
         "Refresh secret key not found in env",
-        StatusCode.INTERNAL_SERVER_ERROR
-      )
+        StatusCode.INTERNAL_SERVER_ERROR,
+      ),
     );
   }
 
@@ -59,7 +59,7 @@ export const refresh = asyncErrorHandler(async (req, res, next) => {
         secure: true,
       });
       return next(
-        new CustomError("Invalid refresh token", StatusCode.FORBIDDEN)
+        new CustomError("Invalid refresh token", StatusCode.FORBIDDEN),
       );
     }
 
@@ -85,7 +85,7 @@ export const signup = asyncErrorHandler(async (req, res, next) => {
   if (!email || !name) {
     const error = new CustomError(
       "Please provide name and email ID to sign up.",
-      StatusCode.BAD_REQUEST
+      StatusCode.BAD_REQUEST,
     );
     return next(error);
   }
@@ -96,7 +96,7 @@ export const signup = asyncErrorHandler(async (req, res, next) => {
   if (isDuplicate) {
     const error = new CustomError(
       "Email already registered",
-      StatusCode.NOT_ACCEPTABLE
+      StatusCode.NOT_ACCEPTABLE,
     );
     return next(error);
   }
@@ -124,7 +124,7 @@ export const login = asyncErrorHandler(async (req, res, next) => {
   if (!email || !password) {
     const error = new CustomError(
       "Please provide email ID and Password for login.",
-      StatusCode.BAD_REQUEST
+      StatusCode.BAD_REQUEST,
     );
     return next(error);
   }
@@ -135,7 +135,7 @@ export const login = asyncErrorHandler(async (req, res, next) => {
   if (!foundUser) {
     const error = new CustomError(
       "No user exists with this email.",
-      StatusCode.UNAUTHORIZED
+      StatusCode.UNAUTHORIZED,
     );
     return next(error);
   }
@@ -162,7 +162,7 @@ export const login = asyncErrorHandler(async (req, res, next) => {
     foundUser.extra_permissions?.forEach((perm) => allowed_perms.add(perm));
     foundUser.role_id?.permissions?.forEach((perm) => allowed_perms.add(perm));
     foundUser.removed_permissions?.forEach((perm) =>
-      allowed_perms.delete(perm)
+      allowed_perms.delete(perm),
     );
     res.json({
       status: "success",
@@ -184,7 +184,7 @@ export const login = asyncErrorHandler(async (req, res, next) => {
   } else {
     const error = new CustomError(
       "Password is wrong!",
-      StatusCode.UNAUTHORIZED
+      StatusCode.UNAUTHORIZED,
     );
     return next(error);
   }
@@ -239,7 +239,7 @@ export const forgotPassword = asyncErrorHandler(async (req, res, next) => {
   if (!user) {
     const error = new CustomError(
       "No user exists with this email.",
-      StatusCode.NOT_FOUND
+      StatusCode.NOT_FOUND,
     );
     return next(error);
   }
@@ -267,7 +267,7 @@ export const forgotPassword = asyncErrorHandler(async (req, res, next) => {
   } catch (err) {
     const error = new CustomError(
       "There was an error in sending password reset email. Please try again.",
-      StatusCode.INTERNAL_SERVER_ERROR
+      StatusCode.INTERNAL_SERVER_ERROR,
     );
     return next(error);
   }
@@ -285,7 +285,7 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
   if (!key) {
     const error = new CustomError(
       "Refresh/Reset secret key not found in env",
-      StatusCode.INTERNAL_SERVER_ERROR
+      StatusCode.INTERNAL_SERVER_ERROR,
     );
     return next(error);
   }
@@ -296,7 +296,7 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
   } catch (e) {
     const err = new CustomError(
       "Invalid/Expired Token",
-      StatusCode.BAD_REQUEST
+      StatusCode.BAD_REQUEST,
     );
     return next(err);
   }
@@ -305,7 +305,7 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
   if (!email) {
     const error = new CustomError(
       "Generated reset link is invalid!",
-      StatusCode.BAD_REQUEST
+      StatusCode.BAD_REQUEST,
     );
     return next(error);
   }
@@ -315,7 +315,7 @@ export const resetPassword = asyncErrorHandler(async (req, res, next) => {
   if (!user || user.passwordResetToken !== resetToken) {
     const error = new CustomError(
       "Token has been invalidated!",
-      StatusCode.BAD_REQUEST
+      StatusCode.BAD_REQUEST,
     );
     return next(error);
   }

@@ -1,4 +1,8 @@
-import Email, { APP_URL, COPYRIGHT_YEAR, DEVELOPER_FOOTER } from "../emailService";
+import Email, {
+  APP_URL,
+  COPYRIGHT_YEAR,
+  DEVELOPER_FOOTER,
+} from "../emailService";
 import { IBlog } from "../../models/blogModel";
 
 /** Mail for story publication */

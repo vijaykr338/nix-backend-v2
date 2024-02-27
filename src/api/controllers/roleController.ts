@@ -29,13 +29,13 @@ export const add_or_update_role = asyncErrorHandler(async (req, res, next) => {
   if (name && permissions) {
     // Manual validation of permissions
     const isPermissionsValid = permissions.every((permission) =>
-      Object.values(Permission).includes(permission)
+      Object.values(Permission).includes(permission),
     );
 
     if (!isPermissionsValid) {
       const error = new CustomError(
         "Invalid permission value in the array.",
-        StatusCode.BAD_REQUEST
+        StatusCode.BAD_REQUEST,
       );
       return next(error);
     }
@@ -55,7 +55,7 @@ export const add_or_update_role = asyncErrorHandler(async (req, res, next) => {
   // If neither id nor (name and permissions) is provided, return an error
   const error = new CustomError(
     "Please provide either role_id for updating or both role_name and permissions for creating a role.",
-    StatusCode.BAD_REQUEST
+    StatusCode.BAD_REQUEST,
   );
   return next(error);
 });
@@ -68,7 +68,7 @@ export const delete_role = asyncErrorHandler(async (req, res, next) => {
     if (user) {
       const error = new CustomError(
         "Cannot delete a role that is assigned to a user.",
-        StatusCode.BAD_REQUEST
+        StatusCode.BAD_REQUEST,
       );
       return next(error);
     }
@@ -84,7 +84,7 @@ export const delete_role = asyncErrorHandler(async (req, res, next) => {
   } else {
     const error = new CustomError(
       "Please provide role_id to delete a role.",
-      StatusCode.BAD_REQUEST
+      StatusCode.BAD_REQUEST,
     );
     return next(error);
   }

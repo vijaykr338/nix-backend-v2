@@ -1,7 +1,11 @@
 import { NextFunction, Request, Response } from "express";
 import { allowedOrigins } from "../../config/corsOptions";
 
-export const credentials = (req: Request, res: Response, next: NextFunction) => {
+export const credentials = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   const origin = req.headers.origin;
   if (origin && allowedOrigins.includes(origin)) {
     // add Access-Control-Allow-Credentials header to response to true

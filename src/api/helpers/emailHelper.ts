@@ -1,10 +1,9 @@
-import { User } from "../models/userModel";
 import mongoose from "mongoose";
+import { IBlog } from "../models/blogModel";
+import { User } from "../models/userModel";
+import PendingApprovalMail from "../services/emails/pendingApproval";
 import * as UserService from "../services/userService";
 import Permission from "./permissions";
-import emailService from "../services/emailService";
-import { IBlog } from "../models/blogModel";
-import PendingApprovalMail from "../services/emails/pendingApproval";
 
 type ObjectId = mongoose.Types.ObjectId;
 
@@ -29,7 +28,6 @@ export const getUsersPermissionBased = async (permissions: Permission[][]) => {
   });
   return allowed_users;
 };
-
 
 // todo: maybe overload the role name to diff perm, but still send email to all users of that role
 // this is quite redundant feature, so not implementing it right now
