@@ -5,6 +5,7 @@ import {
   getAllEditions,
   getPublishedEditions,
   upsertEdition,
+  getEdition,
 } from "../controllers/editionController";
 import Permission from "../helpers/permissions";
 import { protect } from "../middlewares/authMiddleware";
@@ -17,6 +18,8 @@ const updateProtect = protected_route([Permission.UpdateEdition]);
 const deleteProtect = protected_route([Permission.DeleteEdition]);
 
 router.route("/").get(protect, getAllEditions);
+// todo: it is not protected, afterall who else except the nix users would have this id
+router.route("/get-edition/:id").get(getEdition);
 
 // for the main dtutimes frontend
 router.route("/published-editions").get(getPublishedEditions);

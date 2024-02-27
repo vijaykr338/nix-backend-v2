@@ -20,6 +20,24 @@ export const getAllEditions = asyncErrorHandler(async (req, res, next) => {
   });
 });
 
+export const getEdition = asyncErrorHandler(async (req, res, next) => {
+  const { id } = req.params;
+  const edition = await Edition.findOne({
+    _id: new mongoose.Types.ObjectId(id),
+  });
+
+  if (!edition) {
+    const error = new CustomError("Edition not found", StatusCode.NOT_FOUND);
+    return next(error);
+  }
+
+  res.status(StatusCode.OK).json({
+    status: "success",
+    message: "Edition fetched successfully",
+    data: edition,
+  });
+});
+
 export const getPublishedEditions = asyncErrorHandler(
   async (req, res, next) => {
     await refresh_status();
