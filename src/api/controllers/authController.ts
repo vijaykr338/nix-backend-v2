@@ -1,13 +1,13 @@
-import jwt, { JwtPayload } from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import asyncErrorHandler from "../helpers/asyncErrorHandler";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import CustomError from "../../config/CustomError";
-import passwordResetMail from "../services/emailService";
-import * as UserService from "../services/userService";
+import asyncErrorHandler from "../helpers/asyncErrorHandler";
+import { makeAccessToken, makeRefreshToken } from "../helpers/common";
 import StatusCode from "../helpers/httpStatusCode";
 import Permission from "../helpers/permissions";
 import { User } from "../models/userModel";
-import { makeAccessToken, makeRefreshToken } from "../helpers/common";
+import PasswordResetMail from "../services/emails/passwordReset";
+import * as UserService from "../services/userService";
 
 /**
  * Used when access tokens have expired. Generate a new access token and a new refresh token.
@@ -255,7 +255,7 @@ export const forgotPassword = asyncErrorHandler(async (req, res, next) => {
   await user.save();
   console.log("Password reset token added to db", user);
 
-  const mail = new passwordResetMail.PasswordResetMail(user);
+  const mail = new PasswordResetMail(user);
 
   try {
     await mail.sendTo(email);

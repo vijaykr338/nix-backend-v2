@@ -1,19 +1,19 @@
-import "dotenv/config";
 import "colors";
 import compression from "compression";
-import cors from "cors";
 import cookieParser from "cookie-parser";
+import cors from "cors";
+import "dotenv/config";
 import express from "express";
-import swaggerUi from "swagger-ui-express";
-import { swaggerDocument } from "./config/swagger/swagger-config";
-import connectDB from "./config/DatabaseConfig";
-import CustomError from "./config/CustomError";
-import globalErrorHandler from "./api/helpers/globalErrorHandler";
-import { corsOptions } from "./config/corsOptions";
-import { credentials } from "./api/middlewares/credentials";
-import StatusCode from "./api/helpers/httpStatusCode";
-import router from "./api/routes";
 import morgan from "morgan";
+import swaggerUi from "swagger-ui-express";
+import globalErrorHandler from "./api/helpers/globalErrorHandler";
+import StatusCode from "./api/helpers/httpStatusCode";
+import { credentials } from "./api/middlewares/credentials";
+import router from "./api/routes";
+import CustomError from "./config/CustomError";
+import connectDB from "./config/DatabaseConfig";
+import { corsOptions } from "./config/corsOptions";
+import { swaggerDocument } from "./config/swagger/swagger-config";
 
 process.on("uncaughtException", (err) => {
   console.error(err.name.red.underline, err.message.red.underline);
