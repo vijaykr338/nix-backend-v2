@@ -19,6 +19,9 @@ enum Permission {
   UploadImage = 14,
   DeleteImage = 15,
   UpdateImage = 16,
+  CreateEdition = 17,
+  UpdateEdition = 18,
+  DeleteEdition = 19,
 }
 
 export default Permission;
