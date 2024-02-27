@@ -184,18 +184,20 @@ export const createBlogController = asyncErrorHandler(
 export const updateBlogController = asyncErrorHandler(
   async (req, res, next) => {
     const { id } = req.params;
-
-    if (
-      !req.body.status ||
-      req.body.status === BlogStatus.Published ||
-      req.body.status === BlogStatus.Approved
-    ) {
+    const supplied_status = req.body.status;
+    
+    if (typeof supplied_status !== "number") {
+      req.body.status = BlogStatus.Draft;
+    } else if (supplied_status === BlogStatus.Published || supplied_status === BlogStatus.Approved || supplied_status === BlogStatus.Pending) {
+      req.body.status = BlogStatus.Pending;
+    } else {
       req.body.status = BlogStatus.Draft;
     }
+
     const blog = await Blog.findOneAndUpdate(
       { _id: new mongoose.Types.ObjectId(id), status: BlogStatus.Draft },
       { ...req.body },
-      { new: true }
+      { new: true , runValidators: true}
     );
 
     if (!blog) {
