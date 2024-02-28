@@ -8,6 +8,7 @@ import blogRouter from "./blogRoute";
 import logsRouter from "./logsRoute";
 import imageRouter from "./imageRouter";
 import editionRouter from "./editionRoute";
+import dashboardRouter from './dashboardRoute';
 
 const router = express.Router();
 
@@ -18,6 +19,7 @@ router.use("/blog", blogRouter);
 router.use("/logs", logsRouter);
 router.use("/images", imageRouter);
 router.use("/edition", editionRouter);
+router.use('/dashboard', dashboardRouter);
 router.all("/permissions", (req, res) => {
   const all_permissions = Object.entries(Permission)
     .filter(([, perm_id]) => typeof perm_id === "number")
