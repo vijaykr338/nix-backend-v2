@@ -48,7 +48,7 @@ export const getTopUsers = asyncErrorHandler(async (req, res, next) => {
 
     res.status(StatusCode.OK).json({
         status: "success",
-        message: "Blogs fetched successfully",
+        message: "Top users fetched successfully",
         data: topUsers,
     });
 })
@@ -68,17 +68,10 @@ export const getBlogsInEachCategory = asyncErrorHandler(async (req, res, next) =
         return next(error);
     }
 
-    const result = {};
-
-    const statusNames = {
-        [BlogStatus.Pending]: "Pending",
-        [BlogStatus.Published]: "Published",
-        [BlogStatus.Approved]: "Approved",
-        [BlogStatus.Draft]: "Draft",
-    };
+    const result: Record<string, number> = {};
 
     blogCountsByCategory.forEach((category) => {
-        const categoryName = statusNames[category._id];
+        const categoryName = BlogStatus[category._id];
         result[categoryName] = category.count;
     });
 
@@ -87,4 +80,4 @@ export const getBlogsInEachCategory = asyncErrorHandler(async (req, res, next) =
         message: "Blogs in each category fetched successfully",
         data: result,
     });
-})
+});
