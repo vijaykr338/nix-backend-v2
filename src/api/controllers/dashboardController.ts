@@ -68,12 +68,12 @@ export const getBlogsInEachCategory = asyncErrorHandler(async (req, res, next) =
         return next(error);
     }
 
-    const result: Record<string, number> = {};
-
-    blogCountsByCategory.forEach((category) => {
+    
+    const result = Object.fromEntries(blogCountsByCategory.map((category) => {
         const categoryName = BlogStatus[category._id];
-        result[categoryName] = category.count;
-    });
+        return [categoryName, category.count];
+    }));
+
 
     res.status(StatusCode.OK).json({
         status: "success",
