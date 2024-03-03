@@ -51,6 +51,19 @@ export const refresh = asyncErrorHandler(async (req, res, next) => {
     );
   }
 
+  const newRefreshToken = makeRefreshToken(foundUser.email, foundUser._id);
+
+  foundUser.refreshToken = newRefreshToken;
+  await foundUser.save();
+
+  //set refreshToken cookie (whose name is jwt) in headers of response which will store in browser
+  res.cookie("jwt", newRefreshToken, {
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000, //1 day
+    sameSite: "none",
+    secure: true,
+  });
+
   jwt.verify(refreshToken, refresh_secret_key, (err, decoded: JwtPayload) => {
     if (err || foundUser.email != decoded.email) {
       res.clearCookie("jwt", {
