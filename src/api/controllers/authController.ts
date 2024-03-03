@@ -56,14 +56,6 @@ export const refresh = asyncErrorHandler(async (req, res, next) => {
   foundUser.refreshToken = newRefreshToken;
   await foundUser.save();
 
-  //set refreshToken cookie (whose name is jwt) in headers of response which will store in browser
-  res.cookie("jwt", newRefreshToken, {
-    httpOnly: true,
-    maxAge: 24 * 60 * 60 * 1000, //1 day
-    sameSite: "none",
-    secure: true,
-  });
-
   jwt.verify(refreshToken, refresh_secret_key, (err, decoded: JwtPayload) => {
     if (err || foundUser.email != decoded.email) {
       res.clearCookie("jwt", {
@@ -72,11 +64,18 @@ export const refresh = asyncErrorHandler(async (req, res, next) => {
         secure: true,
       });
       return next(
-        new CustomError("Invalid refresh token", StatusCode.FORBIDDEN),
+        new CustomError("Expired/Invalid refresh token", StatusCode.FORBIDDEN),
       );
     }
 
     const newAccessToken = makeAccessToken(foundUser.email, foundUser._id);
+    //set refreshToken cookie (whose name is jwt) in headers of response which will store in browser
+    res.cookie("jwt", newRefreshToken, {
+      httpOnly: true,
+      maxAge: 24 * 60 * 60 * 1000, //1 day
+      sameSite: "none",
+      secure: true,
+    });
 
     res.status(StatusCode.OK).json({
       status: "success",
