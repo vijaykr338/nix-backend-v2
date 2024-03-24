@@ -9,7 +9,11 @@ import {
 } from "../controllers/imageController";
 import Permission from "../helpers/permissions";
 import { protect } from "../middlewares/authMiddleware";
-import { avatarStorage, storage } from "../middlewares/imageMiddleware";
+import {
+  avatarStorage,
+  storage,
+  editionStorage,
+} from "../middlewares/imageMiddleware";
 import protected_route from "../middlewares/permsMiddlewareInit";
 
 const router = express.Router();
@@ -17,6 +21,7 @@ const router = express.Router();
 const protect_upload = protected_route([Permission.UploadImage]);
 const protect_update = protected_route([Permission.UpdateImage]);
 const protect_delete = protected_route([Permission.DeleteImage]);
+const protect_edition_image = protected_route([Permission.CreateEdition]);
 
 router
   .route("/update/:filename")
@@ -30,6 +35,14 @@ router
 router.route("/delete-avatar").delete(protect, delete_avatar);
 router.route("/get/:filename").get(get_image);
 router.route("/get-avatar/:id").get(get_avatar);
+router
+  .route("/edition-image/:id")
+  .post(
+    protect,
+    protect_edition_image,
+    editionStorage.single("image"),
+    upload_image,
+  );
 router.route("/delete/:filename").delete(protect, protect_delete, delete_image);
 
 export default router;

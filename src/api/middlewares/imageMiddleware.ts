@@ -70,3 +70,37 @@ export const avatarStorage = multer({
     fileSize: 1024 * 1024 * 5, // 5MB
   },
 });
+
+export const editionStorage = multer({
+  fileFilter: function (req, file, callback) {
+    const fileExtension = file.originalname
+      .split(".")
+    [file.originalname.split(".").length - 1].toLowerCase();
+
+    if (["png", "jpg", "jpeg"].indexOf(fileExtension) === -1) {
+      return callback(null, false);
+    }
+    callback(null, true);
+  },
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, "uploads/");
+    },
+    filename: (req, file, cb) => {
+      const filename = `edition-${req.params.id}`;
+      req.query.thumbnail = "true"; // to force generate thumbnail in next middleware
+      if (!filename) {
+        // should not be rechable because of the way we route here through protect middleware
+        const err = new CustomError(
+          "Required information not found! Please relogin.",
+          StatusCode.BAD_REQUEST,
+        );
+        return cb(err, "error");
+      }
+      cb(null, filename);
+    },
+  }),
+  limits: {
+    fileSize: 1024 * 1024 * 5, // 5MB
+  },
+});
