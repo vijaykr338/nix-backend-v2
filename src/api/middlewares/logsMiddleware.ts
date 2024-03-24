@@ -14,12 +14,16 @@ export const get_logs = asyncErrorHandler(async (req, res, _next) => {
   const { stdout: stderr } = await exec(
     `npx pm2 logs --nostream NixBackend --lines ${num_lines} --raw --err`,
   );
-  res.send(
-    `<h1>stdout</h1><pre>${stdout}</pre><h1>stderr</h1><pre>${stderr}</pre>`,
-  );
+  res.json({
+    stdout,
+    stderr,
+  });
 });
 
 export const clear_logs = asyncErrorHandler(async (req, res, _next) => {
-  const { stdout } = await exec("npx pm2 flush NixBackend");
-  res.send(`<h1>Clearing logs</h1><pre>${stdout}</pre>`);
+  const { stdout, stderr } = await exec("npx pm2 flush NixBackend");
+  res.json({
+    stdout,
+    stderr
+  });
 });
