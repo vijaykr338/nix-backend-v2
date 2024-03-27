@@ -39,7 +39,7 @@ export const refresh = asyncErrorHandler(async (req, res, next) => {
 
   if (!foundUser) {
     res.clearCookie("jwt", { httpOnly: true, sameSite: "none", secure: true });
-    return next(new CustomError("Invalid refresh token", StatusCode.FORBIDDEN));
+    return next(new CustomError("Invalid refresh token", StatusCode.UNAUTHORIZED));
   }
   const refresh_secret_key = process.env.REFRESH_SECRET_KEY;
   if (!refresh_secret_key) {
@@ -64,7 +64,7 @@ export const refresh = asyncErrorHandler(async (req, res, next) => {
         secure: true,
       });
       return next(
-        new CustomError("Expired/Invalid refresh token", StatusCode.FORBIDDEN),
+        new CustomError("Expired/Invalid refresh token", StatusCode.UNAUTHORIZED),
       );
     }
 
