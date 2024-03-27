@@ -43,7 +43,7 @@ export const getCurrentUserController = asyncErrorHandler(
     if (!user) {
       const error = new CustomError(
         "Unable to get current user",
-        StatusCode.FORBIDDEN,
+        StatusCode.UNAUTHORIZED,
       );
       return next(error);
     }

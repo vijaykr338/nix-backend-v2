@@ -42,7 +42,7 @@ export const protect = asyncErrorHandler(async (req, res, next) => {
         return next(
           new CustomError(
             "Invalid JWT token! Please login again",
-            StatusCode.FORBIDDEN,
+            StatusCode.UNAUTHORIZED,
           ),
         );
 
@@ -54,7 +54,7 @@ export const protect = asyncErrorHandler(async (req, res, next) => {
       return next();
     } catch (err) {
       // Handle token verification error
-      return next(new CustomError(err, StatusCode.FORBIDDEN));
+      return next(new CustomError(err, StatusCode.UNAUTHORIZED));
     }
   } else {
     const err = new CustomError("Not authorized", StatusCode.UNAUTHORIZED);
