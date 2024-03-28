@@ -1,6 +1,6 @@
 import { CorsOptions } from "cors";
-import CustomError from "./CustomError";
 import StatusCode from "../api/helpers/httpStatusCode";
+import CustomError from "./CustomError";
 
 export const allowedOrigins = [
   // nix frontend origin
@@ -28,7 +28,9 @@ export const corsOptions: CorsOptions = {
       callback(null, true);
     } else {
       console.log("CORS origin:", origin);
-      callback(new CustomError("Not allowed by CORS", StatusCode.UNAUTHORIZED));
+      callback(
+        new CustomError("Not allowed by CORS", StatusCode.PRECONDITION_FAILED),
+      );
     }
   },
   optionsSuccessStatus: StatusCode.OK,
