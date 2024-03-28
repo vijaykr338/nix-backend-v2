@@ -19,7 +19,7 @@ export const refresh = asyncErrorHandler(async (req, res, next) => {
     return next(
       new CustomError(
         "User not logged in or cookies disabled!",
-        StatusCode.UNAUTHORIZED,
+        StatusCode.BAD_REQUEST,
       ),
     );
 
@@ -28,7 +28,7 @@ export const refresh = asyncErrorHandler(async (req, res, next) => {
   if (!refreshToken) {
     const err = new CustomError(
       "No refreshToken found! Please login again!",
-      StatusCode.UNAUTHORIZED,
+      StatusCode.BAD_REQUEST,
     );
     return next(err);
   }
@@ -39,7 +39,9 @@ export const refresh = asyncErrorHandler(async (req, res, next) => {
 
   if (!foundUser) {
     res.clearCookie("jwt", { httpOnly: true, sameSite: "none", secure: true });
-    return next(new CustomError("Invalid refresh token", StatusCode.UNAUTHORIZED));
+    return next(
+      new CustomError("Invalid refresh token", StatusCode.BAD_REQUEST),
+    );
   }
   const refresh_secret_key = process.env.REFRESH_SECRET_KEY;
   if (!refresh_secret_key) {
@@ -64,7 +66,10 @@ export const refresh = asyncErrorHandler(async (req, res, next) => {
         secure: true,
       });
       return next(
-        new CustomError("Expired/Invalid refresh token", StatusCode.UNAUTHORIZED),
+        new CustomError(
+          "Expired/Invalid refresh token",
+          StatusCode.BAD_REQUEST,
+        ),
       );
     }
 
