@@ -13,7 +13,7 @@ const router = express.Router();
 
 const updateProfileProtect = protected_route([Permission.UpdateProfile]);
 
-router.route("/").get(protect, getAllUsers);
+router.route("/").get(getAllUsers);
 
 router.route("/current-user").get(protect, getCurrentUserController);
 
