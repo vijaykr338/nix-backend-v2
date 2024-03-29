@@ -19,7 +19,7 @@ fs.readdir(directoryPath, (err, files) => {
     const ed_id = Number(file.split(".")[0].split("Edition")[1].trim());
     exec(
       `pdftoppm -png "src/scripts/editions/${file}" src/scripts/edition_images/edition-${ed_id} -f 1 -l 1`,
-    ).on("exit", (code) => {
+    ).on("close", (code) => {
       if (code === 0) {
         fs.rename(
           `src/scripts/edition_images/edition-${ed_id}-01.png`,
