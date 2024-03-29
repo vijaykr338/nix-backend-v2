@@ -3,7 +3,7 @@ import editions from "./editions.json";
 import { IEdition, Edition, EditionStatus } from "../api/models/editionModel";
 import "colors";
 
-export interface OldEdition {
+interface OldEdition {
   id: number;
   name: string;
   link: string;

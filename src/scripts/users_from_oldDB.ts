@@ -4,7 +4,7 @@ import users from "./users.json";
 import bcrypt from "bcrypt";
 import "colors";
 
-export interface OldUserData {
+interface OldUserData {
   id: number;
   name: string;
   uuid: string;

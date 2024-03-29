@@ -42,3 +42,4 @@ thumbnails/*
 old_db
 *.pdf
 edition-*
+db/
