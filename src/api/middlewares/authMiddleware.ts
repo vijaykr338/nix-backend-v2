@@ -49,7 +49,9 @@ export const protect = asyncErrorHandler(async (req, res, next) => {
       // Add decoded information to the request body
       req.body.email = email as string;
       req.body.user_id = user_id as string;
-      console.log("email", email, "user_id", user_id, "in the chat");
+      // todo: i had to put this because of multer issue in image route https://github.com/expressjs/multer/issues/952
+      // fix when fixable
+      req.query.avatar_id = user_id as string;
 
       // Continue to the next middleware or route handler
       return next();

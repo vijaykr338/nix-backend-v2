@@ -42,6 +42,8 @@ const generate_thumbnail = async (
 export const upload_image = asyncErrorHandler(async (req, res, next) => {
   const req_file = req.file;
   const is_thumbnail = req.query.thumbnail === "true";
+  const image_type = (req.body.image_type as ImageType) || ImageType.General;
+  console.log("Image type", image_type);
 
   if (!req_file) {
     const err = new CustomError(
@@ -56,7 +58,7 @@ export const upload_image = asyncErrorHandler(async (req, res, next) => {
   const image_png = image.png();
   if (is_thumbnail) {
     await generate_thumbnail(image_png, req_file.filename, {
-      image_type: (req.body.image_type as ImageType) || ImageType.General,
+      image_type,
     });
 
     return res.status(201).json({
