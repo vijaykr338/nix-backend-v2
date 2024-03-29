@@ -101,6 +101,13 @@ export const updateUserController = asyncErrorHandler(async (req, res, next) => 
   if (req.body.bio) user.bio = req.body.bio;
 
   await user.save();
+  if (!req.body.extra_permissions && !req.body.removed_permissions && !req.body.role_id) {
+    return res.status(StatusCode.OK).json({
+      status: "success",
+      message: "User updated successfully",
+      data: { user }
+    })
+  }
   return next();
 });
 
@@ -124,7 +131,7 @@ export const permsUpdateController = asyncErrorHandler(async (req, res, next) =>
 
   res.status(StatusCode.OK).json({
     status: "success",
-    message: "Profile Updated",
+    message: "Permissions Updated",
     data: { user }
   })
 });
