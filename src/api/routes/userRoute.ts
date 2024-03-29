@@ -2,7 +2,7 @@ import express from "express";
 import {
   getAllUsers,
   getCurrentUserController,
-  permController,
+  permsUpdateController,
   updateUserController
 } from "../controllers/userController";
 import { protect } from "../middlewares/authMiddleware";
@@ -17,6 +17,6 @@ router.route("/").get(protect, getAllUsers);
 
 router.route("/current-user").get(protect, getCurrentUserController);
 
-router.route("/update-user").put(protect, updateUserController, updateProfileProtect, permController);
+router.route("/update-user").put(protect, updateUserController, updateProfileProtect, permsUpdateController);
 
 export default router;

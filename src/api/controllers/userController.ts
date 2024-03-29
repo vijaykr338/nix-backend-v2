@@ -104,7 +104,7 @@ export const updateUserController = asyncErrorHandler(async (req, res, next) => 
   return next();
 });
 
-export const permController = asyncErrorHandler(async (req, res, next) => {
+export const permsUpdateController = asyncErrorHandler(async (req, res, next) => {
   const { target_user_id } = req.body;
   const user = await UserService.checkUserExists({ _id: target_user_id });
 
