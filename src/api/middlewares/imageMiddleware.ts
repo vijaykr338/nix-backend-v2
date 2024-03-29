@@ -62,6 +62,7 @@ export const avatarStorage = multer({
     filename: (req, file, cb) => {
       req.body.image_type = ImageType.Avatar;
       const filename = req.body.user_id;
+      console.log(req.body);
       req.query.thumbnail = "true"; // to force generate thumbnail in next middleware
       if (!filename) {
         // should not be rechable because of the way we route here through protect middleware
