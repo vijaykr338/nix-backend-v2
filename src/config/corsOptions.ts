@@ -7,8 +7,10 @@ export const allowedOrigins = [
   "http://134.209.159.97:5173",
   // frontend localhost origin
   "http://localhost:5173",
+  "http://localhost:3000",
   // frontend localhost origin
   "http://127.0.0.1:5173",
+  "http://127.0.0.1:3000",
   // vs code live server plugin port
   "http://localhost:5500",
   // hoppscotch extension
