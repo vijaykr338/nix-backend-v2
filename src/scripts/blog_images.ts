@@ -65,7 +65,9 @@ const old_media = media.map((m) => ({
 
 const merged = old_stories.map((story) => {
   const media = old_media.find(
-    (m) => m.model_id === story.id && m.model_type === "App\\Models\\Story" || m.model_type === "App\\Models\\Image",
+    (m) =>
+      (m.model_id === story.id && m.model_type === "App\\Models\\Story") ||
+      m.model_type === "App\\Models\\Image",
   );
 
   if (!media) {

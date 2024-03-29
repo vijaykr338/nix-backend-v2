@@ -3,7 +3,7 @@ import {
   getAllUsers,
   getCurrentUserController,
   permsUpdateController,
-  updateUserController
+  updateUserController,
 } from "../controllers/userController";
 import { protect } from "../middlewares/authMiddleware";
 import protected_route from "../middlewares/permsMiddlewareInit";
@@ -17,6 +17,13 @@ router.route("/").get(getAllUsers);
 
 router.route("/current-user").get(protect, getCurrentUserController);
 
-router.route("/update-user").put(protect, updateUserController, updateProfileProtect, permsUpdateController);
+router
+  .route("/update-user")
+  .put(
+    protect,
+    updateUserController,
+    updateProfileProtect,
+    permsUpdateController,
+  );
 
 export default router;

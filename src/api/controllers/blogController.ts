@@ -5,6 +5,7 @@ import StatusCode from "../helpers/httpStatusCode";
 import { Blog, BlogStatus } from "../models/blogModel";
 import { IUser } from "../models/userModel";
 import { blogForApprovalMail } from "../helpers/emailHelper";
+import fs from "node:fs";
 
 export const getMyBlogController = asyncErrorHandler(async (req, res, next) => {
   const user_id = new mongoose.Types.ObjectId(req.body.user_id);
@@ -397,6 +398,23 @@ export const deleteMyBlogController = asyncErrorHandler(
       message: "Blog deleted successfully",
       data: blog,
     });
+
+    if (blog.cover) {
+      fs.unlink(`uploads/${blog.cover}`, (err) => {
+        if (err) {
+          console.error("Deleting blog image failed", err, blog._id);
+          return;
+        }
+        console.log("Image deleted for deleted blog");
+      });
+      fs.unlink(`thumbnail/${blog.cover}`, (err) => {
+        if (err) {
+          console.error("Deleting blog thumbnail failed", err, blog._id);
+          return;
+        }
+        console.log("Thumbnail deleted for deleted blog");
+      });
+    }
   },
 );
 
@@ -419,6 +437,23 @@ export const deleteBlogController = asyncErrorHandler(
       message: "Blog deleted successfully",
       data: blog,
     });
+
+    if (blog.cover) {
+      fs.unlink(`uploads/${blog.cover}`, (err) => {
+        if (err) {
+          console.error("Deleting blog image failed", err, blog._id);
+          return;
+        }
+        console.log("Image deleted for deleted blog");
+      });
+      fs.unlink(`thumbnail/${blog.cover}`, (err) => {
+        if (err) {
+          console.error("Deleting blog thumbnail failed", err, blog._id);
+          return;
+        }
+        console.log("Thumbnail deleted for deleted blog");
+      });
+    }
   },
 );
 
