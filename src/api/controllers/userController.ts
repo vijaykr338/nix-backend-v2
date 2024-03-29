@@ -72,66 +72,75 @@ export const getCurrentUserController = asyncErrorHandler(
   },
 );
 
+export const updateUserController = asyncErrorHandler(
+  async (req, res, next) => {
+    const user_id = req.body.user_id;
+    const { target_user_id } = req.body;
 
-export const updateUserController = asyncErrorHandler(async (req, res, next) => {
-  const user_id = req.body.user_id;
-  const { target_user_id } = req.body;
+    if (target_user_id !== user_id) {
+      return next();
+    }
 
-  if (target_user_id !== user_id) {
+    const user = await UserService.checkUserExists({ _id: target_user_id });
+
+    if (!user) {
+      const error = new CustomError(
+        "Unable to get current user",
+        StatusCode.NOT_FOUND,
+      );
+      return next(error);
+    }
+
+    // Update user properties if provided in request body
+    if (req.body.name) user.name = req.body.name;
+    if (req.body.email) user.email = req.body.email;
+    if (req.body.password) {
+      const hashed_password: string = await bcrypt.hash(req.body.password, 10);
+      user.password = hashed_password;
+    }
+    if (req.body.bio) user.bio = req.body.bio;
+
+    await user.save();
+    if (
+      !req.body.extra_permissions &&
+      !req.body.removed_permissions &&
+      !req.body.role_id
+    ) {
+      return res.status(StatusCode.OK).json({
+        status: "success",
+        message: "User updated successfully",
+        data: { user },
+      });
+    }
     return next();
-  }
+  },
+);
 
-  const user = await UserService.checkUserExists({ _id: target_user_id });
+export const permsUpdateController = asyncErrorHandler(
+  async (req, res, next) => {
+    const { target_user_id } = req.body;
+    const user = await UserService.checkUserExists({ _id: target_user_id });
 
-  if (!user) {
-    const error = new CustomError(
-      "Unable to get current user",
-      StatusCode.NOT_FOUND,
-    );
-    return next(error);
-  }
+    if (!user) {
+      const error = new CustomError(
+        "Requested user not found",
+        StatusCode.NOT_FOUND,
+      );
+      return next(error);
+    }
 
-  // Update user properties if provided in request body
-  if (req.body.name) user.name = req.body.name;
-  if (req.body.email) user.email = req.body.email;
-  if (req.body.password) {
-    const hashed_password: string = await bcrypt.hash(req.body.password, 10);
-    user.password = hashed_password;
-  }
-  if (req.body.bio) user.bio = req.body.bio;
+    if (req.body.role_id) user.role_id = req.body.role_id;
+    if (req.body.extra_permissions)
+      user.extra_permissions = req.body.extra_permissions;
+    if (req.body.removed_permissions)
+      user.removed_permissions = req.body.removed_permissions;
 
-  await user.save();
-  if (!req.body.extra_permissions && !req.body.removed_permissions && !req.body.role_id) {
-    return res.status(StatusCode.OK).json({
+    await user.save();
+
+    res.status(StatusCode.OK).json({
       status: "success",
-      message: "User updated successfully",
-      data: { user }
-    })
-  }
-  return next();
-});
-
-export const permsUpdateController = asyncErrorHandler(async (req, res, next) => {
-  const { target_user_id } = req.body;
-  const user = await UserService.checkUserExists({ _id: target_user_id });
-
-  if (!user) {
-    const error = new CustomError(
-      "Requested user not found",
-      StatusCode.NOT_FOUND,
-    );
-    return next(error);
-  }
-
-  if (req.body.role_id) user.role_id = req.body.role_id;
-  if (req.body.extra_permissions) user.extra_permissions = req.body.extra_permissions;
-  if (req.body.removed_permissions) user.removed_permissions = req.body.removed_permissions;
-
-  await user.save();
-
-  res.status(StatusCode.OK).json({
-    status: "success",
-    message: "Permissions Updated",
-    data: { user }
-  })
-});
+      message: "Permissions Updated",
+      data: { user },
+    });
+  },
+);

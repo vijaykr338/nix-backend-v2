@@ -1,11 +1,10 @@
-import stories from "./stories.json";
-import media from "./media.json";
-import users from "./users.json";
+import "colors";
 import { Blog, BlogStatus, IBlog } from "../api/models/blogModel";
 import { User } from "../api/models/userModel";
 import connectDB from "../config/DatabaseConfig";
-import "colors";
-import mongoose from "mongoose";
+import media from "./media.json";
+import stories from "./stories.json";
+import users from "./users.json";
 
 interface OldBlog {
   id: number;

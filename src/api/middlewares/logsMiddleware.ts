@@ -24,6 +24,6 @@ export const clear_logs = asyncErrorHandler(async (req, res, _next) => {
   const { stdout, stderr } = await exec("npx pm2 flush NixBackend");
   res.json({
     stdout,
-    stderr
+    stderr,
   });
 });

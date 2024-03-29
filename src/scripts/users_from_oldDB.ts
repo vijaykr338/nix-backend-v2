@@ -63,6 +63,7 @@ Promise.all([
   // create(new_users);
 });
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function create(users: IUser[]) {
   User.insertMany(users, {
     ordered: false,
