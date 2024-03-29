@@ -49,6 +49,7 @@ export const protect = asyncErrorHandler(async (req, res, next) => {
       // Add decoded information to the request body
       req.body.email = email as string;
       req.body.user_id = user_id as string;
+      console.log("email", email, "user_id", user_id, "in the chat");
 
       // Continue to the next middleware or route handler
       return next();
