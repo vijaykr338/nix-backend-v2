@@ -34,7 +34,7 @@ export const getPublishedBlogsController = asyncErrorHandler(
     await refresh_blog_status();
     const blogs = await Blog.find({ status: BlogStatus.Published }, "-body")
       .populate<{ user: IUser }>("user", "_id name email")
-      .sort({ published_at: 1 })
+      .sort({ published_at: -1 })
       .lean();
 
     if (!blogs || blogs.length === 0) {
@@ -73,7 +73,7 @@ export const myBlogsController = asyncErrorHandler(async (req, res, next) => {
   const user_id = new mongoose.Types.ObjectId(req.body.user_id);
   const blogs = await Blog.find({ user: user_id }, "-body")
     .populate<{ user: IUser }>("user", "_id name email")
-    .sort({ created_at: -1 })
+    .sort({ updatedAt: -1 })
     .lean();
 
   if (!blogs || blogs.length === 0) {
@@ -100,7 +100,7 @@ export const getAllBlogsController = asyncErrorHandler(
       "-body",
     )
       .populate<{ user: IUser }>("user", "_id name email")
-      .sort({ created_at: -1 })
+      .sort({ updatedAt: -1 })
       .lean();
 
     if (!blogs || blogs.length === 0) {
