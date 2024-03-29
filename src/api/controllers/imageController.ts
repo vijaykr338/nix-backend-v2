@@ -4,6 +4,7 @@ import CustomError from "../../config/CustomError";
 import StatusCode from "../helpers/httpStatusCode";
 import fs from "fs";
 import util from "util";
+import { ImageType } from "../middlewares/imageMiddleware";
 
 // const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
@@ -12,12 +13,28 @@ const unlink = util.promisify(fs.unlink);
 const generate_thumbnail = async (
   image: sharp.Sharp,
   filename: string,
-  { suppress_console } = { suppress_console: false },
+  { suppress_console = false, image_type = ImageType.General } = {},
 ) => {
   if (!suppress_console) {
     console.log("Creating thumbnail for", filename);
   }
-  const thumbnail = await image.resize(128, 128, { fit: "inside" }).toBuffer();
+
+  const dimension = (() => {
+    switch (image_type) {
+      case ImageType.Avatar:
+        return 128;
+      case ImageType.Edition:
+        return 256;
+      case ImageType.General:
+        return 512;
+      default:
+        return 256;
+    }
+  })();
+
+  const thumbnail = await image
+    .resize(dimension, dimension, { fit: "inside" })
+    .toBuffer();
   await writeFile(`thumbnails/${filename}`, thumbnail);
   return thumbnail;
 };
@@ -38,7 +55,9 @@ export const upload_image = asyncErrorHandler(async (req, res, next) => {
   const image = sharp(req_file.path);
   const image_png = image.png();
   if (is_thumbnail) {
-    await generate_thumbnail(image_png, req_file.filename);
+    await generate_thumbnail(image_png, req_file.filename, {
+      image_type: (req.body.image_type as ImageType) || ImageType.General,
+    });
 
     return res.status(201).json({
       success: true,
@@ -73,6 +92,7 @@ export const get_avatar = asyncErrorHandler(async (req, res, _next) => {
         const image_png = image.png();
         const thumbnail = await generate_thumbnail(image_png, filename, {
           suppress_console: true,
+          image_type: (req.body.image_type as ImageType) || ImageType.General,
         });
         res.contentType("png").send(thumbnail);
       } catch {
@@ -126,7 +146,9 @@ export const get_image = asyncErrorHandler(async (req, res, next) => {
     } catch (err) {
       const image = sharp(`uploads/${filename}`);
       const image_png = image.png();
-      const thumbnail = await generate_thumbnail(image_png, filename);
+      const thumbnail = await generate_thumbnail(image_png, filename, {
+        image_type: (req.body.image_type as ImageType) || ImageType.General,
+      });
       res.contentType("png").send(thumbnail);
     }
   } else {
@@ -229,7 +251,11 @@ export const update_image = asyncErrorHandler(async (req, res, next) => {
   // check if thumbnail exists and update it if it does
   const thumbnail_path = `thumbnails/${filename}`;
   await unlink(thumbnail_path)
-    .then(() => generate_thumbnail(sharp(req_file.path), filename))
+    .then(() =>
+      generate_thumbnail(sharp(req_file.path), filename, {
+        image_type: (req.body.image_type as ImageType) || ImageType.General,
+      }),
+    )
     .catch(() =>
       console.log("No thumbnail found for image, hence not updated", filename),
     );
