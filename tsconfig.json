@@ -10,10 +10,12 @@
         "typeRoots": [
             "./src/types",
             "./node_modules/@types"
-        ]
+        ],
+        "resolveJsonModule": true
     },
     "exclude": [
         "node_modules",
-        "dist"
+        "dist",
+        "src/scripts"
     ],
 }
