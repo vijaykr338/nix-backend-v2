@@ -27,7 +27,7 @@ interface OldBlog {
   published_at: string;
 }
 
-interface OldMedia {
+export interface OldMedia {
   id: number;
   model_type: string;
   model_id: number;
