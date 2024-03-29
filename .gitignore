@@ -40,3 +40,5 @@ uploads/*
 thumbnails/*
 !thumbnails/default-*.png
 old_db
+*.pdf
+edition-*

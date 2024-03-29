@@ -72,5 +72,6 @@ function create(users: IUser[]) {
     })
     .catch((err) => {
       console.log(err);
-    });
+    })
+    .finally(() => process.exit());
 }
