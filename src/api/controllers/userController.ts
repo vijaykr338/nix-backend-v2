@@ -73,66 +73,40 @@ export const getCurrentUserController = asyncErrorHandler(
 );
 
 
-/**
- * Updates the user's profile.
- * Users can update their bio, password, and username.
- * If the user has the permission to Update Profile, they can also update Role, extra_perms, and removed_perms.
- */
 export const updateUserController = asyncErrorHandler(async (req, res, next) => {
-  const user_id = new mongoose.Types.ObjectId(req.body.user_id);
-  // Check if the user exists
-  const user = await UserService.checkUserExists({ _id: user_id });
+  const user_id = req.body.user_id;
+  const { target_user_id } = req.body;
+
+  if (target_user_id !== user_id) {
+    return next();
+  }
+
+  const user = await UserService.checkUserExists({ _id: target_user_id });
 
   if (!user) {
     const error = new CustomError(
       "Unable to get current user",
-      StatusCode.UNAUTHORIZED,
+      StatusCode.NOT_FOUND,
     );
     return next(error);
   }
 
   // Update user properties if provided in request body
   if (req.body.name) user.name = req.body.name;
+  if (req.body.email) user.email = req.body.email;
   if (req.body.password) {
     const hashed_password: string = await bcrypt.hash(req.body.password, 10);
     user.password = hashed_password;
   }
   if (req.body.bio) user.bio = req.body.bio;
 
-  // If user has permission to update profile
-  if (req.body.extra_permissions || req.body.removed_permissions || req.body.role_id) {
-    const allowed_perms: Set<Permission> = new Set();
-    user.extra_permissions?.forEach((perm) => allowed_perms.add(perm));
-    user?.role_id?.permissions?.forEach((perm) => allowed_perms.add(perm));
-    user.removed_permissions?.forEach((perm) => allowed_perms.delete(perm));
-
-    const permissions = [...allowed_perms];
-
-    if (permissions.includes(Permission.UpdateProfile)) {
-      if (req.body.role_id) user.role_id = req.body.role_id;
-      if (req.body.extra_permissions) user.extra_permissions = req.body.extra_permissions;
-      if (req.body.removed_permissions) user.removed_permissions = req.body.removed_permissions;
-    }
-  }
-
-  // Save the updated user
   await user.save();
-
-  res.status(StatusCode.OK).json({
-    status: "success",
-    message: "Profile Updated",
-    data: { user }
-  });
+  return next();
 });
 
-
-/**
- * Allows a user with permission to update profiles to update Role and Perms of other members.
- */
-export const permsUpdateController = asyncErrorHandler(async (req, res, next) => {
-  const { id } = req.params;
-  const user_id = new mongoose.Types.ObjectId(id);
-  const user = await UserService.checkUserExists({ _id: user_id });
+export const permController = asyncErrorHandler(async (req, res, next) => {
+  const { target_user_id } = req.body;
+  const user = await UserService.checkUserExists({ _id: target_user_id });
 
   if (!user) {
     const error = new CustomError(
@@ -150,7 +124,7 @@ export const permsUpdateController = asyncErrorHandler(async (req, res, next) =>
 
   res.status(StatusCode.OK).json({
     status: "success",
-    message: "Perms Updated",
+    message: "Profile Updated",
     data: { user }
   })
 });
