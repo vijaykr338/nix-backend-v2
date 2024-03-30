@@ -13,7 +13,9 @@ const router = express.Router();
 
 const updateProfileProtect = protected_route([Permission.UpdateProfile]);
 
-router.route("/").get(getAllUsers);
+router.route("/").get(protect, getAllUsers);
+
+router.route("/get-team").get(protect, getAllUsers);
 
 router.route("/current-user").get(protect, getCurrentUserController);
 
