@@ -7,6 +7,7 @@ import {
   getAllBlogsController,
   getBlogController,
   getMyBlogController,
+  getPublishedBlogController,
   getPublishedBlogsController,
   myBlogsController,
   publishBlogController,
@@ -39,6 +40,9 @@ router.route("/my-blogs").get(protect, myBlogsController);
 router
   .route("/get-blog/:id")
   .get(protect, getMyBlogController, readBlogProtect, getBlogController);
+
+// route for frontend to get published blog via its id
+router.route("/get-published-blog/:id").get(getPublishedBlogController);
 
 // protected for creating a new blog
 router

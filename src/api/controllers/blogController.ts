@@ -51,6 +51,27 @@ export const getPublishedBlogsController = asyncErrorHandler(
   },
 );
 
+export const getPublishedBlogController = asyncErrorHandler(
+  async (req, res, next) => {
+    const { id } = req.params;
+
+    const blog = await Blog.findById({ _id: new mongoose.Types.ObjectId(id) })
+      .populate<{ user: IUser }>("user", "_id name email")
+      .lean();
+
+    if (!blog || blog.status !== BlogStatus.Published) {
+      const error = new CustomError("Blog not found", StatusCode.NOT_FOUND);
+      return next(error);
+    }
+
+    res.status(StatusCode.OK).json({
+      status: "success",
+      message: "Blog fetched successfully",
+      data: blog,
+    });
+  },
+);
+
 export const getBlogController = asyncErrorHandler(async (req, res, next) => {
   const { id } = req.params;
 
