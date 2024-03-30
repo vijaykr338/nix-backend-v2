@@ -5,7 +5,6 @@ import cors from "cors";
 import "dotenv/config";
 import express from "express";
 import morgan from "morgan";
-import swaggerUi from "swagger-ui-express";
 import globalErrorHandler from "./api/helpers/globalErrorHandler";
 import StatusCode from "./api/helpers/httpStatusCode";
 import { credentials } from "./api/middlewares/credentials";
@@ -13,7 +12,6 @@ import router from "./api/routes";
 import CustomError from "./config/CustomError";
 import connectDB from "./config/DatabaseConfig";
 import { corsOptions } from "./config/corsOptions";
-import { swaggerDocument } from "./config/swagger/swagger-config";
 
 process.on("uncaughtException", (err) => {
   console.error(err.name.red.underline, err.message.red.underline);
@@ -53,9 +51,6 @@ app.get("/", (req, res) => {
 
 //app router
 app.use(`${API_URL}`, router);
-
-//middleware for swagger
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 //fallback route
 app.all("*", (req, res, next) => {
