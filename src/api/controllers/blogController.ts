@@ -38,10 +38,11 @@ export const getPublishedBlogsController = asyncErrorHandler(
       .sort({ published_at: -1 })
       .lean();
 
-    if (!blogs || blogs.length === 0) {
-      const error = new CustomError("No blogs found", StatusCode.NOT_FOUND);
-      return next(error);
-    }
+    // this is not an error, but simply blogs = []
+    // if (!blogs || blogs.length === 0) {
+    //   const error = new CustomError("No blogs found", StatusCode.NOT_FOUND);
+    //   return next(error);
+    // }
 
     return res.status(StatusCode.OK).json({
       status: "success",
@@ -98,10 +99,11 @@ export const myBlogsController = asyncErrorHandler(async (req, res, next) => {
     .sort({ updatedAt: -1 })
     .lean();
 
-  if (!blogs || blogs.length === 0) {
-    const error = new CustomError("No blogs found", StatusCode.NOT_FOUND);
-    return next(error);
-  }
+  // this is not an error, but simply blogs = []
+  // if (!blogs || blogs.length === 0) {
+  //   const error = new CustomError("No blogs found", StatusCode.NOT_FOUND);
+  //   return next(error);
+  // }
 
   res.status(StatusCode.OK).json({
     status: "success",
