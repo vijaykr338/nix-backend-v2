@@ -12,12 +12,6 @@ import dashboardRouter from "./dashboardRoute";
 
 const router = express.Router();
 
-router.use("/", (req, res) => {
-  res.json({
-    status: "success",
-    message: "v1 API for DTU Times",
-  });
-});
 router.use("/user", userRouter);
 router.use("/auth", authRouter);
 router.use("/role", roleRouter);

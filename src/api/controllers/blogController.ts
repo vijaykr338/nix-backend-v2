@@ -16,7 +16,7 @@ export const getMyBlogController = asyncErrorHandler(async (req, res, next) => {
     _id: new mongoose.Types.ObjectId(id),
     user: user_id,
   })
-    .populate<{ user: IUser }>("user", "_id name email")
+    .populate<{ user: IUser }>("user", "_id name email bio")
     .lean();
 
   if (!blog) {
@@ -34,14 +34,15 @@ export const getPublishedBlogsController = asyncErrorHandler(
   async (req, res, next) => {
     await refresh_blog_status();
     const blogs = await Blog.find({ status: BlogStatus.Published }, "-body")
-      .populate<{ user: IUser }>("user", "_id name email")
+      .populate<{ user: IUser }>("user", "_id name email bio")
       .sort({ published_at: -1 })
       .lean();
 
-    if (!blogs || blogs.length === 0) {
-      const error = new CustomError("No blogs found", StatusCode.NOT_FOUND);
-      return next(error);
-    }
+    // this is not an error, but simply blogs = []
+    // if (!blogs || blogs.length === 0) {
+    //   const error = new CustomError("No blogs found", StatusCode.NOT_FOUND);
+    //   return next(error);
+    // }
 
     return res.status(StatusCode.OK).json({
       status: "success",
@@ -56,7 +57,7 @@ export const getPublishedBlogController = asyncErrorHandler(
     const { slug } = req.params;
 
     const blog = await Blog.findOne({ slug: slug })
-      .populate<{ user: IUser }>("user", "_id name email")
+      .populate<{ user: IUser }>("user", "_id name email bio")
       .lean();
 
     if (!blog || blog.status !== BlogStatus.Published) {
@@ -76,7 +77,7 @@ export const getBlogController = asyncErrorHandler(async (req, res, next) => {
   const { id } = req.params;
 
   const blog = await Blog.findById({ _id: new mongoose.Types.ObjectId(id) })
-    .populate<{ user: IUser }>("user", "_id name email")
+    .populate<{ user: IUser }>("user", "_id name email bio")
     .lean();
 
   if (!blog) {
@@ -94,14 +95,15 @@ export const getBlogController = asyncErrorHandler(async (req, res, next) => {
 export const myBlogsController = asyncErrorHandler(async (req, res, next) => {
   const user_id = new mongoose.Types.ObjectId(req.body.user_id);
   const blogs = await Blog.find({ user: user_id }, "-body")
-    .populate<{ user: IUser }>("user", "_id name email")
+    .populate<{ user: IUser }>("user", "_id name email bio")
     .sort({ updatedAt: -1 })
     .lean();
 
-  if (!blogs || blogs.length === 0) {
-    const error = new CustomError("No blogs found", StatusCode.NOT_FOUND);
-    return next(error);
-  }
+  // this is not an error, but simply blogs = []
+  // if (!blogs || blogs.length === 0) {
+  //   const error = new CustomError("No blogs found", StatusCode.NOT_FOUND);
+  //   return next(error);
+  // }
 
   res.status(StatusCode.OK).json({
     status: "success",
@@ -121,7 +123,7 @@ export const getAllBlogsController = asyncErrorHandler(
       { status: { $ne: BlogStatus.Draft } },
       "-body",
     )
-      .populate<{ user: IUser }>("user", "_id name email")
+      .populate<{ user: IUser }>("user", "_id name email bio")
       .sort({ updatedAt: -1 })
       .lean();
 

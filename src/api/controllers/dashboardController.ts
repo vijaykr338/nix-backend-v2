@@ -4,7 +4,7 @@ import StatusCode from "../helpers/httpStatusCode";
 import CustomError from "../../config/CustomError";
 
 export const getTopUsers = asyncErrorHandler(async (req, res, next) => {
-  const topUsers = await Blog.aggregate([
+  const top_users_queried = await Blog.aggregate([
     {
       $match: { status: BlogStatus.Published },
     },
@@ -42,11 +42,15 @@ export const getTopUsers = asyncErrorHandler(async (req, res, next) => {
   ]);
 
   // placeholder id for old blogs without owner
-  topUsers.filter((user) => user.email !== process.env.EMAIL_SERVICE_USER);
+  const top_users = top_users_queried
+    .filter(
+      (user) => user.userDetails?.email !== process.env.EMAIL_SERVICE_USER,
+    )
+    .slice(0, 10);
 
-  if (!topUsers || topUsers.length == 0) {
+  if (!top_users_queried || top_users_queried.length == 0) {
     const error = new CustomError(
-      "No published blogs yet",
+      "No published blogs yet to generate a leaderboard",
       StatusCode.NOT_FOUND,
     );
     return next(error);
@@ -55,7 +59,7 @@ export const getTopUsers = asyncErrorHandler(async (req, res, next) => {
   res.status(StatusCode.OK).json({
     status: "success",
     message: "Top users fetched successfully",
-    data: topUsers.slice(0, 10),
+    data: top_users,
   });
 });
 
