@@ -46,7 +46,10 @@ app.use(morgan("common"));
 
 //test route
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.json({
+    status: "success",
+    message: "Welcome to the DTU Times API",
+  });
 });
 
 //app router
