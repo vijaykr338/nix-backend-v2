@@ -15,7 +15,7 @@ const updateProfileProtect = protected_route([Permission.UpdateProfile]);
 
 router.route("/").get(protect, getAllUsers);
 
-router.route("/get-team").get(protect, getAllUsers);
+router.route("/get-team").get(getAllUsers);
 
 router.route("/current-user").get(protect, getCurrentUserController);
 
