@@ -5,6 +5,30 @@ import mongoose from "mongoose";
 import Permission from "../helpers/permissions";
 import StatusCode from "../helpers/httpStatusCode";
 import bcrypt from "bcrypt";
+import { IUser } from "../models/userModel";
+
+export const getTeam = asyncErrorHandler(async (req, res) => {
+  //add logic here
+  const filter = { show: true } as IUser;
+
+  const allUsers = await UserService.getAllUsers(filter);
+
+  res.status(StatusCode.OK).json({
+    status: "success",
+    message: "Users fetched successfully",
+    data: allUsers.map((user) => {
+      return {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role_id?.name,
+        role_id: user.role_id?._id,
+        bio: user.bio,
+        created_at: user.date_joined,
+      };
+    }),
+  });
+});
 
 export const getAllUsers = asyncErrorHandler(async (req, res) => {
   //add logic here

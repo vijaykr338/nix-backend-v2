@@ -42,7 +42,7 @@ router
   .get(protect, getMyBlogController, readBlogProtect, getBlogController);
 
 // route for frontend to get published blog via its id
-router.route("/get-published-blog/:id").get(getPublishedBlogController);
+router.route("/get-published-blog/:slug").get(getPublishedBlogController);
 
 // protected for creating a new blog
 router

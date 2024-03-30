@@ -2,6 +2,7 @@ import express from "express";
 import {
   getAllUsers,
   getCurrentUserController,
+  getTeam,
   permsUpdateController,
   updateUserController,
 } from "../controllers/userController";
@@ -13,7 +14,9 @@ const router = express.Router();
 
 const updateProfileProtect = protected_route([Permission.UpdateProfile]);
 
-router.route("/").get(getAllUsers);
+router.route("/").get(protect, getAllUsers);
+
+router.route("/get-team").get(getTeam);
 
 router.route("/current-user").get(protect, getCurrentUserController);
 

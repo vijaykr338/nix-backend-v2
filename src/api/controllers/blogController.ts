@@ -53,9 +53,9 @@ export const getPublishedBlogsController = asyncErrorHandler(
 
 export const getPublishedBlogController = asyncErrorHandler(
   async (req, res, next) => {
-    const { id } = req.params;
+    const { slug } = req.params;
 
-    const blog = await Blog.findById({ _id: new mongoose.Types.ObjectId(id) })
+    const blog = await Blog.findOne({ slug: slug })
       .populate<{ user: IUser }>("user", "_id name email")
       .lean();
 

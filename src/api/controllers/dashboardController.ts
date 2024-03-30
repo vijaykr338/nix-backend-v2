@@ -18,7 +18,7 @@ export const getTopUsers = asyncErrorHandler(async (req, res, next) => {
       $sort: { totalPublishedBlogs: -1 },
     },
     {
-      $limit: 10,
+      $limit: 11,
     },
     {
       $lookup: {
@@ -41,6 +41,9 @@ export const getTopUsers = asyncErrorHandler(async (req, res, next) => {
     },
   ]);
 
+  // placeholder id for old blogs without owner
+  topUsers.filter((user) => user.email !== process.env.EMAIL_SERVICE_USER);
+
   if (!topUsers || topUsers.length == 0) {
     const error = new CustomError(
       "No published blogs yet",
@@ -52,11 +55,11 @@ export const getTopUsers = asyncErrorHandler(async (req, res, next) => {
   res.status(StatusCode.OK).json({
     status: "success",
     message: "Top users fetched successfully",
-    data: topUsers,
+    data: topUsers.slice(0, 10),
   });
 });
 
-export const getBlogsInEachCategory = asyncErrorHandler(
+export const getBlogsCountInEachCategory = asyncErrorHandler(
   async (req, res, next) => {
     const blogCountsByCategory = await Blog.aggregate([
       {
