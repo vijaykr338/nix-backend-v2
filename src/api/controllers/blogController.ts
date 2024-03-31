@@ -54,6 +54,7 @@ export const getPublishedBlogsController = asyncErrorHandler(
 
 export const getPublishedBlogController = asyncErrorHandler(
   async (req, res, next) => {
+    await refresh_blog_status();
     const { slug } = req.params;
 
     const blog = await Blog.findOne({ slug: slug })
@@ -93,6 +94,7 @@ export const getBlogController = asyncErrorHandler(async (req, res, next) => {
 });
 
 export const myBlogsController = asyncErrorHandler(async (req, res, next) => {
+  await refresh_blog_status();
   const user_id = new mongoose.Types.ObjectId(req.body.user_id);
   const blogs = await Blog.find({ user: user_id }, "-body")
     .populate<{ user: IUser }>("user", "_id name email bio")
@@ -405,15 +407,19 @@ export const deleteMyBlogController = asyncErrorHandler(
   async (req, res, next) => {
     const user_id = new mongoose.Types.ObjectId(req.body.user_id);
     const { id } = req.params;
-    const blog = await Blog.findOneAndDelete({
+    const blog = await Blog.findOne({
       _id: new mongoose.Types.ObjectId(id),
       user: user_id,
     });
 
     if (!blog) {
+      const err = new CustomError("Blog not found", StatusCode.NOT_FOUND);
+      return next(err);
+    }
+    if (blog.status != BlogStatus.Draft) {
       return next();
     }
-
+    await blog.deleteOne();
     console.log("Draft deleted", blog);
 
     res.status(StatusCode.OK).json({
