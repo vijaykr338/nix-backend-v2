@@ -407,15 +407,19 @@ export const deleteMyBlogController = asyncErrorHandler(
   async (req, res, next) => {
     const user_id = new mongoose.Types.ObjectId(req.body.user_id);
     const { id } = req.params;
-    const blog = await Blog.findOneAndDelete({
+    const blog = await Blog.findOne({
       _id: new mongoose.Types.ObjectId(id),
       user: user_id,
     });
 
     if (!blog) {
+      const err = new CustomError("Blog not found", StatusCode.NOT_FOUND);
+      return next(err);
+    }
+    if (blog.status != BlogStatus.Draft) {
       return next();
     }
-
+    await blog.deleteOne();
     console.log("Draft deleted", blog);
 
     res.status(StatusCode.OK).json({
