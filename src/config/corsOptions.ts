@@ -25,7 +25,7 @@ export const allowedOrigins = [
 export const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
     if (
-      process.env.NODE_ENV === "development" ||
+      (process.env.NODE_ENV === "development" && !origin) ||
       (origin &&
         allowedOrigins.indexOf(origin.split("://")[1] || origin) !== -1)
     ) {
