@@ -23,17 +23,15 @@ export const allowedOrigins = [
 ];
 
 export const corsOptions: CorsOptions = {
-  credentials: true,
   origin: (origin, callback) => {
     if (
       process.env.NODE_ENV === "development" ||
       (origin &&
         allowedOrigins.indexOf(origin.split("://")[1] || origin) !== -1)
     ) {
-      console.log("CORS origin passed", origin);
       callback(null, true);
     } else {
-      console.log("CORS origin:", origin);
+      console.log("CORS origin failed:", origin);
       callback(
         new CustomError("Not allowed by CORS", StatusCode.PRECONDITION_FAILED),
       );
