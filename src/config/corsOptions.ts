@@ -24,12 +24,12 @@ export const allowedOrigins = [
 
 export const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
-    console.log("CORS origin:", origin);
     if (
       process.env.NODE_ENV === "development" ||
       (origin &&
         allowedOrigins.indexOf(origin.split("://")[1] || origin) !== -1)
     ) {
+      console.log("CORS origin passed", origin);
       callback(null, true);
     } else {
       console.log("CORS origin:", origin);
