@@ -23,6 +23,7 @@ export const allowedOrigins = [
 ];
 
 export const corsOptions: CorsOptions = {
+  credentials: true,
   origin: (origin, callback) => {
     if (
       process.env.NODE_ENV === "development" ||
