@@ -132,10 +132,10 @@ export const getUserController = asyncErrorHandler(async (req, res, next) => {
 
 export const updateUserController = asyncErrorHandler(
   async (req, res, next) => {
-    const user_id = req.body.user_id;
-    const { target_user_id } = req.body;
+    const user_id = new mongoose.Types.ObjectId(req.body.user_id);
+    const target_user_id = new mongoose.Types.ObjectId(req.body.target_user_id);
 
-    if (target_user_id !== user_id) {
+    if (!target_user_id.equals(user_id)) {
       return next();
     }
 
@@ -208,7 +208,7 @@ export const permsUpdateController = asyncErrorHandler(
       await User.findByIdAndUpdate(user, { role_id: role_id });
     }
 
-    if (permission) {
+    if (permission !== undefined || permission !== null) {
       const role_perms_taken_away = user.role_id.permissions.filter(
         (perm) => !permission.includes(perm),
       );

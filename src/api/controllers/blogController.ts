@@ -23,7 +23,7 @@ export const getPersonalLevelBlog = asyncErrorHandler(
       return next();
     }
 
-    if (user_id != blog.user._id && blog.status == BlogStatus.Draft) {
+    if (!user_id.equals(blog.user._id) && blog.status == BlogStatus.Draft) {
       const error = new CustomError(
         "This blog does not belongs to you",
         StatusCode.NOT_FOUND,
@@ -384,21 +384,22 @@ export const refreshBlogStatus = asyncErrorHandler(async (_req, res, _next) => {
 async function refresh_blog_status(): Promise<
   import("mongoose").UpdateWriteOpResult
 > {
-  const blogsToPublish = await Blog.find(
-    { status: BlogStatus.Approved, published_at: { $lte: new Date() } },
-    "_id",
-  );
+  const blogsToPublish = await Blog.find({
+    status: BlogStatus.Approved,
+    published_at: { $lte: new Date() },
+  });
 
   const blogIds = blogsToPublish.map((blog) => blog._id);
 
   const refresh_result = await Blog.updateMany(
-    { _id: { $in: blogIds } },
+    { _id: { $in: blogIds }, status: BlogStatus.Approved },
     { status: BlogStatus.Published },
   );
 
-  if (refresh_result.matchedCount > 0) {
+  if (refresh_result.matchedCount > 0 && refresh_result.modifiedCount > 0) {
     console.log("Auto published blogs; count =", refresh_result);
     console.log("IDs of autopublished blogs", blogIds);
+    blogsToPublish.forEach((blog) => blogPublishedMail(blog));
   }
 
   return refresh_result;
