@@ -384,10 +384,10 @@ export const refreshBlogStatus = asyncErrorHandler(async (_req, res, _next) => {
 async function refresh_blog_status(): Promise<
   import("mongoose").UpdateWriteOpResult
 > {
-  const blogsToPublish = await Blog.find(
-    { status: BlogStatus.Approved, published_at: { $lte: new Date() } },
-    "_id",
-  );
+  const blogsToPublish = await Blog.find({
+    status: BlogStatus.Approved,
+    published_at: { $lte: new Date() },
+  });
 
   const blogIds = blogsToPublish.map((blog) => blog._id);
 
