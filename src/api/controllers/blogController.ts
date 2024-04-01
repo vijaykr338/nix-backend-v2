@@ -321,7 +321,7 @@ export const approveBlogController = asyncErrorHandler(
     if (currentDate > publish_timestamp) {
       // i am a teapot
       const error = new CustomError(
-        "You can't change the past buddy, that's how life is. The puslish timings should be somewhere in the future.",
+        "You can't change the past buddy, that's how life is. The publish timings should be somewhere in the future.",
         StatusCode.IM_A_TEAPOT,
       );
       return next(error);
