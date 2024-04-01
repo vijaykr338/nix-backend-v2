@@ -5,7 +5,7 @@ import mongoose from "mongoose";
 import Permission from "../helpers/permissions";
 import StatusCode from "../helpers/httpStatusCode";
 import bcrypt from "bcrypt";
-import { IUser } from "../models/userModel";
+import { IUser, PopulatedUser, User } from "../models/userModel";
 
 export const getTeam = asyncErrorHandler(async (req, res) => {
   //add logic here
@@ -125,18 +125,12 @@ export const updateUserController = asyncErrorHandler(
     if (req.body.target_bio) user.bio = req.body.target_bio;
 
     await user.save();
-    if (
-      !req.body.extra_permissions &&
-      !req.body.removed_permissions &&
-      !req.body.role_id
-    ) {
+    req.body.user = user;
+    if (!req.body.permission && !req.body.role_id) {
       const allowed_perms: Set<Permission> = new Set();
       user.extra_permissions?.forEach((perm) => allowed_perms.add(perm));
-      // eslint-disable-next-line prettier/prettier
       user.role_id?.permissions?.forEach((perm) => allowed_perms.add(perm));
-      user.removed_permissions?.forEach((perm) =>
-        allowed_perms.delete(perm),
-      );
+      user.removed_permissions?.forEach((perm) => allowed_perms.delete(perm));
       return res.status(StatusCode.OK).json({
         status: "success",
         message: "User updated successfully",
@@ -160,8 +154,12 @@ export const updateUserController = asyncErrorHandler(
 
 export const permsUpdateController = asyncErrorHandler(
   async (req, res, next) => {
-    const { target_user_id } = req.body;
-    const user = await UserService.checkUserExists({ _id: target_user_id });
+    const {
+      user,
+      permission,
+      role_id,
+    }: { user: PopulatedUser; permission: Permission[]; role_id: string } =
+      req.body;
 
     if (!user) {
       const error = new CustomError(
@@ -171,11 +169,20 @@ export const permsUpdateController = asyncErrorHandler(
       return next(error);
     }
 
-    if (req.body.role_id) user.role_id = req.body.role_id;
-    if (req.body.extra_permissions)
-      user.extra_permissions = req.body.extra_permissions;
-    if (req.body.removed_permissions)
-      user.removed_permissions = req.body.removed_permissions;
+    if (role_id) {
+      await User.findByIdAndUpdate(user, { role_id: role_id });
+    }
+
+    if (permission) {
+      const role_perms_taken_away = user.role_id.permissions.filter(
+        (perm) => !permission.includes(perm),
+      );
+      const extra_perms_given = permission.filter(
+        (perm) => !user.role_id.permissions.includes(perm),
+      );
+      user.removed_permissions = role_perms_taken_away;
+      user.extra_permissions = extra_perms_given;
+    }
 
     await user.save();
 
