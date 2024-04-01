@@ -135,11 +135,12 @@ export const updateUserController = asyncErrorHandler(
     const user_id = new mongoose.Types.ObjectId(req.body.user_id);
     const target_user_id = new mongoose.Types.ObjectId(req.body.target_user_id);
 
+    const user = await UserService.checkUserExists({ _id: target_user_id });
+    req.body.user = user;
+
     if (!target_user_id.equals(user_id)) {
       return next();
     }
-
-    const user = await UserService.checkUserExists({ _id: target_user_id });
 
     if (!user) {
       const error = new CustomError(
