@@ -4,31 +4,40 @@ import asyncErrorHandler from "../helpers/asyncErrorHandler";
 import StatusCode from "../helpers/httpStatusCode";
 import { Blog, BlogStatus } from "../models/blogModel";
 import { IUser } from "../models/userModel";
-import { blogForApprovalMail } from "../helpers/emailHelper";
+import { blogForApprovalMail, blogPublishedMail } from "../helpers/emailHelper";
 import fs from "node:fs";
 
-export const getMyBlogController = asyncErrorHandler(async (req, res, next) => {
-  const user_id = new mongoose.Types.ObjectId(req.body.user_id);
-  const { id } = req.params;
+export const getPersonalLevelBlog = asyncErrorHandler(
+  async (req, res, next) => {
+    const user_id = new mongoose.Types.ObjectId(req.body.user_id);
+    const { id } = req.params;
 
-  await refresh_blog_status();
-  const blog = await Blog.findById({
-    _id: new mongoose.Types.ObjectId(id),
-    user: user_id,
-  })
-    .populate<{ user: IUser }>("user", "_id name email bio")
-    .lean();
+    await refresh_blog_status();
+    const blog = await Blog.findById({
+      _id: new mongoose.Types.ObjectId(id),
+    })
+      .populate<{ user: IUser }>("user", "_id name email bio")
+      .lean();
 
-  if (!blog) {
-    return next();
-  }
+    if (!blog) {
+      return next();
+    }
 
-  res.status(StatusCode.OK).json({
-    status: "success",
-    message: "Blog fetched successfully",
-    data: blog,
-  });
-});
+    if (user_id != blog.user._id && blog.status == BlogStatus.Draft) {
+      const error = new CustomError(
+        "This blog does not belongs to you",
+        StatusCode.NOT_FOUND,
+      );
+      return next(error);
+    }
+
+    res.status(StatusCode.OK).json({
+      status: "success",
+      message: "Blog fetched successfully",
+      data: blog,
+    });
+  },
+);
 
 export const getPublishedBlogsController = asyncErrorHandler(
   async (req, res, next) => {
@@ -271,7 +280,7 @@ export const updateBlogController = asyncErrorHandler(
  * @returns {Object} - Returns a JSON object confirming the published blog.
  */
 export const publishBlogController = asyncErrorHandler(
-  async (req, res, _next) => {
+  async (req, res, next) => {
     const { id } = req.params;
     const currentDate = new Date();
     const updatedBlog = await Blog.findByIdAndUpdate(
@@ -283,11 +292,21 @@ export const publishBlogController = asyncErrorHandler(
       { new: true },
     );
 
+    if (!updatedBlog) {
+      const error = new CustomError(
+        "Blog to publish was not found!",
+        StatusCode.NOT_FOUND,
+      );
+      return next(error);
+    }
+
     res.status(StatusCode.OK).json({
       status: "success",
       message: "Blog published successfully",
       data: updatedBlog,
     });
+
+    blogPublishedMail(updatedBlog);
   },
 );
 
@@ -321,7 +340,7 @@ export const approveBlogController = asyncErrorHandler(
     if (currentDate > publish_timestamp) {
       // i am a teapot
       const error = new CustomError(
-        "You can't change the past buddy, that's how life is. The puslish timings should be somewhere in the future.",
+        "You can't change the past buddy, that's how life is. The publish timings should be somewhere in the future.",
         StatusCode.IM_A_TEAPOT,
       );
       return next(error);
@@ -365,13 +384,23 @@ export const refreshBlogStatus = asyncErrorHandler(async (_req, res, _next) => {
 async function refresh_blog_status(): Promise<
   import("mongoose").UpdateWriteOpResult
 > {
-  const refresh_result = await Blog.updateMany(
+  const blogsToPublish = await Blog.find(
     { status: BlogStatus.Approved, published_at: { $lte: new Date() } },
+    "_id",
+  );
+
+  const blogIds = blogsToPublish.map((blog) => blog._id);
+
+  const refresh_result = await Blog.updateMany(
+    { _id: { $in: blogIds } },
     { status: BlogStatus.Published },
   );
+
   if (refresh_result.matchedCount > 0) {
-    console.log("Auto published blogs", refresh_result);
+    console.log("Auto published blogs; count =", refresh_result);
+    console.log("IDs of autopublished blogs", blogIds);
   }
+
   return refresh_result;
 }
 

@@ -199,10 +199,7 @@ export const login = asyncErrorHandler(async (req, res, next) => {
       },
     });
   } else {
-    const error = new CustomError(
-      "Password is wrong!",
-      StatusCode.UNAUTHORIZED,
-    );
+    const error = new CustomError("Password is wrong!", StatusCode.BAD_REQUEST);
     return next(error);
   }
 });
