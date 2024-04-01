@@ -89,6 +89,7 @@ export const getCurrentUserController = asyncErrorHandler(
         email: user.email,
         bio: user.bio,
         role: user.role_id?.name,
+        role_id: user.role_id?._id,
         is_superuser: user._id.toString() === process.env.SUPERUSER_ROLE_ID,
       },
     });
@@ -123,6 +124,7 @@ export const getUserController = asyncErrorHandler(async (req, res, next) => {
       email: user.email,
       bio: user.bio,
       role: user.role_id?.name,
+      role_id: user.role_id?._id,
       is_superuser: user._id.toString() === process.env.SUPERUSER_ROLE_ID,
     },
   });
@@ -173,6 +175,7 @@ export const updateUserController = asyncErrorHandler(
             email: user.email,
             bio: user.bio,
             role: user.role_id.name,
+            role_id: user.role_id._id,
             permission: [...allowed_perms],
             is_superuser:
               user.role_id._id.toString() === process.env.SUPERUSER_ROLE_ID,
@@ -232,6 +235,7 @@ export const permsUpdateController = asyncErrorHandler(
           email: user.email,
           bio: user.bio,
           role: user.role_id.name,
+          role_id: user.role_id._id,
           permission: [...allowed_perms],
           is_superuser:
             user.role_id._id.toString() === process.env.SUPERUSER_ROLE_ID,
