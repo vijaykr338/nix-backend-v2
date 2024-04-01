@@ -11,7 +11,7 @@ class PendingApprovalMail extends Email {
   constructor(blog: IBlog) {
     const { title, byliner, cover, id } = blog;
     const story_link = `${APP_URL}/story/${id}`;
-    const img_url = `${APP_URL}/api/v1/images/get/${cover}`;
+    const img_url = `${APP_URL}/api/v1/images/get/${cover}?thumbnail=true`;
 
     super();
 
