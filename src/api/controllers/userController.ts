@@ -116,13 +116,13 @@ export const updateUserController = asyncErrorHandler(
     }
 
     // Update user properties if provided in request body
-    if (req.body.name) user.name = req.body.name;
-    if (req.body.email) user.email = req.body.email;
+    if (req.body.target_name) user.name = req.body.target_name;
+    if (req.body.target_email) user.email = req.body.target_email;
     if (req.body.password) {
       const hashed_password: string = await bcrypt.hash(req.body.password, 10);
       user.password = hashed_password;
     }
-    if (req.body.bio) user.bio = req.body.bio;
+    if (req.body.target_bio) user.bio = req.body.target_bio;
 
     await user.save();
     if (
