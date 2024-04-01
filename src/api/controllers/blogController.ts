@@ -23,7 +23,7 @@ export const getPersonalLevelBlog = asyncErrorHandler(
       return next();
     }
 
-    if (user_id.equals(blog.user._id) && blog.status == BlogStatus.Draft) {
+    if (!user_id.equals(blog.user._id) && blog.status == BlogStatus.Draft) {
       const error = new CustomError(
         "This blog does not belongs to you",
         StatusCode.NOT_FOUND,
