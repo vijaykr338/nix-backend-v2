@@ -208,7 +208,7 @@ export const permsUpdateController = asyncErrorHandler(
       await User.findByIdAndUpdate(user, { role_id: role_id });
     }
 
-    if (permission) {
+    if (permission !== undefined || permission !== null) {
       const role_perms_taken_away = user.role_id.permissions.filter(
         (perm) => !permission.includes(perm),
       );
