@@ -3,6 +3,7 @@ import {
   getAllUsers,
   getCurrentUserController,
   getTeam,
+  getUserController,
   permsUpdateController,
   updateUserController,
 } from "../controllers/userController";
@@ -19,6 +20,8 @@ router.route("/").get(protect, getAllUsers);
 router.route("/get-team").get(getTeam);
 
 router.route("/current-user").get(protect, getCurrentUserController);
+
+router.route("/get-user/:id").get(protect, getUserController);
 
 router
   .route("/update-user")

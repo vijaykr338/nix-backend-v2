@@ -31,7 +31,7 @@ export const corsOptions: CorsOptions = {
     ) {
       callback(null, true);
     } else {
-      console.log("CORS origin:", origin);
+      console.log("CORS origin failed:", origin);
       callback(
         new CustomError("Not allowed by CORS", StatusCode.PRECONDITION_FAILED),
       );
