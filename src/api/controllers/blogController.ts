@@ -392,11 +392,11 @@ async function refresh_blog_status(): Promise<
   const blogIds = blogsToPublish.map((blog) => blog._id);
 
   const refresh_result = await Blog.updateMany(
-    { _id: { $in: blogIds } },
+    { _id: { $in: blogIds }, status: BlogStatus.Approved },
     { status: BlogStatus.Published },
   );
 
-  if (refresh_result.matchedCount > 0) {
+  if (refresh_result.matchedCount > 0 && refresh_result.modifiedCount > 0) {
     console.log("Auto published blogs; count =", refresh_result);
     console.log("IDs of autopublished blogs", blogIds);
     blogsToPublish.forEach((blog) => blogPublishedMail(blog));
