@@ -40,7 +40,7 @@ export const getPersonalLevelBlog = asyncErrorHandler(
 );
 
 export const getPublishedBlogsController = asyncErrorHandler(
-  async (req, res, next) => {
+  async (req, res, _next) => {
     await refresh_blog_status();
     const blogs = await Blog.find({ status: BlogStatus.Published }, "-body")
       .populate<{ user: IUser }>("user", "_id name email bio")
@@ -102,7 +102,7 @@ export const getBlogController = asyncErrorHandler(async (req, res, next) => {
   });
 });
 
-export const myBlogsController = asyncErrorHandler(async (req, res, next) => {
+export const myBlogsController = asyncErrorHandler(async (req, res, _next) => {
   await refresh_blog_status();
   const user_id = new mongoose.Types.ObjectId(req.body.user_id);
   const blogs = await Blog.find({ user: user_id }, "-body")
