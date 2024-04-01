@@ -218,10 +218,25 @@ export const permsUpdateController = asyncErrorHandler(
 
     await user.save();
 
-    res.status(StatusCode.OK).json({
+    const allowed_perms: Set<Permission> = new Set();
+    user.extra_permissions?.forEach((perm) => allowed_perms.add(perm));
+    user.role_id?.permissions?.forEach((perm) => allowed_perms.add(perm));
+    user.removed_permissions?.forEach((perm) => allowed_perms.delete(perm));
+    return res.status(StatusCode.OK).json({
       status: "success",
-      message: "Permissions Updated",
-      data: { user },
+      message: "User updated successfully",
+      data: {
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          bio: user.bio,
+          role: user.role_id.name,
+          permission: [...allowed_perms],
+          is_superuser:
+            user.role_id._id.toString() === process.env.SUPERUSER_ROLE_ID,
+        },
+      },
     });
   },
 );

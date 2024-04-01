@@ -152,7 +152,7 @@ export const login = asyncErrorHandler(async (req, res, next) => {
   if (!foundUser) {
     const error = new CustomError(
       "No user exists with this email.",
-      StatusCode.UNAUTHORIZED,
+      StatusCode.NOT_FOUND,
     );
     return next(error);
   }
