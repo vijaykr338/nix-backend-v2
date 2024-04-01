@@ -49,12 +49,11 @@ export const blogForApprovalMail = async (blog: IBlog) => {
 };
 
 export const blogPublishedMail = async (blog: IBlog) => {
-  getUsersPermissionBased([
-    [Permission.ReceiveBlogPublishedMail],
-    [Permission.PublishBlog],
-  ]).then((users) => {
-    const emails = users.map((user) => user.email);
-    const email_message = new StoryPublishedMail(blog);
-    email_message.sendTo(emails);
-  });
+  getUsersPermissionBased([[Permission.ReceiveBlogPublishedMail]]).then(
+    (users) => {
+      const emails = users.map((user) => user.email);
+      const email_message = new StoryPublishedMail(blog);
+      email_message.sendTo(emails);
+    },
+  );
 };
