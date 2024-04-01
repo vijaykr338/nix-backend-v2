@@ -54,6 +54,14 @@ class Email {
    * @returns {Promise<boolean>} After awaiting, returns true if email is sent successfully
    */
   async sendTo(reciever: string | string[]): Promise<boolean> {
+    if (
+      !process.env.EMAIL_SERVICE_USER ||
+      !process.env.EMAIL_SERVICE_PASS ||
+      process.env.ENABLE_EMAIL !== "true"
+    ) {
+      console.error("Email service not enabled!");
+      return false;
+    }
     console.assert(reciever, "Reciever is required");
     console.assert(this.subject, "Subject is required");
     console.assert(this.html, "Body is required");

@@ -6,7 +6,7 @@ import {
   deleteMyBlogController,
   getAllBlogsController,
   getBlogController,
-  getMyBlogController,
+  getPersonalLevelBlog,
   getPublishedBlogController,
   getPublishedBlogsController,
   myBlogsController,
@@ -39,7 +39,7 @@ router.route("/my-blogs").get(protect, myBlogsController);
 // blogs by this user ONLY (including drafts) + blogs by other users if person is an admin (with read rights)
 router
   .route("/get-blog/:id")
-  .get(protect, getMyBlogController, readBlogProtect, getBlogController);
+  .get(protect, getPersonalLevelBlog, readBlogProtect, getBlogController);
 
 // route for frontend to get published blog via its id
 router.route("/get-published-blog/:slug").get(getPublishedBlogController);

@@ -4,6 +4,7 @@ import { User } from "../models/userModel";
 import PendingApprovalMail from "../services/emails/pendingApproval";
 import * as UserService from "../services/userService";
 import Permission from "./permissions";
+import StoryPublishedMail from "../services/emails/storyPublished";
 
 type ObjectId = mongoose.Types.ObjectId;
 
@@ -24,7 +25,10 @@ export const getUsersPermissionBased = async (permissions: Permission[][]) => {
     user.extra_permissions?.forEach((perm) => allowed_perms.add(perm));
     user.role_id?.permissions?.forEach((perm) => allowed_perms.add(perm));
     user.removed_permissions?.forEach((perm) => allowed_perms.delete(perm));
-    return permissions.some((perm) => perm.every((p) => allowed_perms.has(p)));
+    return (
+      permissions.some((perm) => perm.every((p) => allowed_perms.has(p))) ||
+      user.role_id.id === process.env.SUPERUSER_ROLE_ID
+    );
   });
   return allowed_users;
 };
@@ -40,6 +44,17 @@ export const blogForApprovalMail = async (blog: IBlog) => {
   getUsersPermissionBased([[Permission.PublishBlog]]).then((users) => {
     const emails = users.map((user) => user.email);
     const email_message = new PendingApprovalMail(blog);
+    email_message.sendTo(emails);
+  });
+};
+
+export const blogPublishedMail = async (blog: IBlog) => {
+  getUsersPermissionBased([
+    [Permission.ReceiveBlogPublishedMail],
+    [Permission.PublishBlog],
+  ]).then((users) => {
+    const emails = users.map((user) => user.email);
+    const email_message = new StoryPublishedMail(blog);
     email_message.sendTo(emails);
   });
 };

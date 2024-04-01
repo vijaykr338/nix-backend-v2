@@ -22,6 +22,8 @@ enum Permission {
   CreateEdition = 17,
   UpdateEdition = 18,
   DeleteEdition = 19,
+  // these perms will be used for management
+  ReceiveBlogPublishedMail = 20,
 }
 
 export default Permission;
