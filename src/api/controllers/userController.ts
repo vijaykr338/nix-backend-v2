@@ -130,10 +130,28 @@ export const updateUserController = asyncErrorHandler(
       !req.body.removed_permissions &&
       !req.body.role_id
     ) {
+      const allowed_perms: Set<Permission> = new Set();
+      user.extra_permissions?.forEach((perm) => allowed_perms.add(perm));
+      // eslint-disable-next-line prettier/prettier
+      user.role_id?.permissions?.forEach((perm) => allowed_perms.add(perm));
+      user.removed_permissions?.forEach((perm) =>
+        allowed_perms.delete(perm),
+      );
       return res.status(StatusCode.OK).json({
         status: "success",
         message: "User updated successfully",
-        data: { user },
+        data: {
+          user: {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            bio: user.bio,
+            role: user.role_id.name,
+            permission: [...allowed_perms],
+            is_superuser:
+              user.role_id._id.toString() === process.env.SUPERUSER_ROLE_ID,
+          },
+        },
       });
     }
     return next();
