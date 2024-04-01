@@ -1,9 +1,9 @@
 import express from "express";
 import {
   getAllUsers,
-  getCurrentUserController,
-  getTeam,
   getUserController,
+  getTeam,
+  getCurrentUserController,
   permsUpdateController,
   updateUserController,
 } from "../controllers/userController";
