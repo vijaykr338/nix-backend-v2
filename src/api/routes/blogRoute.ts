@@ -13,6 +13,7 @@ import {
   publishBlogController,
   submitForApprovalController,
   takeDownBlogController,
+  takeDownMyBlogController,
   updateBlogController,
 } from "../controllers/blogController";
 import Permission from "../helpers/permissions";
@@ -72,7 +73,12 @@ router
 // admins can change pending/approved/published blogs to draft
 router
   .route("/take-down-blog/:id")
-  .put(protect, deleteBlogProtect, takeDownBlogController);
+  .put(
+    protect,
+    takeDownMyBlogController,
+    deleteBlogProtect,
+    takeDownBlogController,
+  );
 
 // protected for deleting a blog by admin or drafts by user
 router
