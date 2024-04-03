@@ -516,13 +516,12 @@ export const deleteBlogController = asyncErrorHandler(
   },
 );
 
-export const takeDownBlogController = asyncErrorHandler(
+export const takeDownMyBlogController = asyncErrorHandler(
   async (req, res, next) => {
     const { id } = req.params;
-    const blog = await Blog.findByIdAndUpdate(
+    const blog = await Blog.findById(
+      // this implies user submitted blog accidentally and wants to take it down
       { _id: new mongoose.Types.ObjectId(id) },
-      { status: BlogStatus.Draft },
-      { new: true },
     );
 
     if (!blog) {
@@ -530,8 +529,34 @@ export const takeDownBlogController = asyncErrorHandler(
       return next(error);
     }
 
+    if (
+      new mongoose.Types.ObjectId(blog.user.toString()).equals(req.body.user_id)
+    ) {
+      // user can take down their own blog
+      blog.status = BlogStatus.Draft;
+      await blog.save();
+    } else {
+      req.body.blog = blog;
+      return next();
+    }
+
     console.log("Blog taken down", blog);
 
+    res.status(StatusCode.OK).json({
+      status: "success",
+      message: "Blog taken down successfully",
+      data: blog,
+    });
+  },
+);
+
+export const takeDownBlogController = asyncErrorHandler(
+  async (req, res, _next) => {
+    const blog = req.body.blog;
+    blog.status = BlogStatus.Draft;
+    await blog.save();
+
+    console.log("Blog taken down", blog);
     res.status(StatusCode.OK).json({
       status: "success",
       message: "Blog taken down successfully",
