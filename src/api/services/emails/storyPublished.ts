@@ -11,7 +11,7 @@ class StoryPublishedMail extends Email {
   constructor(blog: IBlog) {
     super();
     const { title: story_title, byliner: story_byliner, cover, slug } = blog;
-    const img_url = `${APP_URL}/api/v1/images/get/${cover}`;
+    const img_url = `${APP_URL}/api/v1/images/get/${cover}?thumbnail=true`;
     const story_link = `${process.env.FRONTEND_URL}/blog/${slug}`;
 
     this.subject = "Blog published on DTU Times!";
