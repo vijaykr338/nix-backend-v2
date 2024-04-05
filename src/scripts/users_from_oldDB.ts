@@ -23,6 +23,7 @@ export interface OldUserData {
   updated_at: string;
   blocked: number;
   position: string;
+  show: number;
 }
 
 const old_users = users as OldUserData[];
