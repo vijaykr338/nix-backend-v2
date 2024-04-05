@@ -96,7 +96,8 @@ export const getCurrentUserController = asyncErrorHandler(
         role: user.role_id?.name,
         role_id: user.role_id?._id,
         created_at: user.date_joined,
-        is_superuser: user._id.toString() === process.env.SUPERUSER_ROLE_ID,
+        is_superuser:
+          user.role_id?._id?.toString() === process.env.SUPERUSER_ROLE_ID,
       },
     });
   },
@@ -120,6 +121,12 @@ export const getUserController = asyncErrorHandler(async (req, res, next) => {
 
   const permissions = [...allowed_perms];
 
+  console.log(
+    "gettter",
+    user.role_id.toString() === process.env.SUPERUSER_ROLE_ID,
+    user._id.toString(),
+    process.env.SUPERUSER_ROLE_ID,
+  );
   res.status(StatusCode.OK).json({
     status: "success",
     message: "User fetched successfully",
@@ -133,7 +140,8 @@ export const getUserController = asyncErrorHandler(async (req, res, next) => {
       role: user.role_id?.name,
       role_id: user.role_id?._id,
       created_at: user.date_joined,
-      is_superuser: user._id.toString() === process.env.SUPERUSER_ROLE_ID,
+      is_superuser:
+        user.role_id?._id?.toString() === process.env.SUPERUSER_ROLE_ID,
     },
   });
 });
@@ -189,7 +197,7 @@ export const updateUserController = asyncErrorHandler(
             permission: [...allowed_perms],
             created_at: user.date_joined,
             is_superuser:
-              user.role_id._id.toString() === process.env.SUPERUSER_ROLE_ID,
+              user.role_id?._id?.toString() === process.env.SUPERUSER_ROLE_ID,
           },
         },
       });
@@ -234,7 +242,7 @@ export const permsUpdateController = asyncErrorHandler(
     if (role_id) {
       await User.findByIdAndUpdate(user, { role_id: role_id });
     }
-
+    // todo: maybe it returns user's old role
     const allowed_perms: Set<Permission> = new Set();
     user.extra_permissions?.forEach((perm) => allowed_perms.add(perm));
     user.role_id?.permissions?.forEach((perm) => allowed_perms.add(perm));
@@ -254,7 +262,7 @@ export const permsUpdateController = asyncErrorHandler(
           permission: [...allowed_perms],
           created_at: user.date_joined,
           is_superuser:
-            user.role_id._id.toString() === process.env.SUPERUSER_ROLE_ID,
+            user.role_id?._id?.toString() === process.env.SUPERUSER_ROLE_ID,
         },
       },
     });
