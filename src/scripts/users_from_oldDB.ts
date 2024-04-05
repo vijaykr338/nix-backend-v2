@@ -22,7 +22,6 @@ export interface OldUserData {
   created_at: string;
   updated_at: string;
   blocked: number;
-  show: number;
   position: string;
 }
 
@@ -54,7 +53,6 @@ Promise.all([
       role_id: role_map[old_user.position],
       bio: old_user.bio,
       date_joined: new Date(old_user.created_at),
-      show: old_user.show === 1,
     } as IUser;
     return new_user;
   }),
