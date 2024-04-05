@@ -12,10 +12,7 @@ import never_modify_these_roles from "../middlewares/roleMiddleware";
 const router = express.Router();
 
 // permission protected middlewares
-const updation_protect = protected_route([
-  Permission.CreateRole,
-  Permission.UpdateRole,
-]);
+const updation_protect = protected_route([Permission.UpsertRole]);
 const deletion_protect = protected_route([Permission.DeleteRole]);
 // i don't think we need the overhead to protect read operation via perms
 const read_protect = protected_route([Permission.ReadRole]);

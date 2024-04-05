@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import CustomError from "../../config/CustomError";
 import asyncErrorHandler from "../helpers/asyncErrorHandler";
 import StatusCode from "../helpers/httpStatusCode";
-import { Blog, BlogStatus } from "../models/blogModel";
+import { Blog, BlogStatus, IBlog } from "../models/blogModel";
 import { IUser } from "../models/userModel";
 import { blogForApprovalMail, blogPublishedMail } from "../helpers/emailHelper";
 import fs from "node:fs";
@@ -222,14 +222,58 @@ export const createBlogController = asyncErrorHandler(
   },
 );
 
+export const updateBlogController = asyncErrorHandler(
+  async (req, res, next) => {
+    const blog = req.body.blog as IBlog;
+
+    const updated_blog = await blog.updateOne(req.body, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updated_blog) {
+      const error = new CustomError(
+        "Some error occured! Blog not updated.",
+        StatusCode.INTERNAL_SERVER_ERROR,
+      );
+      return next(error);
+    }
+
+    res.status(StatusCode.OK).json({
+      status: "success",
+      message: "Blog updated successfully!",
+      data: updated_blog,
+    });
+  },
+);
+
 /**
  * Update a blog by ID.
  * @returns {Object} - Returns a JSON object containing the updated blog.
  */
-export const updateBlogController = asyncErrorHandler(
+export const updateDraftController = asyncErrorHandler(
   async (req, res, next) => {
     const { id } = req.params;
     const supplied_status = req.body.status;
+    const blog = await Blog.findById({ _id: new mongoose.Types.ObjectId(id) });
+
+    if (!blog) {
+      const error = new CustomError(
+        "Specified blog not found. Maybe it was deleted?",
+        StatusCode.NOT_FOUND,
+      );
+      return next(error);
+    }
+
+    if (blog.status !== BlogStatus.Draft) {
+      req.body.blog = blog;
+      console.log(
+        "Blog is not a draft, needs god like permission to edit!",
+        BlogStatus[blog.status],
+        blog._id,
+      );
+      return next();
+    }
 
     if (typeof supplied_status !== "number") {
       req.body.status = BlogStatus.Draft;
@@ -243,12 +287,6 @@ export const updateBlogController = asyncErrorHandler(
       req.body.status = BlogStatus.Draft;
     }
 
-    const blog = await Blog.findOneAndUpdate(
-      { _id: new mongoose.Types.ObjectId(id), status: BlogStatus.Draft },
-      { ...req.body },
-      { new: true, runValidators: true },
-    );
-
     if (!blog) {
       const error = new CustomError(
         "Blog not found. Only drafts can be updated.",
@@ -257,7 +295,12 @@ export const updateBlogController = asyncErrorHandler(
       return next(error);
     }
 
-    if (blog.status == BlogStatus.Pending) {
+    const updated_blog = await blog.updateOne(req.body, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (updated_blog.status == BlogStatus.Pending) {
       res.status(StatusCode.OK).json({
         status: "success",
         message: "Blog submitted for approval!",
@@ -269,7 +312,7 @@ export const updateBlogController = asyncErrorHandler(
       res.status(StatusCode.OK).json({
         status: "success",
         message: "Blog updated successfully!",
-        data: blog,
+        data: updated_blog,
       });
     }
   },
