@@ -1,6 +1,6 @@
-import mongoose from "mongoose";
+import mongoose, { FilterQuery } from "mongoose";
 import { IRole } from "../models/rolesModel";
-import { User } from "../models/userModel";
+import { IUser, User } from "../models/userModel";
 import bcrypt from "bcrypt";
 import generateRandomPassword from "../helpers/randomPassword";
 import RegisterationMail from "./emails/registeration";
@@ -57,7 +57,7 @@ export const deleteRefreshToken = async (email) => {
   return user;
 };
 
-export const getAllUsers = async (query) => {
+export const getAllUsers = async (query: FilterQuery<IUser>) => {
   const allUsers = await User.find(query).populate<{ role_id: IRole }>(
     "role_id",
   );

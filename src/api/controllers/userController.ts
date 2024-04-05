@@ -1,15 +1,17 @@
 import * as UserService from "../services/userService";
 import asyncErrorHandler from "../helpers/asyncErrorHandler";
 import CustomError from "../../config/CustomError";
-import mongoose from "mongoose";
+import mongoose, { FilterQuery } from "mongoose";
 import Permission from "../helpers/permissions";
 import StatusCode from "../helpers/httpStatusCode";
 import bcrypt from "bcrypt";
 import { IUser, PopulatedUser, User } from "../models/userModel";
+import MainWebsiteRole from "../helpers/mainWebsiteRole";
 
 export const getTeam = asyncErrorHandler(async (req, res) => {
-  //add logic here
-  const filter = { show: true } as IUser;
+  const filter: FilterQuery<IUser> = {
+    team_role: { $ne: MainWebsiteRole.DoNotDisplay },
+  };
 
   const allUsers = await UserService.getAllUsers(filter);
 
@@ -24,6 +26,7 @@ export const getTeam = asyncErrorHandler(async (req, res) => {
         role: user.role_id?.name,
         role_id: user.role_id?._id,
         bio: user.bio,
+        team_role: user.team_role,
         created_at: user.date_joined,
       };
     }),
@@ -55,6 +58,7 @@ export const getAllUsers = asyncErrorHandler(async (req, res) => {
         role: user.role_id?.name,
         role_id: user.role_id?._id,
         bio: user.bio,
+        team_role: user.team_role,
         created_at: user.date_joined,
       };
     }),
@@ -88,8 +92,10 @@ export const getCurrentUserController = asyncErrorHandler(
         name: user.name,
         email: user.email,
         bio: user.bio,
+        team_role: user.team_role,
         role: user.role_id?.name,
         role_id: user.role_id?._id,
+        created_at: user.date_joined,
         is_superuser: user._id.toString() === process.env.SUPERUSER_ROLE_ID,
       },
     });
@@ -123,8 +129,10 @@ export const getUserController = asyncErrorHandler(async (req, res, next) => {
       name: user.name,
       email: user.email,
       bio: user.bio,
+      team_role: user.team_role,
       role: user.role_id?.name,
       role_id: user.role_id?._id,
+      created_at: user.date_joined,
       is_superuser: user._id.toString() === process.env.SUPERUSER_ROLE_ID,
     },
   });
@@ -175,9 +183,11 @@ export const updateUserController = asyncErrorHandler(
             name: user.name,
             email: user.email,
             bio: user.bio,
+            team_role: user.team_role,
             role: user.role_id.name,
             role_id: user.role_id._id,
             permission: [...allowed_perms],
+            created_at: user.date_joined,
             is_superuser:
               user.role_id._id.toString() === process.env.SUPERUSER_ROLE_ID,
           },
@@ -205,10 +215,6 @@ export const permsUpdateController = asyncErrorHandler(
       return next(error);
     }
 
-    if (role_id) {
-      await User.findByIdAndUpdate(user, { role_id: role_id });
-    }
-
     if (permission !== undefined || permission !== null) {
       const role_perms_taken_away = user.role_id.permissions.filter(
         (perm) => !permission.includes(perm),
@@ -220,7 +226,14 @@ export const permsUpdateController = asyncErrorHandler(
       user.extra_permissions = extra_perms_given;
     }
 
+    user.team_role =
+      (req.body.team_role as MainWebsiteRole) || MainWebsiteRole.DoNotDisplay;
+
     await user.save();
+
+    if (role_id) {
+      await User.findByIdAndUpdate(user, { role_id: role_id });
+    }
 
     const allowed_perms: Set<Permission> = new Set();
     user.extra_permissions?.forEach((perm) => allowed_perms.add(perm));
@@ -235,9 +248,11 @@ export const permsUpdateController = asyncErrorHandler(
           name: user.name,
           email: user.email,
           bio: user.bio,
+          team_role: user.team_role,
           role: user.role_id.name,
           role_id: user.role_id._id,
           permission: [...allowed_perms],
+          created_at: user.date_joined,
           is_superuser:
             user.role_id._id.toString() === process.env.SUPERUSER_ROLE_ID,
         },

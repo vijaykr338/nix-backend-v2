@@ -1,6 +1,7 @@
 import mongoose, { Document, Schema } from "mongoose";
 import Permission from "../helpers/permissions";
 import { IRole } from "./rolesModel";
+import MainWebsiteRole from "../helpers/mainWebsiteRole";
 
 export interface IUser extends Document {
   name: string;
@@ -14,6 +15,7 @@ export interface IUser extends Document {
   removed_permissions?: Permission[];
   date_joined: Date;
   show?: boolean;
+  team_role: MainWebsiteRole;
 }
 
 const userSchema = new Schema<IUser>(
@@ -65,6 +67,11 @@ const userSchema = new Schema<IUser>(
     },
     date_joined: {
       type: Date,
+    },
+    team_role: {
+      type: Number,
+      enum: MainWebsiteRole,
+      default: MainWebsiteRole.DoNotDisplay,
     },
   },
   {
