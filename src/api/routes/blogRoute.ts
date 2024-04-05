@@ -15,6 +15,7 @@ import {
   takeDownBlogController,
   takeDownMyBlogController,
   updateBlogController,
+  updateDraftController,
 } from "../controllers/blogController";
 import Permission from "../helpers/permissions";
 import { protect } from "../middlewares/authMiddleware";
@@ -27,6 +28,9 @@ const readBlogProtect = protected_route([Permission.ReadBlog]);
 const updateBlogProtect = protected_route([Permission.UpdateBlog]);
 const publishBlogProtect = protected_route([Permission.PublishBlog]);
 const deleteBlogProtect = protected_route([Permission.DeleteBlog]);
+const publisherUpdateProtect = protected_route([
+  Permission.EditBeforeBlogPublish,
+]);
 
 //  protected for admins who can read all blogs except users' drafts
 router.route("/").get(protect, readBlogProtect, getAllBlogsController);
@@ -50,10 +54,16 @@ router
   .route("/create-blog")
   .post(protect, createBlogProtect, createBlogController);
 
-// protected for updating a draft blogs
+// protected for updating a draft blogs OR updating a blog before publishing
 router
   .route("/update-blog/:id")
-  .put(protect, updateBlogProtect, updateBlogController);
+  .put(
+    protect,
+    updateBlogProtect,
+    updateDraftController,
+    publisherUpdateProtect,
+    updateBlogController,
+  );
 
 // protected for publishing a pending blog
 router
