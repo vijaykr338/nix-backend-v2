@@ -14,7 +14,6 @@ export interface IUser extends Document {
   extra_permissions?: Permission[];
   removed_permissions?: Permission[];
   date_joined: Date;
-  show?: boolean;
   team_role: MainWebsiteRole;
 }
 
@@ -55,10 +54,7 @@ const userSchema = new Schema<IUser>(
         (value) => typeof value === "number",
       ),
     },
-    show: {
-      type: Boolean,
-      default: false,
-    },
+
     removed_permissions: {
       type: [Number],
       enum: Object.values(Permission).filter(
