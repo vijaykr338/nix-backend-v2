@@ -382,6 +382,12 @@ export const approveBlogController = asyncErrorHandler(
     const currentDate = new Date();
     if (currentDate > publish_timestamp) {
       // i am a teapot
+      console.log(
+        "Publish time is in the past",
+        publish_timestamp,
+        currentDate,
+        req.body,
+      );
       const error = new CustomError(
         "You can't change the past buddy, that's how life is. The publish timings should be somewhere in the future.",
         StatusCode.IM_A_TEAPOT,
