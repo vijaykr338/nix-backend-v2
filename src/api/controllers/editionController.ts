@@ -138,7 +138,10 @@ export const upsertEdition = asyncErrorHandler(async (req, res, next) => {
         new: true,
         runValidators: true,
       },
-    );
+    ).catch((e) => {
+      const err = new CustomError(e);
+      return next(err);
+    });
 
     if (!edition) {
       const error = new CustomError("Edition not found", StatusCode.NOT_FOUND);
@@ -154,6 +157,7 @@ export const upsertEdition = asyncErrorHandler(async (req, res, next) => {
       data: edition,
     });
   }
+
   const edition = await Edition.create({
     name: edition_name,
     edition_id: edition_id,
@@ -161,7 +165,15 @@ export const upsertEdition = asyncErrorHandler(async (req, res, next) => {
     edition_link: edition_link,
     published_at:
       req.body.status === EditionStatus.Draft ? null : req.body.published_at,
+  }).catch((e) => {
+    const err = new CustomError(e);
+    return next(err);
   });
+
+  if (!edition) {
+    const error = new CustomError("Edition not created! Some error occured");
+    return next(error);
+  }
 
   return res.status(StatusCode.OK).json({
     status: "success",

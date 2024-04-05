@@ -234,7 +234,7 @@ export const permsUpdateController = asyncErrorHandler(
     if (role_id) {
       await User.findByIdAndUpdate(user, { role_id: role_id });
     }
-
+    // todo: maybe it returns user's old role
     const allowed_perms: Set<Permission> = new Set();
     user.extra_permissions?.forEach((perm) => allowed_perms.add(perm));
     user.role_id?.permissions?.forEach((perm) => allowed_perms.add(perm));
