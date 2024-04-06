@@ -1,4 +1,4 @@
-import sharp from "sharp";
+import sharp, { FitEnum } from "sharp";
 import asyncErrorHandler from "../helpers/asyncErrorHandler";
 import CustomError from "../../config/CustomError";
 import StatusCode from "../helpers/httpStatusCode";
@@ -32,8 +32,21 @@ const generate_thumbnail = async (
     }
   })();
 
+  const fit = ((): keyof FitEnum => {
+    switch (image_type) {
+      case ImageType.Avatar:
+        return "cover";
+      case ImageType.Edition:
+        return "inside";
+      case ImageType.General:
+        return "inside";
+      default:
+        return "inside";
+    }
+  })();
+
   const thumbnail = await image
-    .resize(dimension, dimension, { fit: "inside" })
+    .resize(dimension, dimension, { fit: fit })
     .toBuffer();
   await writeFile(`thumbnails/${filename}`, thumbnail);
   return thumbnail;
