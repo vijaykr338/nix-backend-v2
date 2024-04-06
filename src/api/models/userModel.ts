@@ -78,7 +78,7 @@ const userSchema = new Schema<IUser>(
   },
 );
 
-const User = mongoose.model("user", userSchema);
+const User = mongoose.model<IUser>("user", userSchema);
 type PopulatedUser = Omit<IUser, "role_id"> & { role_id: IRole };
 
 export { User, PopulatedUser };

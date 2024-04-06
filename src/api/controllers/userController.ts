@@ -1,12 +1,14 @@
-import * as UserService from "../services/userService";
-import asyncErrorHandler from "../helpers/asyncErrorHandler";
-import CustomError from "../../config/CustomError";
-import mongoose, { FilterQuery } from "mongoose";
-import Permission from "../helpers/permissions";
-import StatusCode from "../helpers/httpStatusCode";
 import bcrypt from "bcrypt";
-import { IUser, PopulatedUser, User } from "../models/userModel";
+import mongoose, { FilterQuery } from "mongoose";
+import CustomError from "../../config/CustomError";
+import asyncErrorHandler from "../helpers/asyncErrorHandler";
+import StatusCode from "../helpers/httpStatusCode";
 import MainWebsiteRole from "../helpers/mainWebsiteRole";
+import Permission from "../helpers/permissions";
+import { user_to_response } from "../helpers/user_to_response";
+import { IRole } from "../models/rolesModel";
+import { IUser, PopulatedUser, User } from "../models/userModel";
+import * as UserService from "../services/userService";
 
 export const getTeam = asyncErrorHandler(async (req, res) => {
   const filter: FilterQuery<IUser> = {
@@ -19,16 +21,9 @@ export const getTeam = asyncErrorHandler(async (req, res) => {
     status: "success",
     message: "Users fetched successfully",
     data: allUsers.map((user) => {
-      return {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role_id?.name,
-        role_id: user.role_id?._id,
-        bio: user.bio,
-        team_role: user.team_role,
-        created_at: user.date_joined,
-      };
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { permission, is_superuser, ...user_resp } = user_to_response(user);
+      return user_resp;
     }),
   });
 });
@@ -42,25 +37,8 @@ export const getAllUsers = asyncErrorHandler(async (req, res) => {
     status: "success",
     message: "Users fetched successfully",
     data: allUsers.map((user) => {
-      // do a union of permissions here and difference with removed perms
-      const allowed_perms: Set<Permission> = new Set();
-      user.extra_permissions?.forEach((perm) => allowed_perms.add(perm));
-      user.role_id?.permissions?.forEach((perm) => allowed_perms.add(perm));
-      user.removed_permissions?.forEach((perm) => allowed_perms.delete(perm));
-
-      const permissions = [...allowed_perms];
-
-      return {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        permissions: permissions,
-        role: user.role_id?.name,
-        role_id: user.role_id?._id,
-        bio: user.bio,
-        team_role: user.team_role,
-        created_at: user.date_joined,
-      };
+      const user_resp = user_to_response(user);
+      return user_resp;
     }),
   });
 });
@@ -76,29 +54,13 @@ export const getCurrentUserController = asyncErrorHandler(
       );
       return next(error);
     }
-    const allowed_perms: Set<Permission> = new Set();
-    user.extra_permissions?.forEach((perm) => allowed_perms.add(perm));
-    user?.role_id?.permissions?.forEach((perm) => allowed_perms.add(perm));
-    user.removed_permissions?.forEach((perm) => allowed_perms.delete(perm));
 
-    const permissions = [...allowed_perms];
+    const user_resp = user_to_response(user);
 
     res.status(StatusCode.OK).json({
       status: "success",
       message: "User fetched successfully",
-      data: {
-        permission: permissions,
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        bio: user.bio,
-        team_role: user.team_role,
-        role: user.role_id?.name,
-        role_id: user.role_id?._id,
-        created_at: user.date_joined,
-        is_superuser:
-          user.role_id?._id?.toString() === process.env.SUPERUSER_ROLE_ID,
-      },
+      data: user_resp,
     });
   },
 );
@@ -114,12 +76,7 @@ export const getUserController = asyncErrorHandler(async (req, res, next) => {
     return next(error);
   }
 
-  const allowed_perms: Set<Permission> = new Set();
-  user.extra_permissions?.forEach((perm) => allowed_perms.add(perm));
-  user?.role_id?.permissions?.forEach((perm) => allowed_perms.add(perm));
-  user.removed_permissions?.forEach((perm) => allowed_perms.delete(perm));
-
-  const permissions = [...allowed_perms];
+  const user_resp = user_to_response(user);
 
   console.log(
     "gettter",
@@ -130,19 +87,7 @@ export const getUserController = asyncErrorHandler(async (req, res, next) => {
   res.status(StatusCode.OK).json({
     status: "success",
     message: "User fetched successfully",
-    data: {
-      permission: permissions,
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      bio: user.bio,
-      team_role: user.team_role,
-      role: user.role_id?.name,
-      role_id: user.role_id?._id,
-      created_at: user.date_joined,
-      is_superuser:
-        user.role_id?._id?.toString() === process.env.SUPERUSER_ROLE_ID,
-    },
+    data: user_resp,
   });
 });
 
@@ -178,27 +123,13 @@ export const updateUserController = asyncErrorHandler(
     await user.save();
     req.body.user = user;
     if (!req.body.permission && !req.body.role_id) {
-      const allowed_perms: Set<Permission> = new Set();
-      user.extra_permissions?.forEach((perm) => allowed_perms.add(perm));
-      user.role_id?.permissions?.forEach((perm) => allowed_perms.add(perm));
-      user.removed_permissions?.forEach((perm) => allowed_perms.delete(perm));
+      const user_resp = user_to_response(user);
+
       return res.status(StatusCode.OK).json({
         status: "success",
         message: "User updated successfully",
         data: {
-          user: {
-            id: user._id,
-            name: user.name,
-            email: user.email,
-            bio: user.bio,
-            team_role: user.team_role,
-            role: user.role_id.name,
-            role_id: user.role_id._id,
-            permission: [...allowed_perms],
-            created_at: user.date_joined,
-            is_superuser:
-              user.role_id?._id?.toString() === process.env.SUPERUSER_ROLE_ID,
-          },
+          user: user_resp,
         },
       });
     }
@@ -208,12 +139,11 @@ export const updateUserController = asyncErrorHandler(
 
 export const permsUpdateController = asyncErrorHandler(
   async (req, res, next) => {
+    let user: PopulatedUser = req.body.user;
     const {
-      user,
       permission,
       role_id,
-    }: { user: PopulatedUser; permission: Permission[]; role_id: string } =
-      req.body;
+    }: { permission: Permission[]; role_id: string } = req.body;
 
     if (!user) {
       const error = new CustomError(
@@ -221,6 +151,21 @@ export const permsUpdateController = asyncErrorHandler(
         StatusCode.NOT_FOUND,
       );
       return next(error);
+    }
+    if (role_id) {
+      const updated_user = await User.findByIdAndUpdate(user, {
+        role_id: role_id,
+      }).populate<{
+        role_id: IRole;
+      }>("role_id");
+      if (!updated_user) {
+        const error = new CustomError(
+          "Unable to update user",
+          StatusCode.INTERNAL_SERVER_ERROR,
+        );
+        return next(error);
+      }
+      user = updated_user;
     }
 
     if (permission !== undefined || permission !== null) {
@@ -239,31 +184,12 @@ export const permsUpdateController = asyncErrorHandler(
 
     await user.save();
 
-    if (role_id) {
-      await User.findByIdAndUpdate(user, { role_id: role_id });
-    }
-    // todo: maybe it returns user's old role
-    const allowed_perms: Set<Permission> = new Set();
-    user.extra_permissions?.forEach((perm) => allowed_perms.add(perm));
-    user.role_id?.permissions?.forEach((perm) => allowed_perms.add(perm));
-    user.removed_permissions?.forEach((perm) => allowed_perms.delete(perm));
+    const user_resp = user_to_response(user);
     return res.status(StatusCode.OK).json({
       status: "success",
       message: "User updated successfully",
       data: {
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          bio: user.bio,
-          team_role: user.team_role,
-          role: user.role_id.name,
-          role_id: user.role_id._id,
-          permission: [...allowed_perms],
-          created_at: user.date_joined,
-          is_superuser:
-            user.role_id?._id?.toString() === process.env.SUPERUSER_ROLE_ID,
-        },
+        user: user_resp,
       },
     });
   },
