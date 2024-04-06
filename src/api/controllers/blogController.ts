@@ -304,7 +304,6 @@ export const updateDraftController = asyncErrorHandler(
       res.status(StatusCode.OK).json({
         status: "success",
         message: "Blog submitted for approval!",
-        data: blog,
       });
       res.end();
       blogForApprovalMail(blog);
@@ -312,7 +311,6 @@ export const updateDraftController = asyncErrorHandler(
       res.status(StatusCode.OK).json({
         status: "success",
         message: "Blog updated successfully!",
-        data: updated_blog,
       });
     }
   },

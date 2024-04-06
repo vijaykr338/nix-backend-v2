@@ -8,6 +8,7 @@ import Permission from "../helpers/permissions";
 import { User } from "../models/userModel";
 import PasswordResetMail from "../services/emails/passwordReset";
 import * as UserService from "../services/userService";
+import { user_to_response } from "../helpers/user_to_response";
 
 /**
  * Used when access tokens have expired. Generate a new access token and a new refresh token.
@@ -175,29 +176,14 @@ export const login = asyncErrorHandler(async (req, res, next) => {
     });
 
     console.log("Logged in user");
-    const allowed_perms: Set<Permission> = new Set();
-    foundUser.extra_permissions?.forEach((perm) => allowed_perms.add(perm));
-    foundUser.role_id?.permissions?.forEach((perm) => allowed_perms.add(perm));
-    foundUser.removed_permissions?.forEach((perm) =>
-      allowed_perms.delete(perm),
-    );
+    const user = user_to_response(foundUser);
+
     res.json({
       status: "success",
       message: "User successfully login!",
       data: {
         accessToken,
-        user: {
-          id: foundUser._id,
-          name: foundUser.name,
-          email: foundUser.email,
-          bio: foundUser.bio,
-          role: foundUser.role_id.name,
-          role_id: foundUser.role_id._id,
-          permission: [...allowed_perms],
-          is_superuser:
-            foundUser.role_id?._id?.toString() ===
-            process.env.SUPERUSER_ROLE_ID,
-        },
+        user: user,
       },
     });
   } else {
@@ -235,11 +221,13 @@ export const changePassword = asyncErrorHandler(async (req, res, next) => {
   user.password = hashed_password;
   await user.save();
 
+  const user_resp = user_to_response(user);
+
   console.log("Password changed successfully for user", user);
   res.status(StatusCode.OK).json({
     status: "success",
     message: "Password changed successfully",
-    data: { user },
+    data: { user: user_resp },
   });
 });
 
