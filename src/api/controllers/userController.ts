@@ -147,9 +147,13 @@ export const permsUpdateController = asyncErrorHandler(
       return next(error);
     }
     if (role_id) {
-      const updated_user = await User.findByIdAndUpdate(user, {
-        role_id: role_id,
-      }).populate<{
+      const updated_user = await User.findByIdAndUpdate(
+        user,
+        {
+          role_id: role_id,
+        },
+        { new: true },
+      ).populate<{
         role_id: IRole;
       }>("role_id");
       if (!updated_user) {
