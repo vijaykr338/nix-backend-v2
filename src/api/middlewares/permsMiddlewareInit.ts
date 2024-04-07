@@ -50,7 +50,7 @@ export default function protected_route(permissions_required: Permission[]) {
 
     const satisfied = permissions_required.every((perm) => {
       if (user.removed_permissions?.includes(perm)) {
-        console.log(`Permission ${perm} denied (${Permission[perm]})`);
+        console.error(`Permission ${perm} denied (${Permission[perm]})`);
         return false;
       }
 
@@ -58,7 +58,7 @@ export default function protected_route(permissions_required: Permission[]) {
         role.permissions.includes(perm) ||
         user.extra_permissions?.includes(perm);
       if (!perm_given) {
-        console.log(`Permission ${perm} not satisfied (${Permission[perm]})`);
+        console.error(`Permission ${perm} not satisfied (${Permission[perm]})`);
       }
       return perm_given;
     });
