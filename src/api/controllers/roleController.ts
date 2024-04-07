@@ -16,7 +16,7 @@ export const add_or_update_role = asyncErrorHandler(async (req, res, next) => {
     // Update existing role with id
     // todo: should be under service logic
     const role = await Role.updateOne({ _id: id }, { name, permissions });
-    console.log("Role updated", role);
+    console.log("Role updated".blue, req.body, role);
 
     return res.status(StatusCode.OK).json({
       status: "success",
@@ -43,7 +43,7 @@ export const add_or_update_role = asyncErrorHandler(async (req, res, next) => {
     // Create a new role
     // todo: should be under service logic
     const newRole = await Role.create({ name, permissions });
-    console.log("Role created", newRole);
+    console.log("Role created".blue, newRole);
 
     return res.status(StatusCode.CREATED).json({
       status: "success",

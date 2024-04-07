@@ -14,7 +14,7 @@ class CustomError extends Error {
   ) {
     if (message instanceof Error) {
       if (message instanceof MongoServerError) {
-        console.log("Mongoose Error".red);
+        console.error("Mongoose Error".red);
         switch (message.code) {
           case 11000:
             super("Same entry already exists in the database");
@@ -25,7 +25,6 @@ class CustomError extends Error {
             this.statusCode = StatusCode.INTERNAL_SERVER_ERROR;
         }
       } else {
-        console.log("Not Mongoose Error".red);
         super(message.message);
         this.statusCode = statusCode;
       }

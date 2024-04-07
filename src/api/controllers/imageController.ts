@@ -135,7 +135,7 @@ export const get_avatar = asyncErrorHandler(async (req, res, _next) => {
       const image_png_buffer = await image_png.toBuffer();
       res.contentType("png").send(image_png_buffer);
     } catch {
-      console.log("No avatar found for user", filename);
+      console.error("No avatar found for user", filename);
       const image = sharp("uploads/default-avatar.png");
       const img = await image.toBuffer();
       res.contentType("png").send(img);
@@ -210,11 +210,11 @@ export const delete_avatar = asyncErrorHandler(async (req, res, next) => {
 
 // may throw error if file not found
 const delete_image_fs = async (filename: string) => {
-  console.log("Deleting image", filename);
+  console.log("Deleting image".red, filename.red);
   try {
     await unlink(`thumbnails/${filename}`);
   } catch {
-    console.log("No thumbnail found for image");
+    console.error("No thumbnail found for image");
   }
   await unlink(`uploads/${filename}`);
 };
@@ -272,7 +272,10 @@ export const update_image = asyncErrorHandler(async (req, res, next) => {
       }),
     )
     .catch(() =>
-      console.log("No thumbnail found for image, hence not updated", filename),
+      console.error(
+        "No thumbnail found for image, hence not updated",
+        filename,
+      ),
     );
 
   res.status(200).json({

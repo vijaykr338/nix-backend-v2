@@ -78,12 +78,6 @@ export const getUserController = asyncErrorHandler(async (req, res, next) => {
 
   const user_resp = user_to_response(user);
 
-  console.log(
-    "gettter",
-    user.role_id.toString() === process.env.SUPERUSER_ROLE_ID,
-    user._id.toString(),
-    process.env.SUPERUSER_ROLE_ID,
-  );
   res.status(StatusCode.OK).json({
     status: "success",
     message: "User fetched successfully",

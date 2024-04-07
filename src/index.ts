@@ -42,7 +42,13 @@ app.use(express.urlencoded({ extended: false }));
 // parse cookies
 app.use(cookieParser());
 //logger
-app.use(morgan("common"));
+app.use(
+  morgan("common", {
+    skip: (req) => {
+      return req.originalUrl.includes("/images/");
+    },
+  }),
+);
 
 //test route
 app.get("/", (req, res) => {
