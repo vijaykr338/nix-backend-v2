@@ -10,7 +10,7 @@ enum Permission {
   /// Allows user x to update user y's Role, give extra permissions, or remove some permissions,
   /// and also allows to update the display role (main website team page role)
   UpdateProfile = 2,
-  // Delete Profile funcationality doesn't exists, profile can be deleted by manipulating monogodb database for now be devs
+  // Delete Profile functionality doesn't exist, profile can be deleted by manipulating monogodb database for now be devs
   DeleteProfile = 3,
   /// Allows user X to create a new role or update an existing role
   UpsertRole = 4,
