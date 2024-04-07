@@ -6,7 +6,12 @@ import CustomError from "../../config/CustomError";
 export const getTopUsers = asyncErrorHandler(async (req, res, next) => {
   const top_users_queried = await Blog.aggregate([
     {
-      $match: { status: BlogStatus.Published },
+      $match: {
+        status: BlogStatus.Published,
+        createdAt: {
+          $gte: new Date(new Date().setFullYear(new Date().getFullYear() - 4)),
+        },
+      },
     },
     {
       $group: {
