@@ -529,12 +529,14 @@ export const deleteMyBlogController = asyncErrorHandler(
 
 export const deleteBlogController = asyncErrorHandler(
   async (req, res, next) => {
-    const blog = req.body.blog;
+    const blog: IBlog = req.body.blog;
 
     if (!blog) {
-      const error = new CustomError("Blog not found", StatusCode.NOT_FOUND);
+      const error = new CustomError("Some error occured! Blog not deleted");
       return next(error);
     }
+
+    await blog.deleteOne();
 
     console.log("Blog deleted", blog);
 
