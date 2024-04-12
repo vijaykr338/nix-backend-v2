@@ -22,13 +22,12 @@ const generate_thumbnail = async (
   const dimension = (() => {
     switch (image_type) {
       case ImageType.Avatar:
-        return 128;
+        // interesting, what is observed is 128x128 is taking more storage than 256x256 :/
+        return 256;
       case ImageType.Edition:
         return 256;
       case ImageType.General:
         return 512;
-      case ImageType.BiggerAvatar:
-        return 256;
       default:
         return 256;
     }
@@ -36,7 +35,6 @@ const generate_thumbnail = async (
 
   const fit = ((): keyof FitEnum => {
     switch (image_type) {
-      case ImageType.BiggerAvatar:
       case ImageType.Avatar:
         return "cover";
       case ImageType.Edition:
@@ -105,27 +103,7 @@ export const get_avatar = asyncErrorHandler(async (req, res, _next) => {
   const filename = req.params.id;
   const { thumbnail } = req.query;
 
-  if (thumbnail === "256") {
-    const file_query = `${filename}_256`;
-    try {
-      const image = sharp(`thumbnails/${file_query}`);
-      const image_png_buff = await image.png().toBuffer();
-      return res.contentType("png").send(image_png_buff);
-    } catch (err) {
-      try {
-        const image = sharp(`uploads/${filename}`);
-        const thumbnail = await generate_thumbnail(image, file_query, {
-          suppress_console: true,
-          image_type: ImageType.BiggerAvatar,
-        });
-        res.contentType("png").send(thumbnail);
-      } catch {
-        const image = sharp("thumbnails/default-avatar.png");
-        const img = await image.toBuffer();
-        res.contentType("png").send(img);
-      }
-    }
-  } else if (thumbnail === "true") {
+  if (thumbnail === "true") {
     try {
       const image = sharp(`thumbnails/${filename}`);
       const image_png_buff = await image.png().toBuffer();
