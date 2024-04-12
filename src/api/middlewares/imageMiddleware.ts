@@ -6,6 +6,7 @@ export enum ImageType {
   General,
   Avatar,
   Edition,
+  BiggerAvatar,
 }
 
 export const storage = multer({
