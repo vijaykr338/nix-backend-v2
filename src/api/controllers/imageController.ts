@@ -107,7 +107,7 @@ export const get_avatar = asyncErrorHandler(async (req, res, _next) => {
         const image_png = image.png();
         const thumbnail = await generate_thumbnail(image_png, filename, {
           suppress_console: true,
-          image_type: (req.body.image_type as ImageType) || ImageType.General,
+          image_type: (req.body.image_type as ImageType) || ImageType.Avatar,
         });
         res.contentType("png").send(thumbnail);
       } catch {
