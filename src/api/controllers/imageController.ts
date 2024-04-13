@@ -1,37 +1,89 @@
-import sharp, { FitEnum } from "sharp";
-import asyncErrorHandler from "../helpers/asyncErrorHandler";
-import CustomError from "../../config/CustomError";
-import StatusCode from "../helpers/httpStatusCode";
 import fs from "fs";
+import { spawn } from "node:child_process";
+import sharp, { FitEnum } from "sharp";
 import util from "util";
+import CustomError from "../../config/CustomError";
+import asyncErrorHandler from "../helpers/asyncErrorHandler";
+import StatusCode from "../helpers/httpStatusCode";
+import {
+  DeleteImageOptions,
+  GenerateThumbnailOptions,
+  ThumbnailOptions,
+  dimension_map,
+} from "../helpers/imageOptions";
 import { ImageType } from "../middlewares/imageMiddleware";
 
-// const readFile = util.promisify(fs.readFile);
 const writeFile = util.promisify(fs.writeFile);
-const unlink = util.promisify(fs.unlink);
+
+/** Throws CustomError if image not found */
+const get_thumbnail = async ({
+  og_filename: filename,
+  image_type,
+  thumbnail_type,
+}: ThumbnailOptions) => {
+  const dimension =
+    thumbnail_type === "true"
+      ? dimension_map(image_type)
+      : (thumbnail_type && parseInt(thumbnail_type)) ||
+        dimension_map(image_type);
+
+  const thumnail_query = `${filename}_${dimension}`;
+
+  try {
+    const img = sharp(`thumbnails/${thumnail_query}`);
+    const img_buff = await img.toBuffer();
+    return img_buff;
+  } catch {
+    // requested thumbnail doesn't exists
+    console.log(
+      "Non existing thumbnail requested".red,
+      thumnail_query.yellow,
+      "Generating new one".cyan,
+    );
+    if (
+      image_type === ImageType.Avatar &&
+      !fs.existsSync(`uploads/${filename}`)
+    ) {
+      // thumbnail for avatar is requested, which doesn't exists
+      const default_avatar = sharp("thumbnails/default-avatar.png");
+      return default_avatar.toBuffer();
+    }
+    try {
+      const img_buff = await generate_thumbnail(
+        sharp(`uploads/${filename}`),
+        filename,
+        {
+          image_type,
+          image_dimensions: dimension,
+        },
+      );
+      return img_buff;
+    } catch {
+      const err = new CustomError("Image not found", StatusCode.NOT_FOUND);
+      throw err;
+    }
+  }
+};
 
 const generate_thumbnail = async (
   image: sharp.Sharp,
   filename: string,
-  { suppress_console = false, image_type = ImageType.General } = {},
+  { image_type, image_dimensions = 256 }: GenerateThumbnailOptions = {
+    image_dimensions: 256,
+    image_type: ImageType.General,
+  },
 ) => {
-  if (!suppress_console) {
+  if (image_type != undefined && image_dimensions != undefined) {
+    console.log(
+      "Both image_type and image_dimensions are provided, image_dimensions will be used for dimensions",
+    );
+  }
+
+  if (image_type !== ImageType.Avatar) {
     console.log("Creating thumbnail for", filename);
   }
 
-  const dimension = (() => {
-    switch (image_type) {
-      case ImageType.Avatar:
-        // interesting, what is observed is 128x128 is taking more storage than 256x256 :/
-        return 256;
-      case ImageType.Edition:
-        return 256;
-      case ImageType.General:
-        return 512;
-      default:
-        return 256;
-    }
-  })();
+  const dimension = image_dimensions || dimension_map(image_type);
 
   const fit = ((): keyof FitEnum => {
     switch (image_type) {
@@ -49,12 +101,15 @@ const generate_thumbnail = async (
   const thumbnail = await image
     .resize(dimension, dimension, { fit: fit })
     .toBuffer();
-  writeFile(`thumbnails/${filename}`, thumbnail)
-    .then((f) => {
-      if (!suppress_console) console.log("Thumbnail created successfully", f);
+
+  writeFile(`thumbnails/${filename}_${dimension}`, thumbnail)
+    .then(() => {
+      if (image_type !== ImageType.Avatar)
+        console.log("Thumbnail created successfully");
     })
     .catch((err) => {
-      if (!suppress_console) console.error("Error creating thumbnail", err);
+      if (image_type !== ImageType.Avatar)
+        console.error("Error creating thumbnail", err);
     });
   return thumbnail;
 };
@@ -78,7 +133,8 @@ export const upload_image = asyncErrorHandler(async (req, res, next) => {
   const image_png = image.png();
   if (is_thumbnail) {
     await generate_thumbnail(image_png, req_file.filename, {
-      image_type,
+      image_type: image_type,
+      image_dimensions: dimension_map(image_type),
     });
 
     return res.status(201).json({
@@ -99,54 +155,33 @@ export const upload_image = asyncErrorHandler(async (req, res, next) => {
   });
 });
 
-export const get_avatar = asyncErrorHandler(async (req, res, _next) => {
+export const get_avatar = asyncErrorHandler(async (req, res, next) => {
   const filename = req.params.id;
   const { thumbnail } = req.query;
 
-  if (thumbnail === "true") {
-    try {
-      const image = sharp(`thumbnails/${filename}`);
-      const image_png_buff = await image.png().toBuffer();
-      return res.contentType("png").send(image_png_buff);
-    } catch (err) {
-      try {
-        const image = sharp(`uploads/${filename}`);
-        const image_png = image.png();
-        const thumbnail = await generate_thumbnail(image_png, filename, {
-          suppress_console: true,
-          image_type: (req.body.image_type as ImageType) || ImageType.Avatar,
-        });
-        res.contentType("png").send(thumbnail);
-      } catch {
-        const image = sharp("thumbnails/default-avatar.png");
-        const img = await image.toBuffer();
-        res.contentType("png").send(img);
-      }
-    }
-  } else {
-    try {
-      const image = sharp(`uploads/${filename}`);
-      const image_png = image.png();
-      try {
-        const size = thumbnail && parseInt(thumbnail.toString());
-        if (size) {
-          const image_resized = image.resize(size, size, { fit: "inside" });
-          const image_png_resized = image_resized.png();
-          const image_png_resized_buff = await image_png_resized.toBuffer();
+  if (!filename) {
+    const err = new CustomError("UserID is required", StatusCode.BAD_REQUEST);
+    return next(err);
+  }
 
-          return res.contentType("png").send(image_png_resized_buff);
-        }
-      } catch (err) {
-        console.error("Error resizing image", err);
-      }
-      const image_png_buffer = await image_png.toBuffer();
-      res.contentType("png").send(image_png_buffer);
-    } catch {
-      console.error("No avatar found for user", filename);
-      const image = sharp("uploads/default-avatar.png");
-      const img = await image.toBuffer();
-      res.contentType("png").send(img);
-    }
+  if (thumbnail) {
+    const img_buff = await get_thumbnail({
+      og_filename: filename,
+      image_type: ImageType.Avatar,
+      thumbnail_type: thumbnail.toString(),
+    });
+    return res.contentType("image/png").send(img_buff);
+  }
+
+  try {
+    const img = sharp(`thumbnails/${filename}`);
+    const img_buff = await img.png().toBuffer();
+    res.contentType("png").send(img_buff);
+  } catch {
+    console.error("No avatar found for user", filename);
+    const image = sharp("uploads/default-avatar.png");
+    const img = await image.toBuffer();
+    res.contentType("png").send(img);
   }
 });
 
@@ -154,41 +189,29 @@ export const get_image = asyncErrorHandler(async (req, res, next) => {
   const { filename: file } = req.params;
   const filename = file.split("?")[0];
   const { thumbnail } = req.query;
+
   if (!filename) {
-    return next(
-      new CustomError("Filename is required", StatusCode.BAD_REQUEST),
-    );
+    const err = new CustomError("UserID is required", StatusCode.BAD_REQUEST);
+    return next(err);
   }
 
-  if (thumbnail === "true") {
-    try {
-      const image = sharp(`thumbnails/${filename}`);
-      const image_png_buff = await image.png().toBuffer();
-      return res.contentType("png").send(image_png_buff);
-    } catch (err) {
-      const image = sharp(`uploads/${filename}`);
-      const image_png = image.png();
-      const thumbnail = await generate_thumbnail(image_png, filename, {
-        image_type: (req.body.image_type as ImageType) || ImageType.General,
-      });
-      res.contentType("png").send(thumbnail);
-    }
+  if (thumbnail) {
+    // not empty string and not undefined
+    const img_buff = await get_thumbnail({
+      og_filename: filename,
+      image_type: (req.body.image_type as ImageType) || ImageType.General,
+      thumbnail_type: thumbnail.toString(),
+    });
+    return res.contentType("png").send(img_buff);
   } else {
-    const image = sharp(`uploads/${filename}`);
-    const image_png = image.png();
     try {
-      const size = thumbnail && parseInt(thumbnail.toString());
-      if (size) {
-        const image_resized = image.resize(size, size, { fit: "inside" });
-        const image_png_resized = image_resized.png();
-        const image_png_resized_buff = await image_png_resized.toBuffer();
-        return res.contentType("png").send(image_png_resized_buff);
-      }
-    } catch (err) {
-      console.error("Error resizing image", err);
+      const image = sharp(`uploads/${filename}`);
+      const img_buff = await image.png().toBuffer();
+      res.contentType("png").send(img_buff);
+    } catch {
+      const err = new CustomError("Image not found", StatusCode.NOT_FOUND);
+      return next(err);
     }
-    const image_png_buffer = await image_png.toBuffer();
-    res.contentType("png").send(image_png_buffer);
   }
 });
 
@@ -204,26 +227,51 @@ export const delete_avatar = asyncErrorHandler(async (req, res, next) => {
     );
   }
 
-  try {
-    delete_image_fs(filename);
-  } catch (err) {
-    const e = new CustomError(
-      "Error deleting image",
-      StatusCode.INTERNAL_SERVER_ERROR,
-    );
-    return next(e);
-  }
+  delete_image_fs(filename);
 });
 
-// may throw error if file not found
-const delete_image_fs = async (filename: string) => {
+const delete_image_fs = (
+  filename: string,
+  { only_thumbnail }: DeleteImageOptions = { only_thumbnail: false },
+) => {
+  // filter non-alphanumeric characters
+  // constraint from image middleware
+  filename = filename.replace(/[^a-z0-9_.]/g, "");
   console.log("Deleting image".red, filename.red);
-  try {
-    await unlink(`thumbnails/${filename}`);
-  } catch {
-    console.error("No thumbnail found for image");
+  const thumbnail_path = `thumbnails/${filename}_*`;
+  const upload_path = `uploads/${filename}`;
+
+  // security warning: Any input containing shell metacharacters may be used to trigger arbitrary command execution
+  // so i cleaned filename beforehand
+  const delete_path = [thumbnail_path, upload_path];
+  if (only_thumbnail) {
+    // delete only thumbnail
+    delete_path.pop();
   }
-  await unlink(`uploads/${filename}`);
+
+  // directly using rm doesn't work because globbing is shell provided feature and rm expects exact file name match
+  // const child = spawn("rm", ["-f", ...delete_path]);
+
+  const bash_args = [
+    "-c",
+    "shopt -s extglob\nshopt -s nullglob\nrm -f " + delete_path.join(" "),
+  ];
+  const child = spawn("bash", bash_args);
+
+  /* child.stdout.on("data", (data) => {
+    console.log(`stdout: ${data}`);
+  });
+  child.stderr.on("data", (data) => {
+    console.error(`stderr: ${data}`);
+  }); */
+
+  child.once("close", (code) => {
+    console.log(`Delete image process exited with code ${code}`);
+  });
+  child.once("error", () => {
+    console.error("Failed to start subprocess.");
+  });
+  return child;
 };
 
 export const delete_image = asyncErrorHandler(async (req, res, next) => {
@@ -235,15 +283,7 @@ export const delete_image = asyncErrorHandler(async (req, res, next) => {
     );
   }
 
-  try {
-    delete_image_fs(filename);
-  } catch (err) {
-    const e = new CustomError(
-      "Error deleting image",
-      StatusCode.INTERNAL_SERVER_ERROR,
-    );
-    return next(e);
-  }
+  delete_image_fs(filename);
 
   res.status(200).json({
     success: true,
@@ -270,20 +310,24 @@ export const update_image = asyncErrorHandler(async (req, res, next) => {
       ),
     );
   }
-  // check if thumbnail exists and update it if it does
-  const thumbnail_path = `thumbnails/${filename}`;
-  await unlink(thumbnail_path)
-    .then(() =>
-      generate_thumbnail(sharp(req_file.path), filename, {
-        image_type: (req.body.image_type as ImageType) || ImageType.General,
-      }),
-    )
-    .catch(() =>
+  // check if thumbnail exists and remove it
+  const child = delete_image_fs(filename, { only_thumbnail: true });
+
+  // wait for child process to complete with timeout of 1s
+  // this ensures that res is sent only after updation or failing to update
+  // in case update fails, which it never should... well, i didn't handle it.. pray to god that it all works out
+  await new Promise<void>((resolve, reject) => {
+    child.once("close", (code) => {
+      console.log(`Update image deletion step exited with code ${code}`);
+      resolve();
+    });
+    setTimeout(() => {
       console.error(
-        "No thumbnail found for image, hence not updated",
-        filename,
-      ),
-    );
+        "oh my god, update image handle panciked caz couldn't delete thumbnail in time! AAAAwaaaaaaa!",
+      );
+      reject("Child process timeout");
+    }, 1000);
+  });
 
   res.status(200).json({
     success: true,
