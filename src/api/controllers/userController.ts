@@ -9,6 +9,7 @@ import { user_to_response } from "../helpers/user_to_response";
 import { IRole } from "../models/rolesModel";
 import { IUser, PopulatedUser, User } from "../models/userModel";
 import * as UserService from "../services/userService";
+import { Blog } from "../models/blogModel";
 
 export const getTeam = asyncErrorHandler(async (req, res) => {
   const filter: FilterQuery<IUser> = {
@@ -147,9 +148,13 @@ export const permsUpdateController = asyncErrorHandler(
       return next(error);
     }
     if (role_id) {
-      const updated_user = await User.findByIdAndUpdate(user, {
-        role_id: role_id,
-      }).populate<{
+      const updated_user = await User.findByIdAndUpdate(
+        user,
+        {
+          role_id: role_id,
+        },
+        { new: true },
+      ).populate<{
         role_id: IRole;
       }>("role_id");
       if (!updated_user) {
@@ -185,6 +190,64 @@ export const permsUpdateController = asyncErrorHandler(
       data: {
         user: user_resp,
       },
+    });
+  },
+);
+
+export const deleteUserController = asyncErrorHandler(
+  async (req, res, next) => {
+    const { id } = req.params;
+    const user_id = new mongoose.Types.ObjectId(id);
+    const target_user_id = new mongoose.Types.ObjectId(req.body.target_user_id);
+    const new_owner = new mongoose.Types.ObjectId(process.env.EMAIL_USER_OBJID);
+
+    if (target_user_id.equals(new_owner)) {
+      const err = new CustomError(
+        "You cannot delete the default account!",
+        StatusCode.FORBIDDEN,
+      );
+      return next(err);
+    }
+
+    const user = await UserService.checkUserExists({ _id: target_user_id });
+
+    if (!user) {
+      const error = new CustomError(
+        "Unable to get user account!",
+        StatusCode.NOT_FOUND,
+      );
+      return next(error);
+    }
+
+    if (target_user_id.equals(user_id)) {
+      const err = new CustomError(
+        "You cannot delete your own account",
+        StatusCode.FORBIDDEN,
+      );
+      return next(err);
+    }
+
+    const ownership = await Blog.updateMany(
+      {
+        user: user._id,
+      },
+      { user: new_owner },
+    );
+
+    console.log(
+      "User",
+      user,
+      "deleted by",
+      user_id,
+      "upgraded ownership blogs result",
+      ownership,
+    );
+
+    await user.deleteOne();
+
+    res.status(StatusCode.OK).json({
+      status: "success",
+      message: "User deleted successfully",
     });
   },
 );

@@ -6,6 +6,7 @@ import {
   getCurrentUserController,
   permsUpdateController,
   updateUserController,
+  deleteUserController,
 } from "../controllers/userController";
 import { protect } from "../middlewares/authMiddleware";
 import protected_route from "../middlewares/permsMiddlewareInit";
@@ -14,6 +15,7 @@ import Permission from "../helpers/permissions";
 const router = express.Router();
 
 const updateProfileProtect = protected_route([Permission.UpdateProfile]);
+const deleteProfileProtect = protected_route([Permission.DeleteProfile]);
 
 router.route("/").get(protect, getAllUsers);
 
@@ -31,5 +33,9 @@ router
     updateProfileProtect,
     permsUpdateController,
   );
+
+router
+  .route("delete-user/:id")
+  .delete(protect, deleteProfileProtect, deleteUserController);
 
 export default router;
