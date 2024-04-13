@@ -105,11 +105,20 @@ const generate_thumbnail = async (
   writeFile(`thumbnails/${filename}_${dimension}`, thumbnail)
     .then(() => {
       if (image_type !== ImageType.Avatar)
-        console.log("Thumbnail created successfully");
+        console.log(
+          "Thumbnail created successfully for file with given dimension",
+          filename.cyan,
+          dimension,
+        );
     })
     .catch((err) => {
       if (image_type !== ImageType.Avatar)
-        console.error("Error creating thumbnail", err);
+        console.error(
+          "Error creating thumbnail",
+          filename.cyan,
+          dimension,
+          err,
+        );
     });
   return thumbnail;
 };
