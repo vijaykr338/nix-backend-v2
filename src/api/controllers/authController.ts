@@ -4,11 +4,10 @@ import CustomError from "../../config/CustomError";
 import asyncErrorHandler from "../helpers/asyncErrorHandler";
 import { makeAccessToken, makeRefreshToken } from "../helpers/common";
 import StatusCode from "../helpers/httpStatusCode";
-import Permission from "../helpers/permissions";
+import { user_to_response } from "../helpers/user_to_response";
 import { User } from "../models/userModel";
 import PasswordResetMail from "../services/emails/passwordReset";
 import * as UserService from "../services/userService";
-import { user_to_response } from "../helpers/user_to_response";
 
 /**
  * Used when access tokens have expired. Generate a new access token and a new refresh token.
@@ -135,7 +134,6 @@ export const signup = asyncErrorHandler(async (req, res, next) => {
  * Handle user login. Generate new access and refresh tokens for user.
  */
 export const login = asyncErrorHandler(async (req, res, next) => {
-  console.log(req.method);
   const { email, password } = req.body;
   console.log("Login request", email);
 

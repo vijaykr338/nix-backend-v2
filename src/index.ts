@@ -7,7 +7,6 @@ import express from "express";
 import morgan from "morgan";
 import globalErrorHandler from "./api/helpers/globalErrorHandler";
 import StatusCode from "./api/helpers/httpStatusCode";
-import { credentials } from "./api/middlewares/credentials";
 import router from "./api/routes";
 import CustomError from "./config/CustomError";
 import connectDB from "./config/DatabaseConfig";
@@ -28,9 +27,6 @@ const app = express();
 connectDB();
 
 app.use(compression());
-
-//handle options credentials check before CORS
-app.use(credentials);
 
 //cors
 app.use(cors(corsOptions));
@@ -74,10 +70,13 @@ app.all("*", (req, res, next) => {
 //global error handler
 app.use(globalErrorHandler);
 
-const port = process.env.PORT || 5000;
+const port = Number(process.env.PORT) || 5000;
 
-const server = app.listen(port, () => {
-  console.log(`App listening on port ${port}`.yellow.underline);
+const server = app.listen(port, "127.0.0.1", () => {
+  console.log(
+    `App listening on port ${port}`.yellow.underline,
+    app.settings.env,
+  );
 });
 
 process.on("unhandledRejection", (err: Error) => {

@@ -35,11 +35,6 @@ const get_thumbnail = async ({
     return img_buff;
   } catch {
     // requested thumbnail doesn't exists
-    console.log(
-      "Non existing thumbnail requested".red,
-      thumnail_query.yellow,
-      "Generating new one".cyan,
-    );
     if (
       image_type === ImageType.Avatar &&
       !fs.existsSync(`uploads/${filename}`)
@@ -47,6 +42,12 @@ const get_thumbnail = async ({
       // thumbnail for avatar is requested, which doesn't exists
       const default_avatar = sharp("thumbnails/default-avatar.png");
       return default_avatar.toBuffer();
+    } else {
+      console.log(
+        "Non existing thumbnail requested".red,
+        thumnail_query.yellow,
+        "Generating new one".cyan,
+      );
     }
     try {
       const img_buff = await generate_thumbnail(
@@ -183,7 +184,7 @@ export const get_avatar = asyncErrorHandler(async (req, res, next) => {
   }
 
   try {
-    const img = sharp(`thumbnails/${filename}`);
+    const img = sharp(`uploads/${filename}`);
     const img_buff = await img.png().toBuffer();
     res.contentType("png").send(img_buff);
   } catch {
