@@ -23,6 +23,6 @@ export const makeRefreshToken = (
     throw Error("Refresh secret key not found in env");
   }
   return jwt.sign({ email, user_id }, refresh_secret_key, {
-    expiresIn: "1d",
+    expiresIn: "4d",
   });
 };
