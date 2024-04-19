@@ -11,6 +11,7 @@ export const credentials = (
     // add Access-Control-Allow-Credentials header to response to true
     // todo: reminder: check if this is needed (it was true as a boolean earlier but type should be string | string[])
     res.header("Access-Control-Allow-Credentials", "true");
+    res.header("Referrer-Policy", "origin");
   }
   next();
 };

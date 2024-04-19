@@ -35,6 +35,12 @@ app.use(credentials);
 //cors
 app.use(cors(corsOptions));
 
+// set reffer policy
+app.use((req, res, next) => {
+  res.header("Referrer-Policy", "origin");
+  next();
+});
+
 // parse requests of content-type - application/json
 app.use(express.json());
 // parse requests of content-type - application/x-www-form-urlencoded
@@ -74,10 +80,13 @@ app.all("*", (req, res, next) => {
 //global error handler
 app.use(globalErrorHandler);
 
-const port = process.env.PORT || 5000;
+const port = Number(process.env.PORT) || 5000;
 
-const server = app.listen(port, () => {
-  console.log(`App listening on port ${port}`.yellow.underline);
+const server = app.listen(port, "127.0.0.1", () => {
+  console.log(
+    `App listening on port ${port}`.yellow.underline,
+    app.settings.env,
+  );
 });
 
 process.on("unhandledRejection", (err: Error) => {
