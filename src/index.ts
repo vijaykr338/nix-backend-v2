@@ -7,7 +7,6 @@ import express from "express";
 import morgan from "morgan";
 import globalErrorHandler from "./api/helpers/globalErrorHandler";
 import StatusCode from "./api/helpers/httpStatusCode";
-import { credentials } from "./api/middlewares/credentials";
 import router from "./api/routes";
 import CustomError from "./config/CustomError";
 import connectDB from "./config/DatabaseConfig";
@@ -29,17 +28,8 @@ connectDB();
 
 app.use(compression());
 
-//handle options credentials check before CORS
-app.use(credentials);
-
 //cors
 app.use(cors(corsOptions));
-
-// set reffer policy
-app.use((req, res, next) => {
-  res.header("Referrer-Policy", "origin");
-  next();
-});
 
 // parse requests of content-type - application/json
 app.use(express.json());
