@@ -2,7 +2,7 @@ import { CorsOptions } from "cors";
 import StatusCode from "../api/helpers/httpStatusCode";
 import CustomError from "./CustomError";
 
-export const allowedOrigins = [
+export const allowedOrigins = new Set<string>([
   // nix frontend origin
   "134.209.159.97:5173",
   // frontend localhost origin
@@ -20,14 +20,13 @@ export const allowedOrigins = [
   "beta.dtutimes.com",
   "dtutimes.com",
   "dtutimes.dtu.ac.in",
-];
+]);
 
 export const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
     if (
       (process.env.NODE_ENV === "development" && !origin) ||
-      (origin &&
-        allowedOrigins.indexOf(origin.split("://")[1] || origin) !== -1)
+      (origin && allowedOrigins.has(origin.split("://")[1] || origin))
     ) {
       callback(null, true);
     } else {
