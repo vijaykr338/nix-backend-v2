@@ -183,7 +183,7 @@ export const get_avatar = asyncErrorHandler(async (req, res, next) => {
   }
 
   try {
-    const img = sharp(`thumbnails/${filename}`);
+    const img = sharp(`uploads/${filename}`);
     const img_buff = await img.png().toBuffer();
     res.contentType("png").send(img_buff);
   } catch {
