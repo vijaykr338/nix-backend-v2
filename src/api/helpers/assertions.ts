@@ -6,7 +6,7 @@ import StatusCode from "./httpStatusCode";
 
 /// Assertions for development environment (disabled in production)
 export function assert<T>(condition: T, message: string): asserts condition {
-  if (process.env.NODE_ENV === "development") {
+  if (process.env.NODE_ENV !== "production") {
     if (!condition) {
       throw new CustomError(
         "Assertion Failed: " + message,
