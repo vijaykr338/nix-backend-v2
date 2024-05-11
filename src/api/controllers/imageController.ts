@@ -42,13 +42,16 @@ const get_thumbnail = async ({
       // thumbnail for avatar is requested, which doesn't exists
       const default_avatar = sharp("thumbnails/default-avatar.png");
       return default_avatar.toBuffer();
-    } else {
-      console.log(
+    }
+
+    if (image_type !== ImageType.Avatar) {
+      console.error(
         "Non existing thumbnail requested".red,
         thumnail_query.yellow,
         "Generating new one".cyan,
       );
     }
+
     try {
       const img_buff = await generate_thumbnail(
         sharp(`uploads/${filename}`),
