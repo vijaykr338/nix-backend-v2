@@ -207,6 +207,8 @@ export const createBlogController = asyncErrorHandler(
     const blog = new Blog(newBlogData);
     await blog.save();
 
+    console.log(`Blog created by user ${user_id}`, blog);
+
     if (blog.status === BlogStatus.Pending) {
       blogForApprovalMail(blog);
     }
@@ -230,6 +232,13 @@ export const updateBlogController = asyncErrorHandler(
       new: true,
       runValidators: true,
     });
+
+    if (
+      blog.status !== BlogStatus.Published &&
+      updated_blog.status == BlogStatus.Published
+    ) {
+      blogPublishedMail(updated_blog);
+    }
 
     if (!updated_blog) {
       const error = new CustomError(
@@ -267,8 +276,8 @@ export const updateDraftController = asyncErrorHandler(
 
     if (blog.status !== BlogStatus.Draft) {
       req.body.blog = blog;
-      console.log(
-        "Blog is not a draft, needs god like permission to edit!",
+      console.error(
+        "Blog is not a draft, needs god like permission to edit! Lets see if you have them.",
         BlogStatus[blog.status],
         blog._id,
       );

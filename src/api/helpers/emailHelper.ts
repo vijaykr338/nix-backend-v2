@@ -41,6 +41,7 @@ export const getUsersPermissionBased = async (permissions: Permission[][]) => {
 // };
 
 export const blogForApprovalMail = async (blog: IBlog) => {
+  console.log("Triggred blogForApprovalMail");
   getUsersPermissionBased([[Permission.PublishBlog]]).then((users) => {
     const emails = users.map((user) => user.email);
     const email_message = new PendingApprovalMail(blog);
@@ -49,6 +50,7 @@ export const blogForApprovalMail = async (blog: IBlog) => {
 };
 
 export const blogPublishedMail = async (blog: IBlog) => {
+  console.log("Triggred blogPublishedMail");
   getUsersPermissionBased([[Permission.ReceiveBlogPublishedMail]]).then(
     (users) => {
       const emails = users.map((user) => user.email);
