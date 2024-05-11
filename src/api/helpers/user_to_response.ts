@@ -22,12 +22,12 @@ export const user_to_response = (foundUser: PopulatedUser): UserResponse => {
   foundUser.removed_permissions?.forEach((perm) => allowed_perms.delete(perm));
 
   const data: UserResponse = {
-    id: foundUser._id,
+    id: foundUser._id.toString(),
     name: foundUser.name,
     email: foundUser.email,
     bio: foundUser.bio,
     role: foundUser.role_id.name,
-    role_id: foundUser.role_id._id,
+    role_id: foundUser.role_id._id.toString(),
     permission: [...allowed_perms],
     created_at: foundUser.date_joined,
     team_role: foundUser.team_role,

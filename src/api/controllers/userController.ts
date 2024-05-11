@@ -1,5 +1,5 @@
 import bcrypt from "bcrypt";
-import mongoose, { FilterQuery } from "mongoose";
+import mongoose, { FilterQuery, HydratedDocument } from "mongoose";
 import CustomError from "../../config/CustomError";
 import asyncErrorHandler from "../helpers/asyncErrorHandler";
 import StatusCode from "../helpers/httpStatusCode";
@@ -10,9 +10,10 @@ import { IRole } from "../models/rolesModel";
 import { IUser, PopulatedUser, User } from "../models/userModel";
 import * as UserService from "../services/userService";
 import { Blog } from "../models/blogModel";
+import { assertHydratedUser, assertProtectedUser } from "../helpers/assertions";
 
 export const getTeam = asyncErrorHandler(async (req, res) => {
-  const filter: FilterQuery<IUser> = {
+  const filter: FilterQuery<HydratedDocument<IUser>> = {
     team_role: { $ne: MainWebsiteRole.DoNotDisplay },
   };
 
@@ -46,8 +47,8 @@ export const getAllUsers = asyncErrorHandler(async (req, res) => {
 
 export const getCurrentUserController = asyncErrorHandler(
   async (req, res, next) => {
-    const user_id = new mongoose.Types.ObjectId(req.body.user_id);
-    const user = await UserService.checkUserExists({ _id: user_id });
+    assertHydratedUser(res);
+    const user = res.locals.user;
     if (!user) {
       const error = new CustomError(
         "Unable to get current user",
@@ -88,11 +89,22 @@ export const getUserController = asyncErrorHandler(async (req, res, next) => {
 
 export const updateUserController = asyncErrorHandler(
   async (req, res, next) => {
-    const user_id = new mongoose.Types.ObjectId(req.body.user_id);
-    const target_user_id = new mongoose.Types.ObjectId(req.body.target_user_id);
+    assertProtectedUser(res);
+    const user_id = res.locals.user_id;
+    const target_user_id = new mongoose.Types.ObjectId(
+      req.body.target_user_id as string,
+    );
 
     const user = await UserService.checkUserExists({ _id: target_user_id });
-    req.body.user = user;
+    if (!user) {
+      const error = new CustomError(
+        "Unable to get target user",
+        StatusCode.NOT_FOUND,
+      );
+      return next(error);
+    }
+
+    res.locals.user = user;
 
     if (!target_user_id.equals(user_id)) {
       return next();
@@ -116,7 +128,7 @@ export const updateUserController = asyncErrorHandler(
     if (req.body.target_bio) user.bio = req.body.target_bio;
 
     await user.save();
-    req.body.user = user;
+    res.locals.user = user;
     if (!req.body.permission && !req.body.role_id) {
       const user_resp = user_to_response(user);
 
@@ -134,7 +146,8 @@ export const updateUserController = asyncErrorHandler(
 
 export const permsUpdateController = asyncErrorHandler(
   async (req, res, next) => {
-    let user: PopulatedUser = req.body.user;
+    assertHydratedUser(res);
+    let user: PopulatedUser = res.locals.user;
     const {
       permission,
       role_id,
@@ -155,7 +168,7 @@ export const permsUpdateController = asyncErrorHandler(
         },
         { new: true },
       ).populate<{
-        role_id: IRole;
+        role_id: HydratedDocument<IRole>;
       }>("role_id");
       if (!updated_user) {
         const error = new CustomError(
@@ -198,7 +211,9 @@ export const deleteUserController = asyncErrorHandler(
   async (req, res, next) => {
     const { id } = req.params;
     const user_id = new mongoose.Types.ObjectId(id);
-    const target_user_id = new mongoose.Types.ObjectId(req.body.target_user_id);
+    const target_user_id = new mongoose.Types.ObjectId(
+      req.body.target_user_id as string,
+    );
     const new_owner = new mongoose.Types.ObjectId(process.env.EMAIL_USER_OBJID);
 
     if (target_user_id.equals(new_owner)) {

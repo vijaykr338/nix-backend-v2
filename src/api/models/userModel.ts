@@ -1,15 +1,15 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { HydratedDocument, Schema, Types } from "mongoose";
+import MainWebsiteRole from "../helpers/mainWebsiteRole";
 import Permission from "../helpers/permissions";
 import { IRole } from "./rolesModel";
-import MainWebsiteRole from "../helpers/mainWebsiteRole";
 
-export interface IUser extends Document {
+export interface IUser {
   name: string;
   email: string;
   password: string;
   refreshToken?: string;
   passwordResetToken?: string;
-  role_id: mongoose.Schema.Types.ObjectId;
+  role_id: Types.ObjectId;
   bio: string;
   extra_permissions?: Permission[];
   removed_permissions?: Permission[];
@@ -79,6 +79,8 @@ const userSchema = new Schema<IUser>(
 );
 
 const User = mongoose.model<IUser>("user", userSchema);
-type PopulatedUser = Omit<IUser, "role_id"> & { role_id: IRole };
+type PopulatedUser = Omit<HydratedDocument<IUser>, "role_id"> & {
+  role_id: HydratedDocument<IRole>;
+};
 
-export { User, PopulatedUser };
+export { PopulatedUser, User };
