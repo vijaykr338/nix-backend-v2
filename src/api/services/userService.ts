@@ -4,6 +4,7 @@ import { IUser, User } from "../models/userModel";
 import bcrypt from "bcrypt";
 import generateRandomPassword from "../helpers/randomPassword";
 import RegisterationMail from "./emails/registeration";
+import { HydratedDocument } from "mongoose";
 
 export interface ICheckUser {
   _id?: mongoose.Types.ObjectId;
@@ -16,26 +17,19 @@ export const checkUserExists = async ({
   refreshToken,
   _id,
 }: ICheckUser) => {
-  // replaced $or as it was creating confusion
-  // this impl should also be as effective as $or operation
-  if (_id) {
-    const user = await User.findOne({ _id: _id }).populate<{ role_id: IRole }>(
-      "role_id",
-    );
-    return user;
-  }
-  if (email) {
-    const user = await User.findOne({ email: email }).populate<{
-      role_id: IRole;
+  // look into previous commit if this doesn't "look" good to you
+  const conditions: object[] = [];
+  if (_id) conditions.push({ _id });
+  if (email) conditions.push({ email });
+  if (refreshToken) conditions.push({ refreshToken });
+
+  if (conditions.length > 0) {
+    const user = await User.findOne({ $or: conditions }).populate<{
+      role_id: HydratedDocument<IRole>;
     }>("role_id");
     return user;
   }
-  if (refreshToken) {
-    const user = await User.findOne({ refreshToken: refreshToken }).populate<{
-      role_id: IRole;
-    }>("role_id");
-    return user;
-  }
+
   return null;
 };
 
@@ -44,7 +38,7 @@ export const addRefreshToken = async (email, refreshToken) => {
     { email: email },
     { refreshToken: refreshToken },
     { returnDocument: "after" },
-  ).populate<{ role_id: IRole }>("role_id");
+  ).populate<{ role_id: HydratedDocument<IRole> }>("role_id");
   return user;
 };
 
@@ -53,14 +47,16 @@ export const deleteRefreshToken = async (email) => {
     { email: email },
     { refreshToken: null },
     { returnDocument: "after" },
-  ).populate<{ role_id: IRole }>("role_id");
+  ).populate<{ role_id: HydratedDocument<IRole> }>("role_id");
   return user;
 };
 
-export const getAllUsers = async (query: FilterQuery<IUser>) => {
-  const allUsers = await User.find(query).populate<{ role_id: IRole }>(
-    "role_id",
-  );
+export const getAllUsers = async (
+  query: FilterQuery<HydratedDocument<IUser>>,
+) => {
+  const allUsers = await User.find(query).populate<{
+    role_id: HydratedDocument<IRole>;
+  }>("role_id");
   return allUsers;
 };
 

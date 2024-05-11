@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 /** Hardcoded values so relative orders are in sync with db */
 export enum BlogStatus {
@@ -9,7 +9,7 @@ export enum BlogStatus {
   Draft = 3,
 }
 
-export interface IBlog extends Document {
+export interface IBlog  {
   user: mongoose.Schema.Types.ObjectId;
   title: string;
   byliner: string;

@@ -1,3 +1,4 @@
+import { HydratedDocument } from "mongoose";
 import { IUser } from "../../models/userModel";
 import Email, {
   APP_URL,
@@ -9,10 +10,10 @@ import Email, {
 class RegisterationMail extends Email {
   /**
    * @description Generates an email for new user registeration
-   * @param {IUser} user - User object
+   * @param {HydratedDocument<IUser>} user - User object
    * @param {string} password - Unhashed Password
    */
-  constructor(user: IUser, password: string) {
+  constructor(user: HydratedDocument<IUser>, password: string) {
     super();
     const { name } = user;
 

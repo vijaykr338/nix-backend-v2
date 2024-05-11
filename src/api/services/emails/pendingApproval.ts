@@ -1,3 +1,4 @@
+import { HydratedDocument } from "mongoose";
 import { IBlog } from "../../models/blogModel";
 import Email, {
   APP_URL,
@@ -8,7 +9,7 @@ import Email, {
 /** Blog approval mail */
 class PendingApprovalMail extends Email {
   /** Generates an email for pending approval of a blog */
-  constructor(blog: IBlog) {
+  constructor(blog: HydratedDocument<IBlog>) {
     const { title, byliner, cover, id } = blog;
     const story_link = `${APP_URL}/story/${id}`;
     const img_url = `${APP_URL}/api/v1/images/get/${cover}?thumbnail=true`;

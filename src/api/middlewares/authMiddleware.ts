@@ -2,6 +2,7 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import asyncErrorHandler from "../helpers/asyncErrorHandler";
 import CustomError from "../../config/CustomError";
 import StatusCode from "../helpers/httpStatusCode";
+import mongoose from "mongoose";
 
 export const protect = asyncErrorHandler(async (req, res, next) => {
   if (
@@ -46,9 +47,10 @@ export const protect = asyncErrorHandler(async (req, res, next) => {
           ),
         );
 
-      // Add decoded information to the request body
-      req.body.email = email as string;
-      req.body.user_id = user_id as string;
+      // store the email and user_id to res.locals
+      res.locals.email = email;
+      res.locals.user_id = new mongoose.Types.ObjectId(user_id as string);
+
       // todo: i had to put this because of multer issue in image route https://github.com/expressjs/multer/issues/952
       // fix when fixable
       req.query.avatar_id = user_id as string;

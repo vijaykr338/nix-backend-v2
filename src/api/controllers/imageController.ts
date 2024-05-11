@@ -12,6 +12,7 @@ import {
   dimension_map,
 } from "../helpers/imageOptions";
 import { ImageType } from "../middlewares/imageMiddleware";
+import { assertProtectedUser } from "../helpers/assertions";
 
 const writeFile = util.promisify(fs.writeFile);
 
@@ -229,7 +230,8 @@ export const get_image = asyncErrorHandler(async (req, res, next) => {
 });
 
 export const delete_avatar = asyncErrorHandler(async (req, res, next) => {
-  const filename = req.body.user_id;
+  assertProtectedUser(res);
+  const filename = res.locals.user_id.toString();
 
   if (!filename) {
     return next(

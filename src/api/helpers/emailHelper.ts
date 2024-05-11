@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { HydratedDocument } from "mongoose";
 import { IBlog } from "../models/blogModel";
 import { User } from "../models/userModel";
 import PendingApprovalMail from "../services/emails/pendingApproval";
@@ -40,7 +40,7 @@ export const getUsersPermissionBased = async (permissions: Permission[][]) => {
 //   return users;
 // };
 
-export const blogForApprovalMail = async (blog: IBlog) => {
+export const blogForApprovalMail = async (blog: HydratedDocument<IBlog>) => {
   console.log("Triggred blogForApprovalMail");
   getUsersPermissionBased([[Permission.PublishBlog]]).then((users) => {
     const emails = users.map((user) => user.email);
@@ -49,7 +49,7 @@ export const blogForApprovalMail = async (blog: IBlog) => {
   });
 };
 
-export const blogPublishedMail = async (blog: IBlog) => {
+export const blogPublishedMail = async (blog: HydratedDocument<IBlog>) => {
   console.log("Triggred blogPublishedMail");
   getUsersPermissionBased([[Permission.ReceiveBlogPublishedMail]]).then(
     (users) => {

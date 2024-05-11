@@ -4,11 +4,12 @@ import Email, {
   DEVELOPER_FOOTER,
 } from "../emailService";
 import { IBlog } from "../../models/blogModel";
+import { HydratedDocument } from "mongoose";
 
 /** Mail for story publication */
 class StoryPublishedMail extends Email {
   /** Generates an email for published story */
-  constructor(blog: IBlog) {
+  constructor(blog: HydratedDocument<IBlog>) {
     super();
     const { title: story_title, byliner: story_byliner, cover, slug } = blog;
     const img_url = `${APP_URL}/api/v1/images/get/${cover}?thumbnail=true`;

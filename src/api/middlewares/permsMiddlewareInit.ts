@@ -1,8 +1,9 @@
-import asyncErrorHandler from "../helpers/asyncErrorHandler";
 import CustomError from "../../config/CustomError";
+import { assertProtectedUser } from "../helpers/assertions";
+import asyncErrorHandler from "../helpers/asyncErrorHandler";
+import StatusCode from "../helpers/httpStatusCode";
 import Permission from "../helpers/permissions";
 import * as UserService from "../services/userService";
-import StatusCode from "../helpers/httpStatusCode";
 
 /**
  * This generates a middleware to check for certain given permissions
@@ -19,7 +20,8 @@ export default function protected_route(permissions_required: Permission[]) {
       // no permissions required is a no-op
       return next();
     }
-    const user_id = req.body.user_id;
+    assertProtectedUser(res);
+    const user_id = res.locals.user_id;
     if (!user_id) {
       const err = new CustomError("Not authorized", StatusCode.UNAUTHORIZED);
       return next(err);
