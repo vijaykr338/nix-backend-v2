@@ -12,6 +12,9 @@ import CustomError from "./config/CustomError";
 import connectDB from "./config/DatabaseConfig";
 import { corsOptions } from "./config/corsOptions";
 
+const log_format =
+  "[:date[web]] ':method :url' (:status) :res[content-length] bytes in :response-time ms";
+
 process.on("uncaughtException", (err) => {
   console.error(err.name.red.underline, err.message.red.underline);
   console.error("Uncaught Exception occured! Shutting down...".magenta);
@@ -39,7 +42,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 //logger
 app.use(
-  morgan("common", {
+  morgan(log_format, {
     skip: (req) => {
       return req.originalUrl.includes("/images/");
     },
