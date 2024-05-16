@@ -590,9 +590,17 @@ export const takeDownMyBlogController = asyncErrorHandler(
       return next(error);
     }
     assertProtectedUser(res);
-    if (res.locals.user_id.equals(blog.user.toString())) {
-      // user can take down their own blog
-      blog.status = BlogStatus.Draft;
+    if (
+      res.locals.user_id.equals(blog.user.toString()) &&
+      blog.status !== BlogStatus.Published
+    ) {
+      // user can take down their own blog if not published
+      const make_pending: boolean | undefined = req.body.make_pending;
+      if (make_pending) {
+        blog.status = BlogStatus.Pending;
+      } else {
+        blog.status = BlogStatus.Draft;
+      }
       await blog.save();
     } else {
       res.locals.blog = blog;
@@ -611,6 +619,7 @@ export const takeDownMyBlogController = asyncErrorHandler(
 
 export const takeDownBlogController = asyncErrorHandler(
   async (req, res, _next) => {
+    const make_pending: boolean | undefined = req.body.make_pending;
     const blog = res.locals.blog;
     if (!blog) {
       console.error(blog, res.locals);
@@ -620,10 +629,14 @@ export const takeDownBlogController = asyncErrorHandler(
       );
       throw error;
     }
-    blog.status = BlogStatus.Draft;
+    if (make_pending) {
+      blog.status = BlogStatus.Pending;
+    } else {
+      blog.status = BlogStatus.Draft;
+    }
     await blog.save();
 
-    console.log("Blog taken down", blog);
+    console.log("Blog taken down", blog, "by user", res.locals.user);
     res.status(StatusCode.OK).json({
       status: "success",
       message: "Blog taken down successfully",
