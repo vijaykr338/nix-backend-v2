@@ -1,22 +1,24 @@
-import mongoose from "mongoose";
+import mongoose, { HydratedDocument } from "mongoose";
+import fs from "node:fs";
 import CustomError from "../../config/CustomError";
+import { assertProtectedUser } from "../helpers/assertions";
 import asyncErrorHandler from "../helpers/asyncErrorHandler";
+import { blogForApprovalMail, blogPublishedMail } from "../helpers/emailHelper";
 import StatusCode from "../helpers/httpStatusCode";
 import { Blog, BlogStatus, IBlog } from "../models/blogModel";
 import { IUser } from "../models/userModel";
-import { blogForApprovalMail, blogPublishedMail } from "../helpers/emailHelper";
-import fs from "node:fs";
 
 export const getPersonalLevelBlog = asyncErrorHandler(
   async (req, res, next) => {
-    const user_id = new mongoose.Types.ObjectId(req.body.user_id);
+    assertProtectedUser(res);
+    const user_id = res.locals.user_id;
     const { id } = req.params;
 
     await refresh_blog_status();
     const blog = await Blog.findById({
       _id: new mongoose.Types.ObjectId(id),
     })
-      .populate<{ user: IUser }>("user", "_id name email bio")
+      .populate<{ user: HydratedDocument<IUser> }>("user", "_id name email bio")
       .lean();
 
     if (!blog) {
@@ -43,7 +45,7 @@ export const getPublishedBlogsController = asyncErrorHandler(
   async (req, res, _next) => {
     await refresh_blog_status();
     const blogs = await Blog.find({ status: BlogStatus.Published }, "-body")
-      .populate<{ user: IUser }>("user", "_id name email bio")
+      .populate<{ user: HydratedDocument<IUser> }>("user", "_id name email bio")
       .sort({ published_at: -1 })
       .lean();
 
@@ -67,7 +69,7 @@ export const getPublishedBlogController = asyncErrorHandler(
     const { slug } = req.params;
 
     const blog = await Blog.findOne({ slug: slug })
-      .populate<{ user: IUser }>("user", "_id name email bio")
+      .populate<{ user: HydratedDocument<IUser> }>("user", "_id name email bio")
       .lean();
 
     if (!blog || blog.status !== BlogStatus.Published) {
@@ -87,7 +89,7 @@ export const getBlogController = asyncErrorHandler(async (req, res, next) => {
   const { id } = req.params;
 
   const blog = await Blog.findById({ _id: new mongoose.Types.ObjectId(id) })
-    .populate<{ user: IUser }>("user", "_id name email bio")
+    .populate<{ user: HydratedDocument<IUser> }>("user", "_id name email bio")
     .lean();
 
   if (!blog) {
@@ -104,9 +106,11 @@ export const getBlogController = asyncErrorHandler(async (req, res, next) => {
 
 export const myBlogsController = asyncErrorHandler(async (req, res, _next) => {
   await refresh_blog_status();
-  const user_id = new mongoose.Types.ObjectId(req.body.user_id);
+  assertProtectedUser(res);
+
+  const user_id = res.locals.user_id;
   const blogs = await Blog.find({ user: user_id }, "-body")
-    .populate<{ user: IUser }>("user", "_id name email bio")
+    .populate<{ user: HydratedDocument<IUser> }>("user", "_id name email bio")
     .sort({ updatedAt: -1 })
     .lean();
 
@@ -134,7 +138,7 @@ export const getAllBlogsController = asyncErrorHandler(
       { status: { $ne: BlogStatus.Draft } },
       "-body",
     )
-      .populate<{ user: IUser }>("user", "_id name email bio")
+      .populate<{ user: HydratedDocument<IUser> }>("user", "_id name email bio")
       .sort({ updatedAt: -1 })
       .lean();
 
@@ -157,6 +161,8 @@ export const getAllBlogsController = asyncErrorHandler(
  */
 export const createBlogController = asyncErrorHandler(
   async (req, res, next) => {
+    assertProtectedUser(res);
+
     const requiredFields = [
       "title",
       "byliner",
@@ -181,10 +187,7 @@ export const createBlogController = asyncErrorHandler(
       return next(error);
     }
 
-    // todo: we didn't verify if user who sent the request sent their user_id only
-    // this can potentially allow user to publish blog with other's name
-    // but who and why someone will do that so let's keep it the way it is
-    const user_id = new mongoose.Types.ObjectId(req.body.user_id);
+    const user_id = res.locals.user_id;
     const supplied_status: BlogStatus = req.body.status;
 
     if (typeof supplied_status !== "number") {
@@ -207,6 +210,8 @@ export const createBlogController = asyncErrorHandler(
     const blog = new Blog(newBlogData);
     await blog.save();
 
+    console.log(`Blog created by user ${user_id}`, blog);
+
     if (blog.status === BlogStatus.Pending) {
       blogForApprovalMail(blog);
     }
@@ -224,12 +229,19 @@ export const createBlogController = asyncErrorHandler(
 
 export const updateBlogController = asyncErrorHandler(
   async (req, res, next) => {
-    const blog = req.body.blog as IBlog;
+    const blog = req.body.blog as HydratedDocument<IBlog>;
 
     const updated_blog = await blog.updateOne(req.body, {
       new: true,
       runValidators: true,
     });
+
+    if (
+      blog.status !== BlogStatus.Published &&
+      updated_blog.status == BlogStatus.Published
+    ) {
+      blogPublishedMail(updated_blog);
+    }
 
     if (!updated_blog) {
       const error = new CustomError(
@@ -267,8 +279,8 @@ export const updateDraftController = asyncErrorHandler(
 
     if (blog.status !== BlogStatus.Draft) {
       req.body.blog = blog;
-      console.log(
-        "Blog is not a draft, needs god like permission to edit!",
+      console.error(
+        "Blog is not a draft, needs god like permission to edit! Lets see if you have them.",
         BlogStatus[blog.status],
         blog._id,
       );
@@ -529,7 +541,7 @@ export const deleteMyBlogController = asyncErrorHandler(
 
 export const deleteBlogController = asyncErrorHandler(
   async (req, res, next) => {
-    const blog: IBlog = req.body.blog;
+    const blog: HydratedDocument<IBlog> = req.body.blog;
 
     if (!blog) {
       const error = new CustomError("Some error occured! Blog not deleted");
@@ -577,15 +589,21 @@ export const takeDownMyBlogController = asyncErrorHandler(
       const error = new CustomError("Blog not found", StatusCode.NOT_FOUND);
       return next(error);
     }
-
+    assertProtectedUser(res);
     if (
-      new mongoose.Types.ObjectId(blog.user.toString()).equals(req.body.user_id)
+      res.locals.user_id.equals(blog.user.toString()) &&
+      blog.status !== BlogStatus.Published
     ) {
-      // user can take down their own blog
-      blog.status = BlogStatus.Draft;
+      // user can take down their own blog if not published
+      const make_pending: boolean | undefined = req.body.make_pending;
+      if (make_pending) {
+        blog.status = BlogStatus.Pending;
+      } else {
+        blog.status = BlogStatus.Draft;
+      }
       await blog.save();
     } else {
-      req.body.blog = blog;
+      res.locals.blog = blog;
       return next();
     }
 
@@ -601,11 +619,24 @@ export const takeDownMyBlogController = asyncErrorHandler(
 
 export const takeDownBlogController = asyncErrorHandler(
   async (req, res, _next) => {
-    const blog = req.body.blog;
-    blog.status = BlogStatus.Draft;
+    const make_pending: boolean | undefined = req.body.make_pending;
+    const blog = res.locals.blog;
+    if (!blog) {
+      console.error(blog, res.locals);
+      const error = new CustomError(
+        "Assertion failed: Blog not found",
+        StatusCode.NOT_FOUND,
+      );
+      throw error;
+    }
+    if (make_pending) {
+      blog.status = BlogStatus.Pending;
+    } else {
+      blog.status = BlogStatus.Draft;
+    }
     await blog.save();
 
-    console.log("Blog taken down", blog);
+    console.log("Blog taken down", blog, "by user", res.locals.user);
     res.status(StatusCode.OK).json({
       status: "success",
       message: "Blog taken down successfully",

@@ -12,6 +12,7 @@ import {
   dimension_map,
 } from "../helpers/imageOptions";
 import { ImageType } from "../middlewares/imageMiddleware";
+import { assertProtectedUser } from "../helpers/assertions";
 
 const writeFile = util.promisify(fs.writeFile);
 
@@ -42,13 +43,16 @@ const get_thumbnail = async ({
       // thumbnail for avatar is requested, which doesn't exists
       const default_avatar = sharp("thumbnails/default-avatar.png");
       return default_avatar.toBuffer();
-    } else {
-      console.log(
+    }
+
+    if (image_type !== ImageType.Avatar) {
+      console.error(
         "Non existing thumbnail requested".red,
         thumnail_query.yellow,
         "Generating new one".cyan,
       );
     }
+
     try {
       const img_buff = await generate_thumbnail(
         sharp(`uploads/${filename}`),
@@ -226,7 +230,8 @@ export const get_image = asyncErrorHandler(async (req, res, next) => {
 });
 
 export const delete_avatar = asyncErrorHandler(async (req, res, next) => {
-  const filename = req.body.user_id;
+  assertProtectedUser(res);
+  const filename = res.locals.user_id.toString();
 
   if (!filename) {
     return next(

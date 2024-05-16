@@ -1,7 +1,7 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 import Permission from "../helpers/permissions";
 
-export interface IRole extends Document {
+export interface IRole {
   name: string;
   permissions: Permission[];
 }

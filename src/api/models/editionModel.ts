@@ -10,7 +10,7 @@ export enum EditionStatus {
   Approved = 2,
 }
 
-export interface IEdition extends Document {
+export interface IEdition  {
   name: string;
   edition_id: number;
   status: EditionStatus;
