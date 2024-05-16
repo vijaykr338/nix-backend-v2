@@ -4,7 +4,7 @@
   "description": "DTU Times backend",
   "main": "src/index.ts",
   "scripts": {
-    "prod": "npx pm2 delete NixBackend; pm2 --name NixBackend --time start npm -- start",
+    "prod": "npx pm2 delete NixBackend; pm2 --name NixBackend --log-date-format 'YYYY-MM-DD (HH:mm:ss)' start npm -- start",
     "start": "ts-node src/index.ts",
     "dev": "nodemon -e ts,yaml,json",
     "lint": "npx eslint . --fix"

@@ -12,8 +12,9 @@ import CustomError from "./config/CustomError";
 import connectDB from "./config/DatabaseConfig";
 import { corsOptions } from "./config/corsOptions";
 
+// removed time because printed by "pm2"
 const log_format =
-  "[:date[web]] ':method :url' (:status) :res[content-length] bytes in :response-time ms";
+  "':method :url' (:status) :res[content-length] bytes in :response-time ms";
 
 process.on("uncaughtException", (err) => {
   console.error(err.name.red.underline, err.message.red.underline);
