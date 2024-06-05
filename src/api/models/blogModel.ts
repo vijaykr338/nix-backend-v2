@@ -9,7 +9,7 @@ export enum BlogStatus {
   Draft = 3,
 }
 
-export interface IBlog  {
+export interface IBlog {
   user: mongoose.Schema.Types.ObjectId;
   title: string;
   byliner: string;
