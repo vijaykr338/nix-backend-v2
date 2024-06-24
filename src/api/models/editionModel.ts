@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Schema } from "mongoose";
 
 /** Hardcoded values so relative orders are in sync with db */
 export enum EditionStatus {
@@ -10,7 +10,7 @@ export enum EditionStatus {
   Approved = 2,
 }
 
-export interface IEdition  {
+export interface IEdition {
   name: string;
   edition_id: number;
   status: EditionStatus;

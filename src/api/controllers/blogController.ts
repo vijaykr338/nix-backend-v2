@@ -216,6 +216,7 @@ export const createBlogController = asyncErrorHandler(
       blogForApprovalMail(blog);
     }
 
+    console.log("Blog created", blog, "by user", res.locals.user);
     res.status(StatusCode.OK).json({
       status: "success",
       message:
@@ -250,6 +251,8 @@ export const updateBlogController = asyncErrorHandler(
       );
       return next(error);
     }
+
+    console.log("Updated blog", blog, "by user", res.locals.user);
 
     res.status(StatusCode.OK).json({
       status: "success",
@@ -311,6 +314,8 @@ export const updateDraftController = asyncErrorHandler(
       new: true,
       runValidators: true,
     });
+
+    console.log("Updated blog", blog, "by user", res.locals.user);
 
     if (updated_blog.status == BlogStatus.Pending) {
       res.status(StatusCode.OK).json({
@@ -483,6 +488,13 @@ export const submitForApprovalController = asyncErrorHandler(
       return next(error);
     }
 
+    console.log(
+      "Blog submitted for approval",
+      updatedBlog,
+      "by user",
+      res.locals.user,
+    );
+
     res.status(StatusCode.OK).json({
       status: "success",
       message: "Blog submitted for approval",
@@ -512,7 +524,7 @@ export const deleteMyBlogController = asyncErrorHandler(
       return next();
     }
     await blog.deleteOne();
-    console.log("Draft deleted", blog);
+    console.log("Draft deleted", blog, "by user", res.locals.user);
 
     res.status(StatusCode.OK).json({
       status: "success",
@@ -607,7 +619,7 @@ export const takeDownMyBlogController = asyncErrorHandler(
       return next();
     }
 
-    console.log("Blog taken down", blog);
+    console.log("Blog taken down", blog, "by user", res.locals.user);
 
     res.status(StatusCode.OK).json({
       status: "success",

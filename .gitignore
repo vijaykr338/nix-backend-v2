@@ -43,3 +43,4 @@ old_db
 *.pdf
 edition-*
 db/
+src/scripts/*.json

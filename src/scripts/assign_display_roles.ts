@@ -1,7 +1,6 @@
 import "colors";
 import mongoose from "mongoose";
 import MainWebsiteRole from "../api/helpers/mainWebsiteRole";
-import { Role } from "../api/models/rolesModel";
 import { User } from "../api/models/userModel";
 import connectDB from "../config/DatabaseConfig";
 
