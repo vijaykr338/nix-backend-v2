@@ -128,6 +128,27 @@ const generate_thumbnail = async (
   return thumbnail;
 };
 
+/**
+ * @description Handles the upload of an image file.
+ * @route POST /upload
+ * @param req - The HTTP request object.
+ * @param req.file - The uploaded image file.
+ * @param req.query.thumbnail - Optional query parameter indicating if the uploaded image is a thumbnail.
+ * @param req.body.image_type - Optional body parameter specifying the type of the image (e.g., General, Profile).
+ * @param res - The HTTP response object.
+ * @param next - The next middleware function in the stack.
+ * @returns A JSON response indicating the success of the operation.
+ * @returns success - Indicates the success status of the operation (true).
+ * @returns message - Describes the outcome of the operation ('Image uploaded successfully').
+ * @returns data - Contains details of the uploaded image.
+ * @howItWorks
+ * - Validates the presence of the uploaded image file (`req.file`).
+ * - Optionally generates a thumbnail if `req.query.thumbnail` is set to "true".
+ * - Sets the image type based on `req.body.image_type` or defaults to `ImageType.General`.
+ * - Sends a success response with the uploaded image filename upon successful upload.
+ * - Handles errors if the upload fails or required parameters are missing.
+ */
+
 export const upload_image = asyncErrorHandler(async (req, res, next) => {
   const req_file = req.file;
   const is_thumbnail = req.query.thumbnail === "true";
@@ -169,6 +190,23 @@ export const upload_image = asyncErrorHandler(async (req, res, next) => {
   });
 });
 
+/**
+ * @description Retrieves an avatar image for a user based on the filename.
+ * @route GET /get-avatar/:id
+ * @param req - The HTTP request object.
+ * @param req.params.id - The filename or user ID of the avatar image to retrieve.
+ * @param req.query.thumbnail - Optional query parameter indicating if a thumbnail version of the avatar is requested.
+ * @param res - The HTTP response object.
+ * @param next - The next middleware function in the stack.
+ * @returns Returns the avatar image or its thumbnail as a PNG buffer.
+ * @howItWorks
+ * - Retrieves the filename (`req.params.id`) of the avatar image to fetch.
+ * - Optionally fetches a thumbnail version if `req.query.thumbnail` is provided.
+ * - Responds with the avatar image in PNG format.
+ * - Defaults to a default avatar image if no avatar is found for the specified user.
+ * - Handles errors and sends appropriate error responses if the avatar retrieval fails.
+ */
+
 export const get_avatar = asyncErrorHandler(async (req, res, next) => {
   const filename = req.params.id;
   const { thumbnail } = req.query;
@@ -199,6 +237,22 @@ export const get_avatar = asyncErrorHandler(async (req, res, next) => {
   }
 });
 
+/**
+ * @description Retrieves an image file based on the filename.
+ * @route GET /get/:filename
+ * @param req - The HTTP request object.
+ * @param req.params.filename - The filename of the image to retrieve.
+ * @param req.query.thumbnail - Optional query parameter indicating if a thumbnail version of the image is requested.
+ * @param res - The HTTP response object.
+ * @param next - The next middleware function in the stack.
+ * @returns Returns the requested image or its thumbnail as a PNG buffer.
+ * @howItWorks
+ * - Retrieves the filename (`req.params.filename`) of the image to fetch.
+ * - Optionally fetches a thumbnail version if `req.query.thumbnail` is provided.
+ * - Responds with the image in PNG format.
+ * - Defaults to sending an error response if the image is not found.
+ */
+
 export const get_image = asyncErrorHandler(async (req, res, next) => {
   const { filename: file } = req.params;
   const filename = file.split("?")[0];
@@ -228,6 +282,22 @@ export const get_image = asyncErrorHandler(async (req, res, next) => {
     }
   }
 });
+
+/**
+ * @description Deletes the avatar image associated with the current user.
+ * @route DELETE /delete-avatar
+ * @param req - The HTTP request object.
+ * @param res - The HTTP response object.
+ * @param next - The next middleware function in the stack.
+ * @returns A JSON response indicating the success of the operation.
+ * @returns success - Indicates the success status of the operation (true).
+ * @returns message - Describes the outcome of the operation ('Avatar deleted successfully').
+ * @howItWorks
+ * - Ensures the user making the request is authenticated and has permissions to delete their avatar.
+ * - Retrieves the filename (`res.locals.user_id`) of the avatar to delete.
+ * - Calls a function (`delete_image_fs`) to delete the image from the filesystem.
+ * - If the filename is not found, returns a `BAD_REQUEST` error indicating the user needs to re-login.
+ */
 
 export const delete_avatar = asyncErrorHandler(async (req, res, next) => {
   assertProtectedUser(res);
@@ -289,6 +359,22 @@ const delete_image_fs = (
   return child;
 };
 
+/**
+ * @description Deletes an image from the filesystem.
+ * @route DELETE /delete/:filename
+ * @param req - The HTTP request object.
+ * @param res - The HTTP response object.
+ * @param next - The next middleware function in the stack.
+ * @returns A JSON response indicating the success of the operation.
+ * @returns success - Indicates the success status of the operation (true).
+ * @returns message - Describes the outcome of the operation ('Image deleted successfully').
+ * @howItWorks
+ * - Retrieves the filename (`filename`) of the image to delete from the request parameters.
+ * - Deletes the image using a function (`delete_image_fs`) that interacts with the filesystem.
+ * - Sends a success response indicating the image was deleted.
+ * - If no filename is provided, returns a `BAD_REQUEST` error.
+ */
+
 export const delete_image = asyncErrorHandler(async (req, res, next) => {
   const { filename } = req.params;
 
@@ -305,6 +391,26 @@ export const delete_image = asyncErrorHandler(async (req, res, next) => {
     message: "Image deleted successfully",
   });
 });
+
+/**
+ * @description Updates an image file in the filesystem.
+ * @route PUT /update/:filename
+ * @param req - The HTTP request object containing the updated image file (`req.file`).
+ * @param res - The HTTP response object.
+ * @param next - The next middleware function in the stack.
+ * @returns A JSON response indicating the success of the operation.
+ * @returns success - Indicates the success status of the operation (true).
+ * @returns message - Describes the outcome of the operation ('Image updated successfully').
+ * @returns data - Contains details of the updated image.
+ * @howItWorks
+ * - Retrieves the updated image file (`req.file`) from the request body.
+ * - Deletes any existing thumbnail associated with the image (`filename`) using a child process.
+ * - Waits for the deletion process to complete before sending a response.
+ * - Sends a success response indicating the image was updated, including the new filename (`req_file.filename`).
+ * - If no image file (`req.file`) is provided, returns a `BAD_REQUEST` error.
+ * - If no filename is provided, returns a `BAD_REQUEST` error indicating the filename is required.
+ * - Handles edge cases such as timeout during deletion process with appropriate logging and error handling.
+ */
 
 export const update_image = asyncErrorHandler(async (req, res, next) => {
   const req_file = req.file;

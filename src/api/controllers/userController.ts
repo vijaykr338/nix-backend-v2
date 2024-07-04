@@ -12,6 +12,22 @@ import * as UserService from "../services/userService";
 import { Blog } from "../models/blogModel";
 import { assertHydratedUser, assertProtectedUser } from "../helpers/assertions";
 
+/**
+ * @description Retrieves all team members excluding those with the role MainWebsiteRole.DoNotDisplay.
+ * @route GET /get-team
+ * @param req - The HTTP request object.
+ * @param res - The HTTP response object.
+ * @returns A JSON response containing the fetched team members' details.
+ * @returns status - Indicates the success status of the operation ('success').
+ * @returns message - Describes the outcome of the operation ('Users fetched successfully').
+ * @returns data - Contains an array of team member objects with filtered details.
+ * @howItWorks
+ * - Constructs a filter to exclude users with MainWebsiteRole.DoNotDisplay.
+ * - Retrieves all users matching the filter using UserService.getAllUsers().
+ * - Maps each user to include relevant details in the response.
+ * - Sends a success response with the list of team members.
+ */
+
 export const getTeam = asyncErrorHandler(async (req, res) => {
   const filter: FilterQuery<HydratedDocument<IUser>> = {
     team_role: { $ne: MainWebsiteRole.DoNotDisplay },
@@ -30,6 +46,21 @@ export const getTeam = asyncErrorHandler(async (req, res) => {
   });
 });
 
+/**
+ * @description Retrieves all users.
+ * @route GET /
+ * @param req - The HTTP request object.
+ * @param res - The HTTP response object.
+ * @returns A JSON response containing the fetched users' details.
+ * @returns status - Indicates the success status of the operation ('success').
+ * @returns message - Describes the outcome of the operation ('Users fetched successfully').
+ * @returns data - Contains an array of user objects with their details.
+ * @howItWorks
+ * - Retrieves all users using UserService.getAllUsers().
+ * - Maps each user to include relevant details in the response.
+ * - Sends a success response with the list of users.
+ */
+
 export const getAllUsers = asyncErrorHandler(async (req, res) => {
   //add logic here
 
@@ -44,6 +75,24 @@ export const getAllUsers = asyncErrorHandler(async (req, res) => {
     }),
   });
 });
+
+/**
+ * @description Retrieves the current user details.
+ * @route GET /current-user
+ * @param req - The HTTP request object.
+ * @param res - The HTTP response object.
+ * @param next - The next middleware function in the stack.
+ * @returns A JSON response containing the fetched user's details.
+ * @returns status - Indicates the success status of the operation ('success').
+ * @returns message - Describes the outcome of the operation ('User fetched successfully').
+ * @returns data - Contains the details of the fetched user.
+ * @howItWorks
+ * - Asserts that the user is hydrated using `assertHydratedUser`.
+ * - Retrieves the current user from `res.locals.user`.
+ * - If no user is found, returns an unauthorized error.
+ * - Converts the user object to a response format using `user_to_response`.
+ * - Sends a success response with the user data.
+ */
 
 export const getCurrentUserController = asyncErrorHandler(
   async (req, res, next) => {
@@ -67,6 +116,24 @@ export const getCurrentUserController = asyncErrorHandler(
   },
 );
 
+/**
+ * @description Retrieves user details by ID.
+ * @route GET /get-user/:id
+ * @param req - The HTTP request object.
+ * @param res - The HTTP response object.
+ * @param next - The next middleware function in the stack.
+ * @returns A JSON response containing the fetched user's details.
+ * @returns status - Indicates the success status of the operation ('success').
+ * @returns message - Describes the outcome of the operation ('User fetched successfully').
+ * @returns data - Contains the details of the fetched user.
+ * @howItWorks
+ * - Retrieves the user ID from `req.params.id`.
+ * - Checks if the user exists using `UserService.checkUserExists`.
+ * - If the user does not exist, returns an unauthorized error.
+ * - Converts the user object to a response format using `user_to_response`.
+ * - Sends a success response with the user data.
+ */
+
 export const getUserController = asyncErrorHandler(async (req, res, next) => {
   const user_id = new mongoose.Types.ObjectId(req.params.id);
   const user = await UserService.checkUserExists({ _id: user_id });
@@ -86,6 +153,33 @@ export const getUserController = asyncErrorHandler(async (req, res, next) => {
     data: user_resp,
   });
 });
+
+/**
+ * @description Updates user details including name, email, password, and bio.
+ * @route PUT /update-user
+ * @param req - The HTTP request object.
+ * @param req.body.target_user_id - The ID of the user to update.
+ * @param req.body.target_name - The updated name of the user.
+ * @param req.body.target_email - The updated email of the user.
+ * @param req.body.password - The updated password of the user.
+ * @param req.body.target_bio - The updated biography of the user.
+ * @param res - The HTTP response object.
+ * @param next - The next middleware function in the stack.
+ * @returns A JSON response indicating the success of the operation.
+ * @returns status - Indicates the success status of the operation ('success').
+ * @returns message - Describes the outcome of the operation ('User updated successfully').
+ * @returns data - Contains the updated user details.
+ * @returns data.user - Updated user object.
+ * @howItWorks
+ * - Asserts that the user making the request (`res.locals.user_id`) is protected.
+ * - Retrieves `target_user_id` from `req.body` and checks if the user exists.
+ * - If the user doesn't exist, throws a "Not Found" error.
+ * - If the `target_user_id` doesn't match the current user's ID (`res.locals.user_id`), proceeds to the next middleware.
+ * - Updates user properties (name, email, password, bio) if provided in the request body.
+ * - Hashes the updated password using bcrypt.
+ * - Saves the updated user details.
+ * - Responds with a success message and updated user data.
+ */
 
 export const updateUserController = asyncErrorHandler(
   async (req, res, next) => {
@@ -143,6 +237,31 @@ export const updateUserController = asyncErrorHandler(
     return next();
   },
 );
+
+/**
+ * @description Updates permissions, role, and team role for a user.
+ * @route PUT /update-user
+ * @param req - The HTTP request object.
+ * @param req.body.permission - The updated permissions array.
+ * @param req.body.role_id - The ID of the new role to assign to the user.
+ * @param req.body.team_role - The team role for the user.
+ * @param res - The HTTP response object.
+ * @param next - The next middleware function in the stack.
+ * @returns A JSON response indicating the success of the operation.
+ * @returns status - Indicates the success status of the operation ('success').
+ * @returns message - Describes the outcome of the operation ('User updated successfully').
+ * @returns data - Contains the updated user details.
+ * @returns data.user - Updated user object.
+ * @howItWorks
+ * - Asserts that the user object (`res.locals.user`) is hydrated.
+ * - Retrieves `permission`, `role_id`, and `team_role` from `req.body`.
+ * - If `user` is not found, throws an error.
+ * - Updates the `role_id` of the user if provided in `req.body`.
+ * - Computes changes in permissions (`removed_permissions` and `extra_permissions`).
+ * - Updates `team_role` to default if not provided.
+ * - Saves the updated user.
+ * - Returns a success response with the updated user details.
+ */
 
 export const permsUpdateController = asyncErrorHandler(
   async (req, res, next) => {
@@ -206,6 +325,32 @@ export const permsUpdateController = asyncErrorHandler(
     });
   },
 );
+
+/**
+ * @description Deletes a user account.
+ * @route DELETE /delete-user/:id
+ * @param req - The HTTP request object.
+ * @param req.params.id - The ID of the user to delete.
+ * @param req.body.target_user_id - The ID of the user to be deleted.
+ * @param res - The HTTP response object.
+ * @param next - The next middleware function in the stack.
+ * @returns A JSON response indicating the success of the operation.
+ * @returns status - Indicates the success status of the operation ('success').
+ * @returns message - Describes the outcome of the operation ('User deleted successfully').
+ * @howItWorks
+ * - Retrieves the `id` from `req.params`, which represents the ID of the user to delete.
+ * - Retrieves `target_user_id` from `req.body`, which is used to find the user to delete.
+ * - Checks if `target_user_id` is the default account owner (new_owner).
+ *   - If yes, returns a forbidden error indicating the default account cannot be deleted.
+ * - Checks if the user identified by `target_user_id` exists using `UserService.checkUserExists`.
+ *   - If not found, returns a not found error indicating the user account could not be retrieved.
+ * - Checks if `target_user_id` matches `user_id` (current user's ID).
+ *   - If yes, returns a forbidden error indicating the user cannot delete their own account.
+ * - Transfers ownership of all blogs associated with the user to `new_owner`.
+ * - Deletes the user using `user.deleteOne()`.
+ * - Logs the deletion and ownership transfer of blogs.
+ * - Sends a success response indicating the user account was deleted successfully.
+ */
 
 export const deleteUserController = asyncErrorHandler(
   async (req, res, next) => {
