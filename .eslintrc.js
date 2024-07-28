@@ -5,6 +5,7 @@ module.exports = {
   },
   extends: [
     "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:prettier/recommended",
   ],
@@ -24,9 +25,9 @@ module.exports = {
     ecmaVersion: "latest",
     sourceType: "module",
   },
-  plugins: ["@typescript-eslint"],
+  plugins: ["@typescript-eslint", "prettier"],
   rules: {
-    "linebreak-style": ["error", "unix"],
+    "linebreak-style": ["warn", "unix"],
     quotes: ["warn", "double"],
     semi: ["error", "always"],
     "no-unused-vars": "off",
