@@ -79,8 +79,21 @@ const userSchema = new Schema<IUser>(
 );
 
 const User = mongoose.model<IUser>("user", userSchema);
-type PopulatedUser = Omit<HydratedDocument<IUser>, "role_id"> & {
-  role_id: HydratedDocument<IRole>;
-};
+type PopulatedUser = mongoose.Document<
+  unknown,
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  {},
+  mongoose.MergeType<
+    IUser,
+    {
+      role_id: HydratedDocument<IRole>;
+    }
+  >
+> &
+  Omit<IUser, "role_id"> & {
+    role_id: HydratedDocument<IRole>;
+  } & {
+    _id: Types.ObjectId;
+  };
 
 export { PopulatedUser, User };
