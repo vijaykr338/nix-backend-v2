@@ -23,7 +23,7 @@
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.14",
-    "sharp": "^0.33.4"
+    "sharp": "^0.32.6"
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
