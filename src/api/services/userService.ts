@@ -1,6 +1,6 @@
 import mongoose, { FilterQuery } from "mongoose";
 import { IRole } from "../models/rolesModel";
-import { IUser, User } from "../models/userModel";
+import { IUser, PopulatedUser, User } from "../models/userModel";
 import bcrypt from "bcrypt";
 import generateRandomPassword from "../helpers/randomPassword";
 import RegisterationMail from "./emails/registeration";
@@ -16,7 +16,7 @@ export const checkUserExists = async ({
   email,
   refreshToken,
   _id,
-}: ICheckUser) => {
+}: ICheckUser): Promise<PopulatedUser | null> => {
   // look into previous commit if this doesn't "look" good to you
   const conditions: object[] = [];
   if (_id) conditions.push({ _id });
@@ -33,7 +33,10 @@ export const checkUserExists = async ({
   return null;
 };
 
-export const addRefreshToken = async (email, refreshToken) => {
+export const addRefreshToken = async (
+  email: string,
+  refreshToken: string,
+): Promise<PopulatedUser | null> => {
   const user = await User.findOneAndUpdate(
     { email: email },
     { refreshToken: refreshToken },
@@ -42,7 +45,9 @@ export const addRefreshToken = async (email, refreshToken) => {
   return user;
 };
 
-export const deleteRefreshToken = async (email) => {
+export const deleteRefreshToken = async (
+  email: string,
+): Promise<PopulatedUser | null> => {
   const user = await User.findOneAndUpdate(
     { email: email },
     { refreshToken: null },
@@ -53,7 +58,7 @@ export const deleteRefreshToken = async (email) => {
 
 export const getAllUsers = async (
   query: FilterQuery<HydratedDocument<IUser>>,
-) => {
+): Promise<PopulatedUser[]> => {
   const allUsers = await User.find(query).populate<{
     role_id: HydratedDocument<IRole>;
   }>("role_id");

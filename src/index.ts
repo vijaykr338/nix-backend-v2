@@ -86,7 +86,6 @@ const server = app.listen(port, "127.0.0.1", () => {
 process.on("unhandledRejection", (err: Error) => {
   console.error(err.name.magenta, err.message.magenta);
   console.error("Unhandled rejection occured! Shutting down...".red);
-  server.close(() => {
-    process.exit(1);
-  });
+  server.closeAllConnections();
+  process.exit(1);
 });
