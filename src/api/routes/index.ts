@@ -9,9 +9,11 @@ import logsRouter from "./logsRoute";
 import imageRouter from "./imageRouter";
 import editionRouter from "./editionRoute";
 import dashboardRouter from "./dashboardRoute";
+import totpRouter from "./totpRouter";
 
 const router = express.Router();
 
+router.use("/totp", totpRouter);
 router.use("/user", userRouter);
 router.use("/auth", authRouter);
 router.use("/role", roleRouter);
