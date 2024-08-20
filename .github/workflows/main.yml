@@ -16,23 +16,24 @@ jobs:
   # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v4
 
-      # Runs a single command using the runners shell
-      - name: Deploy on Digitalocean
-        uses: appleboy/ssh-action@v0.1.2
-        with:
-          host: ${{secrets.SSH_HOST}}
-          key: ${{secrets.SSH_KEY}}
-          username: ${{secrets.SSH_USERNAME}}
-          script: |
-            cd ~/dtutimes-backend
-            git stash
-            git pull
-            npm i
-            pm2 restart NixBackend
+      - name: Get to work dir
+        run: cd $GITHUB_WORKSPACE
+
+      - name: Copy source code to target dir
+        run: rsync -avz $GITHUB_WORKSPACE ~/dtutimes-backend
+
+      - name: Get to target dir
+        run: cd ~/dtutimes-backend
+
+      - name: Install dependencies
+        run: npm i
+
+      - name: Deploy to web
+        run: pm2 restart NixBackend
