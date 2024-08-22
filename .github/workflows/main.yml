@@ -27,7 +27,7 @@ jobs:
         run: cd $GITHUB_WORKSPACE
 
       - name: Copy source code to target dir
-        run: rsync -avz $GITHUB_WORKSPACE ~/dtutimes-backend
+        run: rsync -avz $GITHUB_WORKSPACE/ ~/dtutimes-backend/
 
       - name: Get to target dir
         run: cd ~/dtutimes-backend
