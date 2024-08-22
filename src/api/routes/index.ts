@@ -10,9 +10,11 @@ import imageRouter from "./imageRouter";
 import editionRouter from "./editionRoute";
 import dashboardRouter from "./dashboardRoute";
 import totpRouter from "./totpRouter";
+import notificationRouter from "./notificationRouter";
 
 const router = express.Router();
 
+router.use("/notification", notificationRouter);
 router.use("/totp", totpRouter);
 router.use("/user", userRouter);
 router.use("/auth", authRouter);
