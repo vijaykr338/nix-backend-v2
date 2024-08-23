@@ -27,8 +27,20 @@ type InformationUpdate = TabUpdate[];
 type Link = string;
 
 interface INotification {
-  data: InformationUpdate;
+  data: ClientNotification;
   updated_at: Date;
+}
+
+export interface ClientNotification {
+  title: string;
+  description: string;
+  actions: ClientNotificationAction[];
+  link?: string;
+}
+
+export interface ClientNotificationAction {
+  action: string;
+  link: string;
 }
 
 const LinkNodeUpdateSchema = new Schema<LinkNodeUpdate>({
@@ -45,16 +57,22 @@ const DataUpdateSchema = new Schema<DataUpdate>({
   update: { type: String, required: true },
 });
 
-const TabUpdateSchema = new Schema<TabUpdate>({
+const ActionSchema = new Schema<ClientNotificationAction>({
+  action: { type: String, required: true },
+  link: { type: String, required: true },
+});
+
+const NotificationSchema = new Schema<ClientNotification>({
   title: { type: String, required: true },
-  data: { type: [DataUpdateSchema], required: true },
-  update: { type: String, required: true },
+  description: { type: String, required: true },
+  actions: { type: [ActionSchema], default: [] },
+  link: { type: String },
 });
 
 const notificationSchema = new Schema<INotification>(
   {
-    data: { type: [TabUpdateSchema], required: [true, "Give data"] },
     updated_at: { type: Date, required: false, default: Date.now },
+    data: { type: NotificationSchema, required: [true, "Give data"] },
   },
   {
     timeseries: {
@@ -70,4 +88,4 @@ const Notification = mongoose.model<INotification>(
   notificationSchema,
 );
 
-export { Notification };
+export { Notification, InformationUpdate };
