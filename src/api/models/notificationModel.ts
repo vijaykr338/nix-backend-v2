@@ -43,43 +43,38 @@ export interface ClientNotificationAction {
   link: string;
 }
 
-const LinkNodeUpdateSchema = new Schema<LinkNodeUpdate>({
-  title: { type: String, required: true },
-  link: { type: String },
-  update: { type: String, required: true },
-});
+const ActionSchema = new Schema<ClientNotificationAction>(
+  {
+    action: { type: String, required: true },
+    link: { type: String, required: true },
+  },
+  { _id: false },
+);
 
-const DataUpdateSchema = new Schema<DataUpdate>({
-  title: { type: String, required: true },
-  link: { type: String },
-  children: { type: [LinkNodeUpdateSchema], required: true },
-  date: { type: String },
-  update: { type: String, required: true },
-});
-
-const ActionSchema = new Schema<ClientNotificationAction>({
-  action: { type: String, required: true },
-  link: { type: String, required: true },
-});
-
-const NotificationSchema = new Schema<ClientNotification>({
-  title: { type: String, required: true },
-  description: { type: String, required: true },
-  actions: { type: [ActionSchema], default: [] },
-  link: { type: String },
-});
+const NotificationSchema = new Schema<ClientNotification>(
+  {
+    title: { type: String, required: true },
+    description: { type: String, required: true },
+    actions: { type: [ActionSchema], default: [] },
+    link: { type: String },
+  },
+  { _id: false },
+);
 
 const notificationSchema = new Schema<INotification>(
   {
     updated_at: { type: Date, required: false, default: Date.now },
-    data: { type: NotificationSchema, required: [true, "Give data"] },
+    data: {
+      type: NotificationSchema,
+      required: [true, "Notification content not provided"],
+    },
   },
   {
     timeseries: {
       timeField: "updated_at",
       granularity: "hours",
     },
-    expireAfterSeconds: 60 * 24 * 7 * 4, // 4 weeks,
+    expireAfterSeconds: 7 * 24 * 60 * 60, // 1 week
   },
 );
 
