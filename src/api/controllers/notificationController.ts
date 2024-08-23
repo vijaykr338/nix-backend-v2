@@ -147,7 +147,20 @@ export const save_notif = asyncErrorHandler(async (req, res, _next) => {
     }
   });
 
+  if (notifications.length == 0) {
+    return res.json({
+      status: "success",
+      message: "No new notifications",
+    });
+  }
+
   console.log(notifications);
+
+  await Notification.create(
+    notifications.map((notif) => {
+      return { data: notif };
+    }),
+  );
 
   res.json({
     status: "success",
