@@ -149,23 +149,6 @@ export const save_notif = asyncErrorHandler(async (req, res, _next) => {
 
   console.log(notifications);
 
-  // console.log(
-  //   await Notification.insertMany(
-  //     notifications.map((notif) => {
-  //       return { data: notif };
-  //     }),
-  //     { throwOnValidationError: true },
-  //   ),
-  // );
-
-  console.log(
-    await Notification.create(
-      notifications.map((notif) => {
-        return { data: notif };
-      }),
-    ),
-  );
-
   res.json({
     status: "success",
     message: "Notification saved successfully",
@@ -173,7 +156,14 @@ export const save_notif = asyncErrorHandler(async (req, res, _next) => {
 });
 
 export const get_notif = asyncErrorHandler(async (req, res, _next) => {
-  const notifications = await Notification.find().sort({ updated_at: -1 });
+  const query = req.query.since
+    ? {
+        // updated_at greater than since
+        updated_at: { $gt: new Date(req.query.since as string) },
+      }
+    : {};
+
+  const notifications = await Notification.find(query).sort({ updated_at: -1 });
 
   res.json({
     status: "success",
