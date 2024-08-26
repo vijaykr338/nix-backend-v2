@@ -7,6 +7,39 @@ import {
   Notification,
 } from "../models/notificationModel";
 import { Subscription } from "../models/subscriptionModel";
+import webpush from "web-push";
+
+export const push_notification = async () => {
+  const PRIVATE_KEY = process.env.NOTIF_PRIVATE_KEY;
+  if (!PRIVATE_KEY) {
+    throw new Error("Private key for notification API not configured");
+  }
+
+  const subscriptions = await Subscription.find();
+
+  const notificationPayload = JSON.stringify({
+    title: "New Notification",
+    body: "This is a new notification",
+    icon: "https://dtutimes.com/favicon.ico",
+  });
+
+  webpush.setVapidDetails(
+    `mailto:${process.env.EMAIL_SERVICE_USER}`,
+    "BCOsRaxpJeR0KyIPIg1rHx3pUtWVsGDGOxH65dDkqyU5ycF-CjPJxuqiXF4M0LpUMG_rk_YxSZX34uHbrV5umJQ",
+    PRIVATE_KEY,
+  );
+
+  for (const subscription of subscriptions) {
+    await webpush.sendNotification(subscription, notificationPayload);
+  }
+};
+
+export const test_notif = asyncErrorHandler(async (req, res, _next) => {
+  await push_notification();
+  res.json({
+    done: true,
+  });
+});
 
 export const save_notif = asyncErrorHandler(async (req, res, _next) => {
   if (req.body.secret != process.env.NOTIF_SECRET) {
