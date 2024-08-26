@@ -29,9 +29,17 @@ export const push_notification = async () => {
     PRIVATE_KEY,
   );
 
-  for (const subscription of subscriptions) {
-    await webpush.sendNotification(subscription, notificationPayload);
-  }
+  subscriptions.forEach((subscription) => {
+    webpush
+      .sendNotification(subscription, notificationPayload)
+      .then(() => {
+        console.log("Notification sent");
+      })
+      .catch(async (err) => {
+        console.error("Error sending notification", err);
+        await subscription.deleteOne();
+      });
+  });
 };
 
 export const test_notif = asyncErrorHandler(async (req, res, _next) => {
