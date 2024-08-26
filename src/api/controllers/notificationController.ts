@@ -198,6 +198,19 @@ export const save_notif = asyncErrorHandler(async (req, res, _next) => {
     status: "success",
     message: "Notification saved successfully",
   });
+  res.end();
+
+  if (notifications.length === 0) return;
+
+  if (notifications.length > 5) {
+    push_notification({
+      title: "DTU Website Update",
+      description: "Multiple updates were made to the website",
+      actions: [],
+    }).then(console.log);
+  } else {
+    notifications.forEach((n) => push_notification(n).then(console.log));
+  }
 });
 
 export const subscribe = asyncErrorHandler(async (req, res, _next) => {
