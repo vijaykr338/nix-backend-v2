@@ -6,6 +6,7 @@ import {
   InformationUpdate,
   Notification,
 } from "../models/notificationModel";
+import { Subscription } from "../models/subscriptionModel";
 
 export const save_notif = asyncErrorHandler(async (req, res, _next) => {
   if (req.body.secret != process.env.NOTIF_SECRET) {
@@ -165,6 +166,18 @@ export const save_notif = asyncErrorHandler(async (req, res, _next) => {
   res.json({
     status: "success",
     message: "Notification saved successfully",
+  });
+});
+
+export const subscribe = asyncErrorHandler(async (req, res, _next) => {
+  const subscription: PushSubscriptionJSON = req.body;
+  console.log("New subscriber", subscription);
+
+  await Subscription.create(subscription);
+
+  res.json({
+    status: "success",
+    message: "Subscription successful",
   });
 });
 
