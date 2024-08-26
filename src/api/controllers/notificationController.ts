@@ -9,7 +9,7 @@ import {
 import { Subscription } from "../models/subscriptionModel";
 import webpush from "web-push";
 
-export const push_notification = async () => {
+export const push_notification = async (notification: ClientNotification) => {
   const PRIVATE_KEY = process.env.NOTIF_PRIVATE_KEY;
   if (!PRIVATE_KEY) {
     throw new Error("Private key for notification API not configured");
@@ -18,9 +18,8 @@ export const push_notification = async () => {
   const subscriptions = await Subscription.find();
 
   const notificationPayload = JSON.stringify({
-    title: "New Notification",
-    body: "This is a new notification",
-    icon: "https://dtutimes.com/favicon.ico",
+    title: notification.title,
+    body: notification.description,
   });
 
   webpush.setVapidDetails(
@@ -32,9 +31,7 @@ export const push_notification = async () => {
   subscriptions.forEach((subscription) => {
     webpush
       .sendNotification(subscription, notificationPayload)
-      .then(() => {
-        console.log("Notification sent");
-      })
+      .then(() => console.log)
       .catch(async (err) => {
         console.error("Error sending notification", err);
         await subscription.deleteOne();
@@ -43,7 +40,11 @@ export const push_notification = async () => {
 };
 
 export const test_notif = asyncErrorHandler(async (req, res, _next) => {
-  await push_notification();
+  await push_notification({
+    title: "Test notification",
+    description: "This is a test notification",
+    actions: [],
+  });
   res.json({
     done: true,
   });
