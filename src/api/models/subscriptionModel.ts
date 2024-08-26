@@ -1,8 +1,7 @@
 import mongoose, { Schema } from "mongoose";
+import { type PushSubscription } from "web-push";
 
-const susbcriberSchema = new Schema<
-  Omit<PushSubscriptionJSON, "expirationTime">
->({
+const susbcriberSchema = new Schema<PushSubscription>({
   endpoint: {
     type: String,
     required: true,
@@ -19,8 +18,9 @@ const susbcriberSchema = new Schema<
   },
 });
 
-const Subscription = mongoose.model<
-  Omit<PushSubscriptionJSON, "expirationTime">
->("subscriber", susbcriberSchema);
+const Subscription = mongoose.model<PushSubscription>(
+  "subscriber",
+  susbcriberSchema,
+);
 
 export { Subscription };
