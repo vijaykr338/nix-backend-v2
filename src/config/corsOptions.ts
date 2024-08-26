@@ -12,6 +12,7 @@ const allowedOrigins = new Set<string>([
   "http://dtutimes.dtu.ac.in",
   "https://beta.dtutimes.com",
   "https://dev.dtutimes.com",
+  "https://team-dev.dtutimes.com",
 ]);
 
 export const corsOptions: CorsOptions = {
