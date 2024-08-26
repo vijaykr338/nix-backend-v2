@@ -39,17 +39,6 @@ export const push_notification = async (notification: ClientNotification) => {
   });
 };
 
-export const test_notif = asyncErrorHandler(async (req, res, _next) => {
-  await push_notification({
-    title: "Test notification",
-    description: "This is a test notification",
-    actions: [],
-  });
-  res.json({
-    done: true,
-  });
-});
-
 export const save_notif = asyncErrorHandler(async (req, res, _next) => {
   if (req.body.secret != process.env.NOTIF_SECRET) {
     throw new CustomError("Invalid secret", StatusCode.BAD_REQUEST);
