@@ -31,7 +31,7 @@ export const push_notification = async (notification: ClientNotification) => {
   subscriptions.forEach((subscription) => {
     webpush
       .sendNotification(subscription, notificationPayload)
-      .then(() => console.log)
+      .then(console.log)
       .catch(async (err) => {
         console.error("Error sending notification", err);
         await subscription.deleteOne();
@@ -207,9 +207,11 @@ export const save_notif = asyncErrorHandler(async (req, res, _next) => {
       title: "DTU Website Update",
       description: "Multiple updates were made to the website",
       actions: [],
-    }).then(console.log);
+    }).then(() => console.log("Notification sent"));
   } else {
-    notifications.forEach((n) => push_notification(n).then(console.log));
+    notifications.forEach((n) =>
+      push_notification(n).then(() => console.log("Notification sent")),
+    );
   }
 });
 
