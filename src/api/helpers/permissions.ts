@@ -49,6 +49,8 @@ enum Permission {
   DeleteEdition = 19,
   /// Will send an email to user X when a blog is published
   ReceiveBlogPublishedMail = 20,
+  /// Alllow user x to create event
+  CreateUpdateEvent = 21,
 }
 
 export default Permission;
