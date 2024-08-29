@@ -90,12 +90,25 @@ export const updateEventController = asyncErrorHandler(
     }
 
     const updateData: Partial<IEvent> = {};
-    if (event_title !== undefined) updateData.title = event_title;
-    if (event_allDay !== undefined) updateData.allDay = event_allDay;
-    if (event_allDay === false && event_start !== undefined)
+    updateData.title = event_title;
+    if (event_allDay !== undefined) {
+      updateData.allDay = event_allDay;
+      if (event_allDay === true) {
+        updateData.start = null;
+        updateData.end = null;
+      }
+    }
+
+    //assuming if start and end in request and allDay is undefined, then allDay is false
+    if (event_start !== undefined) {
       updateData.start = event_start;
-    if (event_allDay === false && event_end !== undefined)
+      updateData.allDay = false;
+    }
+    if (event_end !== undefined) {
       updateData.end = event_end;
+      updateData.allDay = false;
+    }
+
     if (event_description !== undefined)
       updateData.description = event_description;
 
