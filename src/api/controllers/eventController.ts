@@ -6,11 +6,6 @@ import { Event, IEvent } from "../models/eventModel";
 export const getEventsController = asyncErrorHandler(async (req, res, next) => {
   const events = await Event.find().sort();
 
-  if (!events || events.length === 0) {
-    const error = new CustomError("No events found", StatusCode.NOT_FOUND);
-    return next(error);
-  }
-
   res.status(StatusCode.OK).json({
     status: "success",
     message: "Events fetched successfully",
@@ -28,7 +23,7 @@ export const createEventsController = asyncErrorHandler(
       (field) => req.body[field] == undefined || req.body[field] === null,
     );
 
-    // is event is not allDay, we dont need start or end times
+    // if event is not allDay, we dont need start or end times
     if (allDay === false && !req.body["start"]) {
       missingFields.push("start");
     }
@@ -94,7 +89,7 @@ export const updateEventController = asyncErrorHandler(
       return next(error);
     }
 
-    const updateData: any = {};
+    const updateData: Partial<IEvent> = {};
     if (event_title !== undefined) updateData.title = event_title;
     if (event_allDay !== undefined) updateData.allDay = event_allDay;
     if (event_allDay === false && event_start !== undefined)
