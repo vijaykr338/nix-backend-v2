@@ -11,9 +11,11 @@ import editionRouter from "./editionRoute";
 import dashboardRouter from "./dashboardRoute";
 import totpRouter from "./totpRouter";
 import notificationRouter from "./notificationRouter";
+import eventRouter from "./eventRouter";
 
 const router = express.Router();
 
+router.use("/event", eventRouter);
 router.use("/notification", notificationRouter);
 router.use("/totp", totpRouter);
 router.use("/user", userRouter);
