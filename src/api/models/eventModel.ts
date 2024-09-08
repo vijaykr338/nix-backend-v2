@@ -33,7 +33,7 @@ const eventSchema = new Schema<IEvent>({
   society: {
     type: String,
     default: null,
-  }
+  },
 });
 
 const Event = mongoose.model<IEvent>("event", eventSchema);

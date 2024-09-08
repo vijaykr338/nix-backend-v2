@@ -21,6 +21,8 @@ router
 router
   .route("/update-event/:id")
   .post(protect, createUpdateProtect, updateEventController);
-router.route("/delete-event/:id").delete(protect, createUpdateProtect, deleteEventController);
+router
+  .route("/delete-event/:id")
+  .delete(protect, createUpdateProtect, deleteEventController);
 
 export default router;
