@@ -3,9 +3,10 @@ import mongoose, { Schema } from "mongoose";
 export interface IEvent {
   title: string;
   allDay: boolean;
-  start: Date | null;
+  start: Date;
   end: Date | null;
   description: string;
+  society: string | null;
 }
 
 const eventSchema = new Schema<IEvent>({
@@ -19,7 +20,7 @@ const eventSchema = new Schema<IEvent>({
   },
   start: {
     type: Date,
-    default: null,
+    required: [true, "Please enter event start"],
   },
   end: {
     type: Date,
@@ -29,6 +30,10 @@ const eventSchema = new Schema<IEvent>({
     type: String,
     default: null,
   },
+  society: {
+    type: String,
+    default: null,
+  }
 });
 
 const Event = mongoose.model<IEvent>("event", eventSchema);

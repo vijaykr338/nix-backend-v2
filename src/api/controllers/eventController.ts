@@ -15,18 +15,13 @@ export const getEventsController = asyncErrorHandler(async (req, res, next) => {
 
 export const createEventsController = asyncErrorHandler(
   async (req, res, next) => {
-    const { title, allDay, start, end, description } = req.body;
+    const { title, allDay, start, end, description, society} = req.body;
 
-    const requiredFields = ["title", "allDay"];
+    const requiredFields = ["title", "allDay", "start"];
 
     const missingFields = requiredFields.filter(
       (field) => req.body[field] == undefined || req.body[field] === null,
     );
-
-    // if event is not allDay, we dont need start or end times
-    if (allDay === false && !req.body["start"]) {
-      missingFields.push("start");
-    }
 
     if (missingFields.length > 0) {
       const error = new CustomError(
@@ -39,9 +34,10 @@ export const createEventsController = asyncErrorHandler(
     const newEvent = new Event({
       title,
       allDay,
-      start: allDay ? null : start,
+      start,
       end: allDay ? null : end,
       description: description || null,
+      society: society || null,
     });
 
     await newEvent.save();
@@ -65,6 +61,7 @@ export const updateEventController = asyncErrorHandler(
       event_start,
       event_end,
       event_description,
+      event_society,
     } = req.body;
 
     if (!event_id) {
@@ -75,35 +72,35 @@ export const updateEventController = asyncErrorHandler(
       return next(error);
     }
 
-    if (event_allDay && (event_start || event_end)) {
+    // if event_allDay is true and end time is true was passed
+    if (event_allDay && event_end) {
       const error = new CustomError(
-        "Cannot provide start and end times to all day event",
+        "Cannot provide end time to all day event",
         StatusCode.BAD_REQUEST,
       );
       return next(error);
-    } else if (!event_allDay && !event_start) {
-      const error = new CustomError(
-        "Cannot make event allDay if no start time provided",
-        StatusCode.BAD_REQUEST,
-      );
-      return next(error);
-    }
+    } 
 
     const updateData: Partial<IEvent> = {};
-    updateData.title = event_title;
+    if (event_title !== undefined) {
+      updateData.title = event_title;
+    }
+
+    //if allday is true, then ensure end time is null
     if (event_allDay !== undefined) {
       updateData.allDay = event_allDay;
       if (event_allDay === true) {
-        updateData.start = null;
         updateData.end = null;
       }
     }
 
-    //assuming if start and end in request and allDay is undefined, then allDay is false
+    // if start in request and allDay is undefined, user may be changing the date of the event or allDay was prev false and user is changing start time
+    // in either case, not required to update allDay
     if (event_start !== undefined) {
       updateData.start = event_start;
-      updateData.allDay = false;
     }
+    
+    //assuming if end in request and allDay is undefined, then allDay is false
     if (event_end !== undefined) {
       updateData.end = event_end;
       updateData.allDay = false;
@@ -111,6 +108,9 @@ export const updateEventController = asyncErrorHandler(
 
     if (event_description !== undefined)
       updateData.description = event_description;
+
+    if (event_society !== undefined)
+      updateData.society = event_society;
 
     const event = await Event.updateOne({ _id: event_id }, updateData);
 
