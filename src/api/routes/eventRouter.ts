@@ -4,6 +4,7 @@ import {
   getEventsController,
   createEventsController,
   updateEventController,
+  deleteEventController,
 } from "../controllers/eventController";
 import { protect } from "../middlewares/authMiddleware";
 import Permission from "../helpers/permissions";
@@ -18,7 +19,8 @@ router
   .route("/create-event")
   .post(protect, createUpdateProtect, createEventsController);
 router
-  .route("/update-event")
+  .route("/update-event/:id")
   .post(protect, createUpdateProtect, updateEventController);
+router.route("/delete-event/:id").delete(protect, createUpdateProtect, deleteEventController);
 
 export default router;

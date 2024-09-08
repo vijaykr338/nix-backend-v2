@@ -54,8 +54,8 @@ export const createEventsController = asyncErrorHandler(
 
 export const updateEventController = asyncErrorHandler(
   async (req, res, next) => {
+    const id = req.params.id;
     const {
-      event_id,
       event_title,
       event_allDay,
       event_start,
@@ -64,9 +64,9 @@ export const updateEventController = asyncErrorHandler(
       event_society,
     } = req.body;
 
-    if (!event_id) {
+    if (!id) {
       const error = new CustomError(
-        "Please provide event_id",
+        "Please provide event id",
         StatusCode.BAD_REQUEST,
       );
       return next(error);
@@ -112,7 +112,7 @@ export const updateEventController = asyncErrorHandler(
     if (event_society !== undefined)
       updateData.society = event_society;
 
-    const event = await Event.updateOne({ _id: event_id }, updateData);
+    const event = await Event.updateOne({ _id: id }, updateData);
 
     if (!event) {
       const error = new CustomError("Event not found", StatusCode.NOT_FOUND);
@@ -128,3 +128,29 @@ export const updateEventController = asyncErrorHandler(
     });
   },
 );
+
+export const deleteEventController = asyncErrorHandler(async (req, res, next) => {
+  const id = req.params.id;
+
+  if (id) {
+    const event = await Event.findByIdAndDelete(id);
+
+    if (!event) {
+      const error = new CustomError("Event not found", StatusCode.NOT_FOUND);
+      return next(error);
+    }
+    
+    console.log("Event deleted", req.body, event);
+
+    return res.status(StatusCode.OK).json({
+      status: "success",
+      message: "Event deleted successfully",
+    });
+  } else {
+    const error = new CustomError(
+      "Please provide event_id to delete an event.",
+      StatusCode.BAD_REQUEST,
+    );
+    return next(error);
+  }
+});
