@@ -1,4 +1,6 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { HydratedDocument, Schema } from "mongoose";
+import { ITag, TagType } from "./tags";
+import { IUser } from "./userModel";
 
 /** Hardcoded values so relative orders are in sync with db */
 export enum BlogStatus {
@@ -18,6 +20,7 @@ export interface IBlog {
   status: BlogStatus;
   category_id: number;
   cover: string | null;
+  tags: ITag[];
   views: number;
   likes: number;
   meta_title: string;
@@ -63,6 +66,22 @@ const blogSchema = new Schema<IBlog>(
       type: String,
       default: null,
     },
+    tags: {
+      type: [
+        {
+          tag_type: { type: Number, enum: TagType },
+          users: [
+            {
+              type: mongoose.Schema.Types.ObjectId,
+              ref: "user",
+            },
+          ],
+          tag_name: {
+            type: String,
+          },
+        },
+      ],
+    },
     views: {
       type: Number,
       default: 0,
@@ -97,6 +116,20 @@ const blogSchema = new Schema<IBlog>(
     },
   },
 );
+
+// Middleware to auto-populate tags on find queries
+function find_prehook(
+  this: mongoose.Query<IBlog[], IBlog>,
+  next: mongoose.CallbackWithoutResultAndOptionalError,
+) {
+  this.populate<{ tags: { users: HydratedDocument<IUser> } }>(
+    "tags.users",
+    "_id name email bio",
+  );
+  next();
+}
+
+blogSchema.pre(/^find/, find_prehook);
 
 const Blog = mongoose.model<IBlog>("blog", blogSchema);
 
