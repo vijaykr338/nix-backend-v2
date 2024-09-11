@@ -16,7 +16,7 @@
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
-    "express": "^4.20.0",
+    "express": "^5.0.0",
     "html-minifier": "^4.0.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.5.3",
