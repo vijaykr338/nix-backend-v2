@@ -5,6 +5,7 @@ import {
   createEventsController,
   updateEventController,
   deleteEventController,
+  createEventController,
 } from "../controllers/eventController";
 import { protect } from "../middlewares/authMiddleware";
 import Permission from "../helpers/permissions";
@@ -17,7 +18,8 @@ const createUpdateProtect = protected_route([Permission.CreateUpdateEvent]);
 router.route("/").get(protect, getEventsController);
 router
   .route("/create-event")
-  .post(protect, createUpdateProtect, createEventsController);
+  .post(protect, createUpdateProtect, createEventController);
+router.route("/create-events").post(protect, createUpdateProtect, createEventsController)
 router
   .route("/update-event/:id")
   .post(protect, createUpdateProtect, updateEventController);
