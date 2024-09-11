@@ -13,7 +13,7 @@ export const getEventsController = asyncErrorHandler(async (req, res, next) => {
   });
 });
 
-export const createEventsController = asyncErrorHandler(
+export const createEventController = asyncErrorHandler(
   async (req, res, next) => {
     const { title, allDay, start, end, description, society } = req.body;
 
@@ -25,7 +25,16 @@ export const createEventsController = asyncErrorHandler(
 
     if (missingFields.length > 0) {
       const error = new CustomError(
-        `Please enter ${missingFields}`,
+        `Please enter ${missingFields.join(", ")}`,
+        StatusCode.BAD_REQUEST,
+      );
+      return next(error);
+    }
+
+    // if event_allDay is true and end time is true was passed
+    if (allDay && end) {
+      const error = new CustomError(
+        "Cannot provide end time to all day event",
         StatusCode.BAD_REQUEST,
       );
       return next(error);
@@ -51,6 +60,84 @@ export const createEventsController = asyncErrorHandler(
     });
   },
 );
+
+export const createEventsController = asyncErrorHandler(
+  async (req, res, next) => {
+    const {events} = req.body;
+
+    if (!Array.isArray(events) || events.length === 0) {
+      const error = new CustomError(
+        "No events provided. Please provide an array of events.",
+        StatusCode.BAD_REQUEST
+      );
+      return next(error);
+    }
+
+    const createdEvents: IEvent[] = [];
+    const errors: {event: IEvent, error: string}[] = [];
+
+    for (const event of events) {
+      const {title, allDay, start, end, description, society} = event;
+
+      const requiredFields = ["title", "allDay", "start"];
+      const missingFields = requiredFields.filter(
+        (field) => event[field] == undefined || event[field] == null
+      );
+
+      if (missingFields.length > 0) {
+        errors.push({
+            event: event,
+            error: `Missing fields: ${missingFields.join(', ')}`,
+        });
+        continue;
+      }
+
+      // if event_allDay is true and end time is true was passed
+      if (allDay && end) {
+        errors.push({
+          event: event,
+          error: "Cannot provide end time to all day events",
+        });
+        continue;
+      }
+
+      const newEvent = new Event({
+        title,
+        allDay,
+        start,
+        end: allDay ? null : end,
+        description: description || null,
+        society: society || null,
+      });
+
+      try {
+        const savedEvent = await newEvent.save();
+        createdEvents.push(savedEvent);
+      } catch (err) {
+        errors.push({
+          event: event,
+          error: err.message,
+        });
+      }
+    }
+
+    if (errors.length > 0) {
+      return res.status(StatusCode.PARTIAL_CONTENT).json({
+        status: "partial success",
+        message: "Some events were not created successfully",
+        createdEvents,
+        errors,
+      });
+    }
+
+    res.status(StatusCode.OK).json({
+      status: "success",
+      message: "All events created successfully",
+      createdEvents,
+    });
+  }
+);
+
 
 export const updateEventController = asyncErrorHandler(
   async (req, res, next) => {
