@@ -1,0 +1,3 @@
+[submodule "src/commonlib"]
+	path = src/commonlib
+	url = git@github.com:dtutimes/central-information.git
