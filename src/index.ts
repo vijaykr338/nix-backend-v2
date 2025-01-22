@@ -58,6 +58,11 @@ app.get("/", (req, res) => {
   });
 });
 
+app.use("/favicon.ico", (_, res) => {
+  // return 204 No Content
+  res.status(StatusCode.NO_CONTENT).end();
+});
+
 //app router
 app.use(`${API_URL}`, router);
 
