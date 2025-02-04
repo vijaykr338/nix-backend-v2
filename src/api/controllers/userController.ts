@@ -11,7 +11,7 @@ import { IUser, PopulatedUser, User } from "../models/userModel";
 import * as UserService from "../services/userService";
 import { Blog } from "../models/blogModel";
 import { assertHydratedUser, assertProtectedUser } from "../helpers/assertions";
-
+import RoleUpdateMail from "../services/emails/roleUpdate";
 /**
  * @description Retrieves all team members excluding those with the role MainWebsiteRole.DoNotDisplay.
  * @route GET /get-team
@@ -60,6 +60,7 @@ export const getTeam = asyncErrorHandler(async (req, res) => {
  * - Maps each user to include relevant details in the response.
  * - Sends a success response with the list of users.
  */
+
 
 export const getAllUsers = asyncErrorHandler(async (req, res) => {
   //add logic here
@@ -315,6 +316,16 @@ export const permsUpdateController = asyncErrorHandler(
 
     await user.save();
 
+    if (req.body.team_role !== undefined && process.env.ENABLE_EMAIL === "true") {
+      try {
+        const mail = new RoleUpdateMail(user, req.body.team_role);
+        await mail.sendTo(user.email);
+        console.log(`Role update email sent to ${user.email}`);
+      } catch (error) {
+        console.error(`Failed to send role update email to ${user.email}:`, error);
+      }
+    }
+
     const user_resp = user_to_response(user);
     return res.status(StatusCode.OK).json({
       status: "success",
@@ -323,6 +334,10 @@ export const permsUpdateController = asyncErrorHandler(
         user: user_resp,
       },
     });
+
+    
+
+
   },
 );
 
