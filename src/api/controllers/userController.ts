@@ -12,6 +12,7 @@ import * as UserService from "../services/userService";
 import { Blog } from "../models/blogModel";
 import { assertHydratedUser, assertProtectedUser } from "../helpers/assertions";
 import RoleUpdateMail from "../services/emails/roleUpdate";
+import { getUsersPermissionBased } from "../helpers/emailHelper";
 /**
  * @description Retrieves all team members excluding those with the role MainWebsiteRole.DoNotDisplay.
  * @route GET /get-team
@@ -318,9 +319,27 @@ export const permsUpdateController = asyncErrorHandler(
 
     if (req.body.team_role !== undefined && process.env.ENABLE_EMAIL === "true") {
       try {
-        const mail = new RoleUpdateMail(user, req.body.team_role);
+        //find the person who updated the role
+        const updaterId = res.locals.user_id;
+        const senderUser = await User.findById(updaterId);
+
+        if (!senderUser) {
+          console.error("Sender user not found");
+          return;
+        }
+        //get their name 
+        const updaterName = senderUser.name;
+        const mail = new RoleUpdateMail(user, req.body.team_role, updaterName);
+        //send the mail to the user
         await mail.sendTo(user.email);
         console.log(`Role update email sent to ${user.email}`);
+
+        const superUsers = await getUsersPermissionBased([]);
+        //send the mail to all users with superuser role
+        for (const superUser of superUsers) {
+          await mail.sendTo(superUser.email);
+          console.log(`Role update notification sent to superuser ${superUser.email}`);
+        }
       } catch (error) {
         console.error(`Failed to send role update email to ${user.email}:`, error);
       }
